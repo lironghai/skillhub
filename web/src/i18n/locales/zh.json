@@ -8,6 +8,7 @@
     "dashboard": "控制台",
     "mySkills": "我的技能",
     "publish": "发布",
+    "mcpManagement": "MCP 管理",
     "login": "登录"
   },
   "landing": {
@@ -219,6 +220,7 @@
     "register": "立即注册",
     "oauthHint": "使用 OAuth 登录时，认证完成后会自动返回当前站点。",
     "passwordCompatHint": "当前部署已启用账号密码兼容接入层。表单将路由到 {{name}}，而不是固定使用本地账号接口。",
+    "authMethodsUnavailable": "暂时无法加载登录方式。你仍可尝试密码登录，或在服务恢复后重试。",
     "enterpriseSsoTitle": "企业单点登录",
     "enterpriseSsoHint": "当前部署已启用兼容接入层。若浏览器中已存在 {{name}} 会话，可直接尝试建立 SkillHub 登录态。",
     "enterpriseSsoAutoHint": "当前部署已启用自动 {{name}} 探测。若未成功，你仍可继续使用现有登录方式。",
@@ -335,6 +337,13 @@
     "previewMore": "...",
     "previewMoreLabel": "查看全部",
     "userId": "用户 ID"
+  },
+  "mcpManagement": {
+    "title": "MCP 管理",
+    "subtitle": "在 SkillHub 统一入口中管理 ContextForge 的 MCP 网关、工具、资源和服务器。",
+    "loginHint": "这里打开的是 ContextForge 管理控制台。ContextForge 使用自己的平台管理员账号，和 SkillHub 登录账号分开。",
+    "openInNewTab": "新窗口打开",
+    "iframeTitle": "ContextForge MCP 管理控制台"
   },
   "mySkills": {
     "title": "我的技能",
@@ -1291,6 +1300,7 @@
       "reviews": "审核管理",
       "promotions": "推广管理",
       "reports": "举报管理",
+      "mcpManagement": "MCP 管理",
       "users": "用户管理",
       "labels": "标签管理",
       "auditLog": "审计日志",

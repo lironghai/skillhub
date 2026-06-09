@@ -1,3 +1,5 @@
+import { renderToStaticMarkup } from 'react-dom/server'
+import { createElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 // Layout is a component-only file with no exported pure functions or constants.
@@ -53,5 +55,11 @@ describe('Layout', () => {
   it('exports a named Layout component function', () => {
     expect(typeof Layout).toBe('function')
     expect(Layout.name).toBe('Layout')
+  })
+
+  it('shows the MCP management entry before SkillHub login', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).toContain('nav.mcpManagement')
   })
 })

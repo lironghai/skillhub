@@ -58,6 +58,7 @@ export const WEB_API_PREFIX = '/api/web'
 type RuntimeConfig = {
   apiBaseUrl?: string
   appBaseUrl?: string
+  mcpContextForgeAdminUrl?: string
   authDirectEnabled?: string
   authDirectProvider?: string
   authSessionBootstrapEnabled?: string

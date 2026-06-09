@@ -49,6 +49,7 @@ export function Layout() {
     { label: t('nav.landing'), to: '/', exact: true },
     { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
     { label: t('nav.search'), to: '/search' },
+    { label: t('nav.mcpManagement'), to: '/dashboard/mcp' },
     { label: t('nav.dashboard'), to: '/dashboard', auth: true },
     { label: t('nav.mySkills'), to: '/dashboard/skills', auth: true },
   ]

@@ -8,6 +8,7 @@
     "dashboard": "Dashboard",
     "mySkills": "My Skills",
     "publish": "Publish",
+    "mcpManagement": "MCP Management",
     "login": "Login"
   },
   "landing": {
@@ -219,6 +220,7 @@
     "register": "Sign up now",
     "oauthHint": "After OAuth authentication, you will be automatically redirected back to this site.",
     "passwordCompatHint": "This deployment has the password compatibility layer enabled. The form will route to {{name}} instead of the fixed local account endpoint.",
+    "authMethodsUnavailable": "Login methods could not be loaded. You can still try password login, or retry after the service is available.",
     "enterpriseSsoTitle": "Enterprise SSO",
     "enterpriseSsoHint": "This deployment has the compatibility layer enabled. If your browser already has a {{name}} session, you can try establishing a SkillHub session directly.",
     "enterpriseSsoAutoHint": "This deployment has automatic {{name}} probing enabled. If it does not succeed, you can continue with the standard login methods.",
@@ -335,6 +337,13 @@
     "previewMore": "...",
     "previewMoreLabel": "View All",
     "userId": "User ID"
+  },
+  "mcpManagement": {
+    "title": "MCP Management",
+    "subtitle": "Manage ContextForge MCP gateways, tools, resources, and servers from the unified SkillHub entry.",
+    "loginHint": "This area opens the ContextForge admin console. ContextForge uses its own platform admin account, separate from the SkillHub login.",
+    "openInNewTab": "Open Console",
+    "iframeTitle": "ContextForge MCP management console"
   },
   "mySkills": {
     "title": "My Skills",
@@ -1290,6 +1299,7 @@
       "reviews": "Review Management",
       "promotions": "Promotion Management",
       "reports": "Report Management",
+      "mcpManagement": "MCP Management",
       "users": "User Management",
       "labels": "Label Management",
       "auditLog": "Audit Log",

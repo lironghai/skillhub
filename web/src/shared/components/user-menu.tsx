@@ -162,6 +162,9 @@ export function UserMenu({ user, triggerClassName }: UserMenuProps) {
             <Link to="/dashboard/subscriptions" className={menuItemClassName} onClick={closeMenu}>
               {t('user.menu.subscriptions')}
             </Link>
+            <Link to="/dashboard/mcp" className={menuItemClassName} onClick={closeMenu}>
+              {t('user.menu.mcpManagement')}
+            </Link>
             {reviewCenterVisible ? (
               <Link to={buildGlobalReviewsPath()} className={menuItemClassName} onClick={closeMenu}>
                 {t('user.menu.reviews')}

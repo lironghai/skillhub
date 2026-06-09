@@ -28,7 +28,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<{ username?: string, password?: string }>({})
   const isChinese = i18n.resolvedLanguage?.split('-')[0] === 'zh'
-  const { data: authMethods } = useAuthMethods(search.returnTo)
+  const { data: authMethods, isError: authMethodsError } = useAuthMethods(search.returnTo)
 
   const returnTo = search.returnTo && search.returnTo.startsWith('/') ? search.returnTo : '/dashboard'
   const disabledMessage = search.reason === 'accountDisabled' ? t('apiError.auth.accountDisabled') : null
@@ -81,6 +81,11 @@ export function LoginPage() {
             {disabledMessage ? (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {disabledMessage}
+              </div>
+            ) : null}
+            {authMethodsError ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {t('login.authMethodsUnavailable')}
               </div>
             ) : null}
             <SessionBootstrapEntry

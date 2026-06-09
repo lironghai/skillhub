@@ -35,7 +35,7 @@ vi.mock('@/features/auth/session-bootstrap-entry', () => ({
 }))
 
 vi.mock('@/features/auth/use-auth-methods', () => ({
-  useAuthMethods: () => ({ data: [] }),
+  useAuthMethods: vi.fn(() => ({ data: [] })),
 }))
 
 vi.mock('@/features/auth/use-password-login', () => ({
@@ -62,7 +62,10 @@ vi.mock('@/shared/ui/tabs', () => ({
 }))
 
 import { renderToStaticMarkup } from 'react-dom/server'
+import { useAuthMethods } from '@/features/auth/use-auth-methods'
 import { LoginPage } from './login'
+
+const mockedUseAuthMethods = vi.mocked(useAuthMethods)
 
 describe('LoginPage', () => {
   it('exports a named component function', () => {
@@ -74,6 +77,18 @@ describe('LoginPage', () => {
 
     expect(html).toContain('login.title')
     expect(html).toContain('login.subtitle')
+    expect(html).toContain('login.submit')
+  })
+
+  it('keeps the password form available when auth methods cannot be loaded', () => {
+    mockedUseAuthMethods.mockReturnValueOnce({
+      data: undefined,
+      isError: true,
+    } as ReturnType<typeof useAuthMethods>)
+
+    const html = renderToStaticMarkup(<LoginPage />)
+
+    expect(html).toContain('login.authMethodsUnavailable')
     expect(html).toContain('login.submit')
   })
 })

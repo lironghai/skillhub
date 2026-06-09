@@ -12,7 +12,13 @@ export function buildReturnTo(location: RouteLocationLike) {
 
 export function createRequireAuth(getCurrentUser: () => Promise<unknown>) {
   return async function requireAuth({ location }: { location: RouteLocationLike }) {
-    const user = await getCurrentUser()
+    let user: unknown = null
+    try {
+      user = await getCurrentUser()
+    } catch {
+      user = null
+    }
+
     if (!user) {
       throw redirect({
         to: '/login',
