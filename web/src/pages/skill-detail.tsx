@@ -172,7 +172,6 @@ export function SkillDetailPage() {
     && ['PENDING_REVIEW', 'SCANNING', 'SCAN_FAILED'].includes(headlineVersion?.status ?? '')
   const hasPendingOwnerPreview = ownerPreviewVersion?.status === 'PENDING_REVIEW'
   const hasRejectedOwnerPreview = ownerPreviewVersion?.status === 'REJECTED'
-  const hasRejectedVersion = versions?.some((v) => v.status === 'REJECTED') ?? false
   const hasPublishedPendingReview = Boolean(publishedVersion && hasPendingOwnerPreview)
   const canInteract = skill?.canInteract ?? true
   const canReport = skill?.canReport ?? true
@@ -762,7 +761,7 @@ export function SkillDetailPage() {
                 {t('skillDetail.versionStatusPendingReview')}
               </span>
             )}
-            {!isPendingPreview && (isRejectedPreview || hasRejectedOwnerPreview || hasRejectedVersion) && skill.canManageLifecycle && (
+            {!isPendingPreview && (isRejectedPreview || hasRejectedOwnerPreview) && skill.canManageLifecycle && (
               <span className="badge-soft" style={{ background: '#fee2e2', color: '#991b1b' }}>
                 {t('skillDetail.rejectedBadge')}
               </span>

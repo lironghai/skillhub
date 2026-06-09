@@ -257,6 +257,12 @@ const dashboardSkillsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'dashboard/skills',
   beforeLoad: requireAuth,
+  validateSearch: (search: Record<string, unknown>): { page?: number; q?: string; namespace?: string; filter?: string } => ({
+    page: typeof search.page === 'number' ? search.page : undefined,
+    q: typeof search.q === 'string' && search.q ? search.q : undefined,
+    namespace: typeof search.namespace === 'string' && search.namespace ? search.namespace : undefined,
+    filter: typeof search.filter === 'string' && search.filter ? search.filter : undefined,
+  }),
   component: MySkillsPage,
 })
 

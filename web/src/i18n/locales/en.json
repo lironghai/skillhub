@@ -348,6 +348,12 @@
   "mySkills": {
     "title": "My Skills",
     "subtitle": "Manage your published skills",
+    "searchPlaceholder": "Search by name, slug, or description",
+    "namespaceFilterLabel": "Filter by namespace",
+    "namespaceFilterAll": "All namespaces",
+    "clearSearch": "Clear filters",
+    "emptySearchTitle": "No matching skills",
+    "emptySearchDescription": "Try adjusting your keyword or switching namespace.",
     "filters": {
       "ALL": "All",
       "PENDING_REVIEW": "Pending Review",
@@ -810,6 +816,8 @@
     "namespaceLabel": "Namespace",
     "loginToRate": "Login to star and rate",
     "install": "Install",
+    "installMethodClawhub": "ClawHub CLI",
+    "installMethodSkillhub": "SkillHub CLI",
     "download": "Download",
     "labelsSectionTitle": "Labels",
     "labelsSectionDescription": "Attach or remove recommended labels that help users filter and discover this skill.",
@@ -1286,7 +1294,8 @@
     "prev": "Previous",
     "next": "Next",
     "pagePrefix": "Page",
-    "pageSuffix": ""
+    "pageSuffix": "",
+    "goToPage": "Go to page {{page}}"
   },
   "user": {
     "menu": {

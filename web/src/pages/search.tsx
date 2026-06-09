@@ -186,7 +186,7 @@ export function SearchPage() {
   }
 
   const handleSkillClick = (namespace: string, slug: string) => {
-    navigate({ to: `/space/${namespace}/${encodeURIComponent(slug)}` })
+    navigate({ to: `/space/${namespace}/${encodeURIComponent(slug)}`, search: { returnTo: `${window.location.pathname}${window.location.search}` } })
   }
 
   const filteredStarredSkills = starredOnly
