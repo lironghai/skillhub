@@ -109,6 +109,7 @@ const sidebars = {
             'developer/architecture/overview',
             'developer/architecture/domain-model',
             'developer/architecture/security',
+            'developer/architecture/mcp-identity-propagation',
           ],
         },
         {

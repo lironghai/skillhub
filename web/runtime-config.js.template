@@ -1,7 +1,6 @@
 window.__SKILLHUB_RUNTIME_CONFIG__ = {
   apiBaseUrl: "${SKILLHUB_WEB_API_BASE_URL}",
   appBaseUrl: "${SKILLHUB_PUBLIC_BASE_URL}",
-  mcpContextForgeAdminUrl: "${SKILLHUB_CONTEXT_FORGE_ADMIN_URL}",
   authDirectEnabled: "${SKILLHUB_WEB_AUTH_DIRECT_ENABLED}",
   authDirectProvider: "${SKILLHUB_WEB_AUTH_DIRECT_PROVIDER}",
   authSessionBootstrapEnabled: "${SKILLHUB_WEB_AUTH_SESSION_BOOTSTRAP_ENABLED}",

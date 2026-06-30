@@ -8,7 +8,7 @@
     "dashboard": "控制台",
     "mySkills": "我的技能",
     "publish": "发布",
-    "mcpManagement": "MCP 管理",
+    "mcpManagement": "MCP 广场",
     "login": "登录"
   },
   "landing": {
@@ -339,11 +339,8 @@
     "userId": "用户 ID"
   },
   "mcpManagement": {
-    "title": "MCP 管理",
-    "subtitle": "在 SkillHub 统一入口中管理 ContextForge 的 MCP 网关、工具、资源和服务器。",
-    "loginHint": "这里打开的是 ContextForge 管理控制台。ContextForge 使用自己的平台管理员账号，和 SkillHub 登录账号分开。",
-    "openInNewTab": "新窗口打开",
-    "iframeTitle": "ContextForge MCP 管理控制台"
+    "title": "MCP 广场",
+    "subtitle": "在 SkillHub 统一入口中浏览并搜索 ContextForge MCP 服务。"
   },
   "mySkills": {
     "title": "我的技能",
@@ -1309,7 +1306,7 @@
       "reviews": "审核管理",
       "promotions": "推广管理",
       "reports": "举报管理",
-      "mcpManagement": "MCP 管理",
+      "mcpManagement": "MCP 广场",
       "users": "用户管理",
       "labels": "标签管理",
       "auditLog": "审计日志",
@@ -1538,5 +1535,50 @@
       "report": "举报通知",
       "reportDesc": "举报提交或处理完成时通知"
     }
+  },
+  "mcpMarketplace": {
+    "title": "MCP 广场",
+    "subtitle": "浏览内部 ContextForge 虚拟 MCP 服务和开源 Registry 服务。",
+    "tabsLabel": "MCP 广场分类",
+    "internalTab": "内部",
+    "openSourceTab": "开源",
+    "searchPlaceholder": "搜索 MCP 服务名称或介绍",
+    "internalSearchPlaceholder": "搜索内部 MCP 服务名称或介绍",
+    "search": "搜索",
+    "clearSearch": "清除搜索",
+    "refresh": "刷新",
+    "retry": "重试",
+    "emptyInternalTitle": "未找到内部 MCP 服务",
+    "emptyInternalDescription": "ContextForge 返回的内部虚拟服务列表为空。",
+    "emptyTitle": "未找到 MCP 服务",
+    "emptyDescription": "ContextForge 返回的 MCP 目录为空。",
+    "emptySearchDescription": "没有匹配该关键词的 MCP 服务，请尝试其他名称或介绍。",
+    "errorTitle": "MCP 广场暂不可用",
+    "errorDescription": "SkillHub 当前无法读取 ContextForge 目录，请检查 ContextForge 地址和凭据后重试。",
+    "noDescription": "暂无介绍。",
+    "available": "可用",
+    "unavailable": "不可用",
+    "enabled": "已启用",
+    "disabled": "已停用",
+    "toolsCount": "{{count}} 个工具",
+    "resourcesCount": "{{count}} 个资源",
+    "promptsCount": "{{count}} 个提示词",
+    "streamableHttpUrl": "Streamable HTTP 地址",
+    "sseUrl": "SSE 地址",
+    "owner": "所有者",
+    "team": "团队",
+    "visibility": "可见性",
+    "provider": "提供方",
+    "authType": "认证",
+    "transport": "传输",
+    "sourceUrl": "URL",
+    "secure": "安全",
+    "unverified": "未验证",
+    "registered": "已注册",
+    "notRegistered": "未注册",
+    "requiresApiKey": "需要 API Key",
+    "requiresOauth": "需要 OAuth 配置",
+    "openServer": "服务",
+    "openDocs": "文档"
   }
 }

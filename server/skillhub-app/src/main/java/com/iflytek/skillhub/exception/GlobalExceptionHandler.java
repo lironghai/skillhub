@@ -7,6 +7,7 @@ import com.iflytek.skillhub.dto.ApiResponseFactory;
 import com.iflytek.skillhub.domain.shared.exception.LocalizedDomainException;
 import com.iflytek.skillhub.domain.shared.exception.LocalizedMessage;
 import com.iflytek.skillhub.metrics.SkillHubMetrics;
+import com.iflytek.skillhub.mcp.McpCatalogUnavailableException;
 import com.iflytek.skillhub.security.SensitiveLogSanitizer;
 import com.iflytek.skillhub.storage.StorageAccessException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -121,6 +122,22 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
                 apiResponseFactory.error(503, "error.storage.unavailable"));
+    }
+
+    @ExceptionHandler(McpCatalogUnavailableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMcpCatalogUnavailable(McpCatalogUnavailableException ex,
+                                                                          HttpServletRequest request) {
+        logger.warn(
+                "MCP catalog unavailable [requestId={}, method={}, path={}, userId={}, reason={}]",
+                MDC.get("requestId"),
+                request.getMethod(),
+                sensitiveLogSanitizer.sanitizeRequestTarget(request),
+                resolveUserId(request),
+                ex.getMessage(),
+                ex
+        );
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+                apiResponseFactory.error(503, "error.mcp.contextForge.unavailable"));
     }
 
     @ExceptionHandler(AsyncRequestTimeoutException.class)
