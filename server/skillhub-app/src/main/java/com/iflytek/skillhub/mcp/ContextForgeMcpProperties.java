@@ -14,6 +14,9 @@ public class ContextForgeMcpProperties {
     private String loginPath = "/auth/email/login";
     private String catalogPath = "/admin/mcp-registry/servers";
     private String internalServersPath = "/admin/servers";
+    private String internalToolsPath = "/admin/tools";
+    private String internalResourcesPath = "/admin/resources";
+    private String internalPromptsPath = "/admin/prompts";
     private int defaultSize = 24;
     private int maxSize = 100;
 
@@ -79,6 +82,30 @@ public class ContextForgeMcpProperties {
 
     public void setInternalServersPath(String internalServersPath) {
         this.internalServersPath = internalServersPath;
+    }
+
+    public String getInternalToolsPath() {
+        return internalToolsPath;
+    }
+
+    public void setInternalToolsPath(String internalToolsPath) {
+        this.internalToolsPath = internalToolsPath;
+    }
+
+    public String getInternalResourcesPath() {
+        return internalResourcesPath;
+    }
+
+    public void setInternalResourcesPath(String internalResourcesPath) {
+        this.internalResourcesPath = internalResourcesPath;
+    }
+
+    public String getInternalPromptsPath() {
+        return internalPromptsPath;
+    }
+
+    public void setInternalPromptsPath(String internalPromptsPath) {
+        this.internalPromptsPath = internalPromptsPath;
     }
 
     public int getDefaultSize() {

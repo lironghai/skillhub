@@ -7,15 +7,17 @@ import { Pagination } from '@/shared/components/pagination'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'
 import { cn } from '@/shared/lib/utils'
 import { MAX_SEARCH_QUERY_LENGTH } from '@/shared/lib/search-query'
 import { useCopyToClipboard } from '@/shared/lib/clipboard'
 import { MCP_CATALOG_PAGE_SIZE } from './mcp-catalog-query'
-import type { McpCatalogItem, McpInternalServerItem } from './mcp-catalog-types'
+import type { McpAssociatedItem, McpCatalogItem, McpInternalServerItem } from './mcp-catalog-types'
 import { useMcpCatalog, useMcpInternalServers } from './use-mcp-catalog'
 
 type McpMarketplaceTab = 'internal' | 'opensource'
+type AssociatedDetailType = 'tools' | 'resources' | 'prompts'
 
 export function McpMarketplacePage() {
   const { t } = useTranslation()
@@ -28,11 +30,15 @@ export function McpMarketplacePage() {
     search,
     page,
     size: MCP_CATALOG_PAGE_SIZE,
+  }, {
+    enabled: activeTab === 'internal',
   })
   const openSourceQuery = useMcpCatalog({
     search,
     page,
     size: MCP_CATALOG_PAGE_SIZE,
+  }, {
+    enabled: activeTab === 'opensource',
   })
   const activeQuery = activeTab === 'internal' ? internalQuery : openSourceQuery
   const totalPages = useMemo(() => {
@@ -215,42 +221,114 @@ function OpenSourceCatalogList({ servers, search, onClear }: { servers: McpCatal
 
 function InternalServerCard({ server }: { server: McpInternalServerItem }) {
   const { t } = useTranslation()
+  const [detailType, setDetailType] = useState<AssociatedDetailType | null>(null)
+  const detailItems = detailType ? server[detailType] : []
+  const detailCount = detailType === 'tools'
+    ? server.toolCount
+    : detailType === 'resources'
+      ? server.resourceCount
+      : detailType === 'prompts'
+        ? server.promptCount
+        : 0
+  const detailTitle = detailType ? t(associatedDetailTitleKey(detailType)) : ''
+
   return (
-    <Card className="flex min-h-80 flex-col p-5">
-      <div className="flex gap-3">
-        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-          <Server className="h-5 w-5" aria-hidden="true" />
+    <>
+      <Card className="flex min-h-80 flex-col p-5">
+        <div className="flex gap-3">
+          <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+            <Server className="h-5 w-5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{server.name}</h2>
+            <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">{server.id}</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{server.name}</h2>
-          <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">{server.id}</p>
+
+        <p className="mt-4 min-h-12 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
+          {server.description || t('mcpMarketplace.noDescription')}
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <StatusBadge active={server.enabled} label={server.enabled ? t('mcpMarketplace.enabled') : t('mcpMarketplace.disabled')} />
+          <CountBadgeButton label={t('mcpMarketplace.toolsCount', { count: server.toolCount })} onClick={() => setDetailType('tools')} />
+          <CountBadgeButton label={t('mcpMarketplace.resourcesCount', { count: server.resourceCount })} onClick={() => setDetailType('resources')} />
+          <CountBadgeButton label={t('mcpMarketplace.promptsCount', { count: server.promptCount })} onClick={() => setDetailType('prompts')} />
         </div>
+
+        {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
+
+        <div className="mt-5 space-y-3">
+          <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
+          <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} />
+        </div>
+
+        <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
+          <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
+          <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
+          <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
+        </dl>
+      </Card>
+      <Dialog open={detailType !== null} onOpenChange={(open) => {
+        if (!open) {
+          setDetailType(null)
+        }
+      }}>
+        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
+          <DialogHeader className="border-b px-6 py-5 text-left">
+            <DialogTitle className="text-left text-lg">{detailTitle}</DialogTitle>
+            <DialogDescription className="text-left">
+              {t('mcpMarketplace.associatedDialogDescription', {
+                server: server.name,
+                count: detailCount,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <AssociatedDetailList
+            items={detailItems}
+            emptyLabel={t('mcpMarketplace.emptyAssociatedItems', { type: detailTitle })}
+            unnamedLabel={t(detailType ? associatedDetailUnnamedKey(detailType) : 'mcpMarketplace.unnamedItem')}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
+export function AssociatedDetailList({
+  items,
+  emptyLabel,
+  unnamedLabel,
+}: {
+  items?: McpAssociatedItem[]
+  emptyLabel: string
+  unnamedLabel: string
+}) {
+  const visibleItems = (items ?? []).filter((item) => item.name || item.id || item.description)
+  if (visibleItems.length === 0) {
+    return (
+      <div className="px-6 py-8 text-center text-sm text-muted-foreground">
+        {emptyLabel}
       </div>
+    )
+  }
 
-      <p className="mt-4 min-h-12 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-        {server.description || t('mcpMarketplace.noDescription')}
-      </p>
-
-      <div className="mt-4 flex flex-wrap gap-2">
-        <StatusBadge active={server.enabled} label={server.enabled ? t('mcpMarketplace.enabled') : t('mcpMarketplace.disabled')} />
-        <CountBadge label={t('mcpMarketplace.toolsCount', { count: server.toolCount })} />
-        <CountBadge label={t('mcpMarketplace.resourcesCount', { count: server.resourceCount })} />
-        <CountBadge label={t('mcpMarketplace.promptsCount', { count: server.promptCount })} />
-      </div>
-
-      {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
-
-      <div className="mt-5 space-y-3">
-        <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
-        <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} />
-      </div>
-
-      <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
-        <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
-        <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
-        <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
-      </dl>
-    </Card>
+  return (
+    <ul className="max-h-[60vh] space-y-3 overflow-y-auto px-6 py-5">
+      {visibleItems.map((item, index) => {
+        const name = item.name || item.id || unnamedLabel
+        return (
+          <li key={`${item.id ?? index}-${name}`} className="min-w-0 rounded-lg border bg-secondary/20 p-3">
+            <p className="break-words text-sm font-medium leading-5 text-foreground [overflow-wrap:anywhere]">{name}</p>
+            {item.description ? (
+              <p className="mt-1 break-words text-xs leading-5 text-muted-foreground [overflow-wrap:anywhere]">
+                {item.description}
+              </p>
+            ) : null}
+          </li>
+        )
+      })}
+    </ul>
   )
 }
 
@@ -366,8 +444,38 @@ function StatusBadge({ active, label, icon }: { active: boolean; label: string; 
   )
 }
 
-function CountBadge({ label }: { label: string }) {
-  return <span className="inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground">{label}</span>
+function CountBadgeButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+    >
+      {label}
+    </button>
+  )
+}
+
+function associatedDetailTitleKey(type: AssociatedDetailType) {
+  switch (type) {
+    case 'tools':
+      return 'mcpMarketplace.toolsTitle'
+    case 'resources':
+      return 'mcpMarketplace.resourcesTitle'
+    case 'prompts':
+      return 'mcpMarketplace.promptsTitle'
+  }
+}
+
+function associatedDetailUnnamedKey(type: AssociatedDetailType) {
+  switch (type) {
+    case 'tools':
+      return 'mcpMarketplace.unnamedTool'
+    case 'resources':
+      return 'mcpMarketplace.unnamedResource'
+    case 'prompts':
+      return 'mcpMarketplace.unnamedPrompt'
+  }
 }
 
 function ExternalAnchor({ href, label }: { href: string; label: string }) {

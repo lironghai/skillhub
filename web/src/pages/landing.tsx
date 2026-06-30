@@ -34,7 +34,6 @@ export function LandingPage() {
   }
 
   const heroView = useInView()
-  const statsView = useInView()
   const featuresView = useInView()
   const quickStartView = useInView()
   const popularView = useInView()
@@ -81,12 +80,6 @@ export function LandingPage() {
     },
   ]
 
-  const stats = [
-    { value: '1000+', label: t('landing.stats.skills', { defaultValue: 'Registry items' }) },
-    { value: '50K+', label: t('landing.stats.downloads', { defaultValue: 'Downloads' }) },
-    { value: '200+', label: t('landing.stats.teams', { defaultValue: 'Teams' }) },
-  ]
-
   return (
     <>
       {/* Hero Section */}
@@ -129,7 +122,7 @@ export function LandingPage() {
         </div>
 
         {/* CTA buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mb-14">
+        <div className="flex flex-wrap justify-center gap-4">
           <Link
             to="/search"
             search={{ q: '', sort: 'relevance', page: 0, starredOnly: false }}
@@ -150,19 +143,6 @@ export function LandingPage() {
           </Link>
         </div>
 
-        {/* Stats */}
-        <div ref={statsView.ref} className={`flex flex-row justify-center gap-16 md:gap-24 scroll-fade-up${statsView.inView ? ' in-view' : ''}`} style={{ transitionDelay: '0.15s' }}>
-          {stats.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center">
-              <span className="text-3xl md:text-4xl font-bold tracking-tight text-brand-gradient mb-1">
-                {stat.value}
-              </span>
-              <span className="text-sm font-normal" style={{ color: 'hsl(var(--foreground))' }}>
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </div>
       </main>
 
       {/* Features Section */}

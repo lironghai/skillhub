@@ -28,6 +28,12 @@ export interface McpCatalogResponse {
   tags: string[]
 }
 
+export interface McpAssociatedItem {
+  id?: string | null
+  name?: string | null
+  description?: string | null
+}
+
 export interface McpInternalServerItem {
   id: string
   name: string
@@ -39,6 +45,9 @@ export interface McpInternalServerItem {
   toolCount: number
   resourceCount: number
   promptCount: number
+  tools: McpAssociatedItem[]
+  resources: McpAssociatedItem[]
+  prompts: McpAssociatedItem[]
   tags: string[]
   streamableHttpUrl?: string | null
   sseUrl?: string | null

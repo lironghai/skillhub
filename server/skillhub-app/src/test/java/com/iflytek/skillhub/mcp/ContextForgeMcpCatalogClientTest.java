@@ -166,7 +166,8 @@ class ContextForgeMcpCatalogClientTest {
                               "name": "bdc4_group",
                               "description": "bdc4_group",
                               "enabled": true,
-                              "associatedTools": ["tool-a", "tool-b"],
+                              "associatedTools": ["query_report_by_code", "legacy-tool-b"],
+                              "associatedToolIds": ["tool-a", "legacy-tool-b"],
                               "associatedResources": ["res-a"],
                               "associatedPrompts": ["prompt-a", "prompt-b", "prompt-c"],
                               "tags": [{"name": "bdc4"}],
@@ -181,6 +182,55 @@ class ContextForgeMcpCatalogClientTest {
                             "total_items": 1,
                             "total_pages": 1
                           },
+                          "links": null
+                        }
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(once(), requestTo("https://contextforge.internal/admin/tools?include_inactive=true&page=1&per_page=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer ctx-token"))
+                .andRespond(withSuccess("""
+                        {
+                          "data": [
+                            {
+                              "id": "tool-a",
+                              "name": "query_report_by_code",
+                              "displayName": "Query report by code",
+                              "description": "Query BDC report data by code"
+                            }
+                          ],
+                          "pagination": {"page": 1, "per_page": 100, "total_items": 1, "total_pages": 1},
+                          "links": null
+                        }
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(once(), requestTo("https://contextforge.internal/admin/resources?include_inactive=true&page=1&per_page=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer ctx-token"))
+                .andRespond(withSuccess("""
+                        {
+                          "data": [
+                            {
+                              "id": "res-a",
+                              "name": "BDC schema",
+                              "description": "Report schema resource"
+                            }
+                          ],
+                          "pagination": {"page": 1, "per_page": 100, "total_items": 1, "total_pages": 1},
+                          "links": null
+                        }
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(once(), requestTo("https://contextforge.internal/admin/prompts?include_inactive=true&page=1&per_page=100"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer ctx-token"))
+                .andRespond(withSuccess("""
+                        {
+                          "data": [
+                            {
+                              "id": "prompt-a",
+                              "name": "BDC prompt",
+                              "description": "Assistant prompt"
+                            }
+                          ],
+                          "pagination": {"page": 1, "per_page": 100, "total_items": 1, "total_pages": 1},
                           "links": null
                         }
                         """, MediaType.APPLICATION_JSON));
@@ -205,6 +255,16 @@ class ContextForgeMcpCatalogClientTest {
         assertThat(item.toolCount()).isEqualTo(2);
         assertThat(item.resourceCount()).isEqualTo(1);
         assertThat(item.promptCount()).isEqualTo(3);
+        assertThat(item.tools())
+                .extracting(McpAssociatedItemResponse::name)
+                .containsExactly("query_report_by_code", "legacy-tool-b");
+        assertThat(item.tools().getFirst().description()).isEqualTo("Query BDC report data by code");
+        assertThat(item.resources())
+                .extracting(McpAssociatedItemResponse::name)
+                .containsExactly("BDC schema");
+        assertThat(item.prompts())
+                .extracting(McpAssociatedItemResponse::name)
+                .containsExactly("BDC prompt", "prompt-b", "prompt-c");
         assertThat(item.tags()).containsExactly("bdc4");
         server.verify();
     }

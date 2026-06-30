@@ -13,6 +13,9 @@ public record McpInternalServerItemResponse(
         int toolCount,
         int resourceCount,
         int promptCount,
+        List<McpAssociatedItemResponse> tools,
+        List<McpAssociatedItemResponse> resources,
+        List<McpAssociatedItemResponse> prompts,
         List<String> tags,
         String streamableHttpUrl,
         String sseUrl

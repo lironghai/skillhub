@@ -62,4 +62,13 @@ describe('Layout', () => {
 
     expect(html).toContain('nav.mcpManagement')
   })
+
+  it('omits the footer resources column', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).not.toContain('footer.resources')
+    expect(html).not.toContain('footer.docs')
+    expect(html).not.toContain('footer.api')
+    expect(html).not.toContain('footer.community')
+  })
 })

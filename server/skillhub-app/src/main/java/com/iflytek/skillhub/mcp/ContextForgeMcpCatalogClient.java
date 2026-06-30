@@ -15,7 +15,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class ContextForgeMcpCatalogClient {
@@ -59,7 +61,8 @@ public class ContextForgeMcpCatalogClient {
         validateConfigured();
         String accessToken = getAccessToken();
         String body = getInternalServers(accessToken, query);
-        return parseInternalServers(body, query);
+        AssociatedCatalog associatedCatalog = fetchAssociatedCatalog(accessToken, body);
+        return parseInternalServers(body, query, associatedCatalog);
     }
 
     private String getAccessToken() {
@@ -125,6 +128,63 @@ public class ContextForgeMcpCatalogClient {
         }
     }
 
+    private AssociatedCatalog fetchAssociatedCatalog(String accessToken, String internalServersBody) {
+        AssociatedNeeds needs = associatedNeeds(internalServersBody);
+        return new AssociatedCatalog(
+                needs.hasTools() ? associatedCatalogItems(accessToken, properties.getInternalToolsPath()) : Map.of(),
+                needs.hasResources() ? associatedCatalogItems(accessToken, properties.getInternalResourcesPath()) : Map.of(),
+                needs.hasPrompts() ? associatedCatalogItems(accessToken, properties.getInternalPromptsPath()) : Map.of()
+        );
+    }
+
+    private AssociatedNeeds associatedNeeds(String internalServersBody) {
+        try {
+            JsonNode root = objectMapper.readTree(internalServersBody);
+            boolean hasTools = false;
+            boolean hasResources = false;
+            boolean hasPrompts = false;
+            for (JsonNode server : root.path("data")) {
+                hasTools = hasTools || hasArrayItems(server, "associatedTools", "associated_tools");
+                hasResources = hasResources || hasArrayItems(server, "associatedResources", "associated_resources");
+                hasPrompts = hasPrompts || hasArrayItems(server, "associatedPrompts", "associated_prompts");
+            }
+            return new AssociatedNeeds(hasTools, hasResources, hasPrompts);
+        } catch (JsonProcessingException ex) {
+            throw new McpCatalogUnavailableException("Unable to parse internal MCP servers from ContextForge", ex);
+        }
+    }
+
+    private boolean hasArrayItems(JsonNode node, String firstField, String secondField) {
+        JsonNode first = node.path(firstField);
+        if (first.isArray() && first.size() > 0) {
+            return true;
+        }
+        JsonNode second = node.path(secondField);
+        return second.isArray() && second.size() > 0;
+    }
+
+    private Map<String, McpAssociatedItemResponse> associatedCatalogItems(String accessToken, String path) {
+        try {
+            String body = restClient.get()
+                    .uri(associatedCatalogUri(path))
+                    .headers(headers -> headers.setBearerAuth(accessToken))
+                    .retrieve()
+                    .body(String.class);
+            JsonNode root = objectMapper.readTree(body);
+            Map<String, McpAssociatedItemResponse> items = new HashMap<>();
+            for (JsonNode item : root.path("data")) {
+                McpAssociatedItemResponse associatedItem = associatedItem(item);
+                putAssociatedItem(items, associatedItem.id(), associatedItem);
+                putAssociatedItem(items, associatedItem.name(), associatedItem);
+                putAssociatedItem(items, text(item, "displayName"), associatedItem);
+                putAssociatedItem(items, text(item, "display_name"), associatedItem);
+            }
+            return Map.copyOf(items);
+        } catch (RestClientException | JsonProcessingException ex) {
+            throw new McpCatalogUnavailableException("Unable to fetch internal MCP associated item details from ContextForge", ex);
+        }
+    }
+
     private String catalogUri(McpCatalogQuery query) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(endpoint(properties.getCatalogPath()))
                 .queryParam("show_available_only", "false")
@@ -149,6 +209,15 @@ public class ContextForgeMcpCatalogClient {
 
         addParam(builder, "search", query.search());
         return builder.build().toUriString();
+    }
+
+    private String associatedCatalogUri(String path) {
+        return UriComponentsBuilder.fromHttpUrl(endpoint(path))
+                .queryParam("include_inactive", "true")
+                .queryParam("page", 1)
+                .queryParam("per_page", Math.max(properties.getMaxSize(), 1))
+                .build()
+                .toUriString();
     }
 
     private McpCatalogResponse parseCatalog(String body, McpCatalogQuery query) {
@@ -190,12 +259,20 @@ public class ContextForgeMcpCatalogClient {
         }
     }
 
-    private McpInternalServerResponse parseInternalServers(String body, McpCatalogQuery query) {
+    private McpInternalServerResponse parseInternalServers(String body, McpCatalogQuery query, AssociatedCatalog associatedCatalog) {
         try {
             JsonNode root = objectMapper.readTree(body);
             List<McpInternalServerItemResponse> items = new ArrayList<>();
             for (JsonNode server : root.path("data")) {
                 String id = text(server, "id");
+                List<McpAssociatedItemResponse> tools = associatedItems(
+                        server,
+                        "associatedTools",
+                        "associated_tools",
+                        "associatedToolIds",
+                        "associated_tool_ids",
+                        associatedCatalog.tools()
+                );
                 items.add(new McpInternalServerItemResponse(
                         id,
                         text(server, "name"),
@@ -207,6 +284,9 @@ public class ContextForgeMcpCatalogClient {
                         countArray(server, "associatedTools", "associated_tools"),
                         countArray(server, "associatedResources", "associated_resources"),
                         countArray(server, "associatedPrompts", "associated_prompts"),
+                        tools,
+                        associatedItems(server, "associatedResources", "associated_resources", null, null, associatedCatalog.resources()),
+                        associatedItems(server, "associatedPrompts", "associated_prompts", null, null, associatedCatalog.prompts()),
                         tagNames(server.path("tags")),
                         publicEndpoint(id, "mcp"),
                         publicEndpoint(id, "sse")
@@ -280,6 +360,100 @@ public class ContextForgeMcpCatalogClient {
         return second.isArray() ? second.size() : 0;
     }
 
+    private List<McpAssociatedItemResponse> associatedItems(JsonNode node,
+                                                           String firstField,
+                                                           String secondField,
+                                                           String firstIdField,
+                                                           String secondIdField,
+                                                           Map<String, McpAssociatedItemResponse> catalog) {
+        JsonNode array = node.path(firstField);
+        if (!array.isArray()) {
+            array = node.path(secondField);
+        }
+        if (!array.isArray()) {
+            return List.of();
+        }
+
+        List<String> ids = textValues(node, firstIdField, secondIdField);
+        List<McpAssociatedItemResponse> values = new ArrayList<>();
+        int index = 0;
+        for (JsonNode item : array) {
+            String id = index < ids.size() ? ids.get(index) : null;
+            McpAssociatedItemResponse associatedItem = associatedItem(item, id);
+            McpAssociatedItemResponse enriched = firstCatalogMatch(catalog, associatedItem.id(), associatedItem.name());
+            values.add(enriched != null ? enriched : associatedItem);
+            index++;
+        }
+        return List.copyOf(values);
+    }
+
+    private McpAssociatedItemResponse firstCatalogMatch(Map<String, McpAssociatedItemResponse> catalog, String firstKey, String secondKey) {
+        McpAssociatedItemResponse item = catalog.get(firstKey);
+        if (item != null) {
+            return item;
+        }
+        return catalog.get(secondKey);
+    }
+
+    private McpAssociatedItemResponse associatedItem(JsonNode item) {
+        return associatedItem(item, null);
+    }
+
+    private McpAssociatedItemResponse associatedItem(JsonNode item, String fallbackId) {
+        if (item.isTextual()) {
+            String value = item.asText();
+            String id = StringUtils.hasText(fallbackId) ? fallbackId : value;
+            return new McpAssociatedItemResponse(id, value, null);
+        }
+
+        if (item.isObject()) {
+            String id = firstText(item, "id", "uuid");
+            if (!StringUtils.hasText(id)) {
+                id = fallbackId;
+            }
+
+            String name = firstText(item, "name", "title");
+            if (!StringUtils.hasText(name)) {
+                name = firstText(item, "displayName", "display_name");
+            }
+            String description = text(item, "description");
+            if (!StringUtils.hasText(name)) {
+                name = id;
+            }
+            return new McpAssociatedItemResponse(id, name, description);
+        }
+
+        return new McpAssociatedItemResponse(fallbackId, fallbackId, null);
+    }
+
+    private void putAssociatedItem(Map<String, McpAssociatedItemResponse> items, String key, McpAssociatedItemResponse item) {
+        if (StringUtils.hasText(key) && item != null) {
+            items.put(key, item);
+        }
+    }
+
+    private List<String> textValues(JsonNode node, String firstField, String secondField) {
+        List<String> values = new ArrayList<>();
+        if (StringUtils.hasText(firstField)) {
+            addTextValues(values, node.path(firstField));
+        }
+        if (values.isEmpty() && StringUtils.hasText(secondField)) {
+            addTextValues(values, node.path(secondField));
+        }
+        return List.copyOf(values);
+    }
+
+    private void addTextValues(List<String> values, JsonNode array) {
+        if (!array.isArray()) {
+            return;
+        }
+        for (JsonNode item : array) {
+            if (item.isTextual() && StringUtils.hasText(item.asText())) {
+                values.add(item.asText());
+            }
+        }
+    }
+
     private List<String> textList(JsonNode node, String field) {
         List<String> values = new ArrayList<>();
         JsonNode array = node.path(field);
@@ -335,5 +509,15 @@ public class ContextForgeMcpCatalogClient {
         boolean isValid(Instant now) {
             return StringUtils.hasText(value) && expiresAt.isAfter(now);
         }
+    }
+
+    private record AssociatedCatalog(
+            Map<String, McpAssociatedItemResponse> tools,
+            Map<String, McpAssociatedItemResponse> resources,
+            Map<String, McpAssociatedItemResponse> prompts
+    ) {
+    }
+
+    private record AssociatedNeeds(boolean hasTools, boolean hasResources, boolean hasPrompts) {
     }
 }

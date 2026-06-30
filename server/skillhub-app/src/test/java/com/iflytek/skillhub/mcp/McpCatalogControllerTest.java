@@ -100,6 +100,21 @@ class McpCatalogControllerTest {
                         5,
                         11,
                         3,
+                        List.of(new McpAssociatedItemResponse(
+                                "tool-a",
+                                "query_report_by_code",
+                                "Query BDC report data by code"
+                        )),
+                        List.of(new McpAssociatedItemResponse(
+                                "res-a",
+                                "BDC schema",
+                                "Report schema resource"
+                        )),
+                        List.of(new McpAssociatedItemResponse(
+                                "prompt-a",
+                                "BDC prompt",
+                                "Assistant prompt"
+                        )),
                         List.of("bdc4"),
                         "http://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp",
                         "http://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse"

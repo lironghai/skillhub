@@ -70,4 +70,15 @@ describe('LandingPage', () => {
     expect(html).toContain('SkillHub')
     expect(html).toContain('landing.hero.title')
   })
+
+  it('does not render the product metrics block on the landing page', () => {
+    const html = renderToStaticMarkup(<LandingPage />)
+
+    expect(html).not.toContain('1000+')
+    expect(html).not.toContain('50K+')
+    expect(html).not.toContain('200+')
+    expect(html).not.toContain('landing.stats.skills')
+    expect(html).not.toContain('landing.stats.downloads')
+    expect(html).not.toContain('landing.stats.teams')
+  })
 })
