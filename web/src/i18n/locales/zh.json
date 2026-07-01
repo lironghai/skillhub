@@ -1589,6 +1589,14 @@
     "requiresApiKey": "需要 API Key",
     "requiresOauth": "需要 OAuth 配置",
     "openServer": "服务",
-    "openDocs": "文档"
+    "openDocs": "文档",
+    "viewToggleLabel": "视图切换",
+    "gridView": "卡片",
+    "listView": "列表",
+    "serverName": "服务器名称",
+    "description": "描述",
+    "associatedItems": "关联项目",
+    "connectionUrls": "连接地址",
+    "metadata": "归属信息"
   }
 }

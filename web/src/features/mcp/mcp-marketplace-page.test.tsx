@@ -155,6 +155,21 @@ describe('McpMarketplacePage', () => {
     expect(html).not.toContain('<iframe')
   })
 
+  it('renders view toggle buttons on the internal tab', () => {
+    mcpCatalogHooks.useMcpInternalServers.mockClear()
+    mcpCatalogHooks.useMcpCatalog.mockClear()
+
+    const html = renderToStaticMarkup(<McpMarketplacePage />)
+
+    // View toggle should be present on internal tab
+    expect(html).toContain('mcpMarketplace.gridView')
+    expect(html).toContain('mcpMarketplace.listView')
+    expect(html).toContain('mcpMarketplace.viewToggleLabel')
+    // Default is grid view, so table headers should NOT be visible
+    expect(html).not.toContain('mcpMarketplace.serverName')
+    expect(html).not.toContain('<table')
+  })
+
   it('renders associated item details inside the detail list', () => {
     const html = renderToStaticMarkup(
       <AssociatedDetailList

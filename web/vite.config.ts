@@ -61,11 +61,11 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://skillhub.alik0.yingxiong.com',
         changeOrigin: true,
       },
       '/oauth2': {
-        target: 'http://localhost:8080',
+        target: 'http://skillhub.alik0.yingxiong.com',
         changeOrigin: true,
       },
       [CONTEXT_FORGE_EMBEDDED_PREFIX]: {

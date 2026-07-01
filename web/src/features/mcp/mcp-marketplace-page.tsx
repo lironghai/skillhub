@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, Search, Server, ShieldCheck, X } from 'lucide-react'
+import { Check, Copy, ExternalLink, KeyRound, List, Loader2, RefreshCw, Search, Server, ShieldCheck, X } from 'lucide-react'
 import { DashboardPageHeader } from '@/shared/components/dashboard-page-header'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'
@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Input } from '@/shared/ui/input'
+import { Table, TableBody, TableCell, TableRow } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
 import { MAX_SEARCH_QUERY_LENGTH } from '@/shared/lib/search-query'
 import { useCopyToClipboard } from '@/shared/lib/clipboard'
@@ -25,6 +26,7 @@ export function McpMarketplacePage() {
   const [searchInput, setSearchInput] = useState('')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list')
 
   const internalQuery = useMcpInternalServers({
     search,
@@ -69,38 +71,92 @@ export function McpMarketplacePage() {
   return (
     <div className="space-y-6 animate-fade-up">
       <DashboardPageHeader
-        title={t('mcpMarketplace.title')}
-        subtitle={t('mcpMarketplace.subtitle')}
-        actions={(
-          <Button type="button" variant="outline" onClick={() => activeQuery.refetch()} disabled={activeQuery.isFetching}>
+        title={t("mcpMarketplace.title")}
+        subtitle={t("mcpMarketplace.subtitle")}
+        actions={
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => activeQuery.refetch()}
+            disabled={activeQuery.isFetching}
+          >
             {activeQuery.isFetching ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
             )}
-            {t('mcpMarketplace.refresh')}
+            {t("mcpMarketplace.refresh")}
           </Button>
-        )}
+        }
       />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className="inline-flex rounded-lg border bg-card p-1 shadow-sm"
+          role="tablist"
+          aria-label={t("mcpMarketplace.tabsLabel")}
+        >
+          <div>
+            <TabButton
+              active={activeTab === "internal"}
+              onClick={() => handleTabChange("internal")}
+            >
+              {t("mcpMarketplace.internalTab")}
+            </TabButton>
+            <TabButton
+              active={activeTab === "opensource"}
+              onClick={() => handleTabChange("opensource")}
+            >
+              {t("mcpMarketplace.openSourceTab")}
+            </TabButton>
+          </div>
+        </div>
 
-      <div className="inline-flex rounded-lg border bg-card p-1 shadow-sm" role="tablist" aria-label={t('mcpMarketplace.tabsLabel')}>
-        <TabButton active={activeTab === 'internal'} onClick={() => handleTabChange('internal')}>
-          {t('mcpMarketplace.internalTab')}
-        </TabButton>
-        <TabButton active={activeTab === 'opensource'} onClick={() => handleTabChange('opensource')}>
-          {t('mcpMarketplace.openSourceTab')}
-        </TabButton>
+        <div
+          className="inline-flex rounded-lg border bg-card p-1 shadow-sm"
+          role="tablist"
+          aria-label={t("mcpMarketplace.tabsLabel")}
+        >
+          <div>
+            <TabButton
+              active={viewMode === "list"}
+              onClick={() => setViewMode("list")}
+            >
+              {/* <List className="h-4 w-4" aria-hidden="true" /> */}
+              {t("mcpMarketplace.listView")}
+            </TabButton>
+            <TabButton
+              active={viewMode === "grid"}
+              onClick={() => setViewMode("grid")}
+            >
+              {/* <LayoutGrid className="h-4 w-4" aria-hidden="true" /> */}
+              {t("mcpMarketplace.gridView")}
+            </TabButton>
+          </div>
+        </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-lg border bg-card p-3 shadow-sm">
+      <form
+        onSubmit={handleSubmit}
+        className="rounded-lg border bg-card p-3 shadow-sm"
+      >
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
             <Input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               maxLength={MAX_SEARCH_QUERY_LENGTH}
-              placeholder={activeTab === 'internal' ? t('mcpMarketplace.internalSearchPlaceholder') : t('mcpMarketplace.searchPlaceholder')}
+              placeholder={
+                activeTab === "internal"
+                  ? t("mcpMarketplace.internalSearchPlaceholder")
+                  : t("mcpMarketplace.searchPlaceholder")
+              }
               className="h-11 pl-10 pr-10"
             />
             {searchInput ? (
@@ -108,16 +164,27 @@ export function McpMarketplacePage() {
                 type="button"
                 onClick={handleClear}
                 className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                aria-label={t('mcpMarketplace.clearSearch')}
-                title={t('mcpMarketplace.clearSearch')}
+                aria-label={t("mcpMarketplace.clearSearch")}
+                title={t("mcpMarketplace.clearSearch")}
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             ) : null}
           </div>
-          <Button type="submit" className="sm:min-w-28" disabled={activeQuery.isFetching}>
-            {activeQuery.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : <Search className="mr-2 h-4 w-4" aria-hidden="true" />}
-            {t('mcpMarketplace.search')}
+          <Button
+            type="submit"
+            className="sm:min-w-28"
+            disabled={activeQuery.isFetching}
+          >
+            {activeQuery.isFetching ? (
+              <Loader2
+                className="mr-2 h-4 w-4 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <Search className="mr-2 h-4 w-4" aria-hidden="true" />
+            )}
+            {t("mcpMarketplace.search")}
           </Button>
         </div>
       </form>
@@ -125,37 +192,59 @@ export function McpMarketplacePage() {
       {activeQuery.isError ? (
         <Card className="p-8">
           <EmptyState
-            title={t('mcpMarketplace.errorTitle')}
-            description={t('mcpMarketplace.errorDescription')}
-            action={(
-              <Button type="button" variant="outline" onClick={() => activeQuery.refetch()}>
+            title={t("mcpMarketplace.errorTitle")}
+            description={t("mcpMarketplace.errorDescription")}
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => activeQuery.refetch()}
+              >
                 <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-                {t('mcpMarketplace.retry')}
+                {t("mcpMarketplace.retry")}
               </Button>
-            )}
+            }
           />
         </Card>
       ) : activeQuery.isLoading ? (
-        <SkeletonList count={6} />
-      ) : activeTab === 'internal' ? (
-        <InternalServerList
-          servers={(internalQuery.data?.items ?? [])}
+        <SkeletonList count={viewMode === "grid" ? 2 : 1} />
+      ) : activeTab === "internal" ? (
+        viewMode === "grid" ? (
+          <InternalServerList
+            servers={internalQuery.data?.items ?? []}
+            search={search}
+            onClear={handleClear}
+          />
+        ) : (
+          <InternalServerTable
+            servers={internalQuery.data?.items ?? []}
+            search={search}
+            onClear={handleClear}
+          />
+        )
+      ) : viewMode === "grid" ? (
+        <OpenSourceCatalogList
+          servers={openSourceQuery.data?.items ?? []}
           search={search}
           onClear={handleClear}
         />
       ) : (
-        <OpenSourceCatalogList
-          servers={(openSourceQuery.data?.items ?? [])}
+        <OpenSourceTable
+          servers={openSourceQuery.data?.items ?? []}
           search={search}
           onClear={handleClear}
         />
       )}
 
       {!activeQuery.isError && !activeQuery.isLoading && totalPages > 1 ? (
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       ) : null}
     </div>
-  )
+  );
 }
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
@@ -219,6 +308,133 @@ function OpenSourceCatalogList({ servers, search, onClear }: { servers: McpCatal
   )
 }
 
+function InternalServerTable({ servers, search, onClear }: { servers: McpInternalServerItem[]; search: string; onClear: () => void }) {
+  const { t } = useTranslation()
+  if (servers.length === 0) {
+    return (
+      <Card className="p-8">
+        <EmptyState
+          title={t('mcpMarketplace.emptyInternalTitle')}
+          description={search ? t('mcpMarketplace.emptySearchDescription') : t('mcpMarketplace.emptyInternalDescription')}
+          action={search ? <Button type="button" variant="outline" onClick={onClear}>{t('mcpMarketplace.clearSearch')}</Button> : null}
+        />
+      </Card>
+    )
+  }
+  return (
+    <Card className="overflow-hidden">
+      <Table>
+        <TableBody>
+          {servers.map((server) => (
+            <InternalServerTableRow key={server.id} server={server} />
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  )
+}
+
+function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
+  const { t } = useTranslation()
+  const [detailType, setDetailType] = useState<AssociatedDetailType | null>(null)
+  const detailItems = detailType ? server[detailType] : []
+  const detailCount = detailType === 'tools'
+    ? server.toolCount
+    : detailType === 'resources'
+      ? server.resourceCount
+      : detailType === 'prompts'
+        ? server.promptCount
+        : 0
+  const detailTitle = detailType ? t(associatedDetailTitleKey(detailType)) : ''
+  //准备行点击参数
+   const [rowDetail, setRowDetail] = useState<Boolean>(false)
+
+  return (
+    <>
+      <TableRow className="align-top hover:bg-muted/50" onClick={() => setRowDetail(true)}>
+        {/* Server Name */}
+        <TableCell className='p-7'>
+          <div className="flex gap-3">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+              {
+                server.iconUrl ? (
+                  <img src={server.iconUrl} alt="" className="h-8 w-8 object-contain" loading="lazy" />
+                ) : (
+                  <Server className="h-8 w-8" aria-hidden="true" />
+                )
+              }
+
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className='flex justify-between'>
+                <p className="break-words text-sm font-semibold leading-5 text-foreground [overflow-wrap:anywhere]">{server.name}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  <StatusBadge active={server.enabled} label={server.enabled ? t('mcpMarketplace.enabled') : t('mcpMarketplace.disabled')} />
+                  <CountBadgeButton label={t('mcpMarketplace.toolsCount', { count: server.toolCount })} onClick={(event) => {event.stopPropagation(); setDetailType('tools')}} />
+                  <CountBadgeButton label={t('mcpMarketplace.resourcesCount', { count: server.resourceCount })} onClick={(event) => {event.stopPropagation(); setDetailType('resources')}} />
+                  <CountBadgeButton label={t('mcpMarketplace.promptsCount', { count: server.promptCount })} onClick={(event) => {event.stopPropagation(); setDetailType('prompts')}}   />
+                </div>
+
+              </div>
+              
+              <p className="mt-2 break-all text-xs leading-4 text-muted-foreground">{server.description}</p>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>
+      {/* 点击行展示弹窗 */}
+      <Dialog open={rowDetail === true} onOpenChange={(open) => {
+        if (!open) {
+          setRowDetail(false)
+        }
+      }}>
+        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
+          <DialogHeader className="border-b px-6 py-5 text-left">
+            <DialogTitle className="text-left text-lg">{server.name}</DialogTitle>
+            <DialogDescription className="text-left">
+              {server.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className='p-7 pt-0'>
+            <div className="mt-0 space-y-3">
+            <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
+            <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} />
+          </div>
+          <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
+            <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
+            <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
+            <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
+          </dl>
+        </div>
+        </DialogContent>
+      </Dialog>
+      {/* 点击按钮展示 */}
+      <Dialog open={detailType !== null} onOpenChange={(open) => {
+        if (!open) {
+          setDetailType(null)
+        }
+      }}>
+        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
+          <DialogHeader className="border-b px-6 py-5 text-left">
+            <DialogTitle className="text-left text-lg">{detailTitle}</DialogTitle>
+            <DialogDescription className="text-left">
+              {t('mcpMarketplace.associatedDialogDescription', {
+                server: server.name,
+                count: detailCount,
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <AssociatedDetailList
+            items={detailItems}
+            emptyLabel={t('mcpMarketplace.emptyAssociatedItems', { type: detailTitle })}
+            unnamedLabel={t(detailType ? associatedDetailUnnamedKey(detailType) : 'mcpMarketplace.unnamedItem')}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 function InternalServerCard({ server }: { server: McpInternalServerItem }) {
   const { t } = useTranslation()
   const [detailType, setDetailType] = useState<AssociatedDetailType | null>(null)
@@ -237,7 +453,14 @@ function InternalServerCard({ server }: { server: McpInternalServerItem }) {
       <Card className="flex min-h-80 flex-col p-5">
         <div className="flex gap-3">
           <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-            <Server className="h-5 w-5" aria-hidden="true" />
+            {/* <Server className="h-5 w-5" aria-hidden="true" /> */}
+            {
+                server.iconUrl ? (
+                  <img src={server.iconUrl} alt="" className="h-8 w-8 object-contain" loading="lazy" />
+                ) : (
+                  <Server className="h-5 w-5" aria-hidden="true" />
+                )
+              }
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{server.name}</h2>
@@ -338,8 +561,8 @@ function OpenSourceServerCard({ server }: { server: McpCatalogItem }) {
     <Card className="flex min-h-96 flex-col p-5">
       <div className="flex gap-3">
         <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-          {server.logoUrl ? (
-            <img src={server.logoUrl} alt="" className="h-7 w-7 object-contain" loading="lazy" />
+          {server.iconUrl ? (
+            <img src={server.iconUrl} alt="" className="h-7 w-7 object-contain" loading="lazy" />
           ) : (
             <Server className="h-5 w-5" aria-hidden="true" />
           )}
@@ -381,6 +604,212 @@ function OpenSourceServerCard({ server }: { server: McpCatalogItem }) {
   )
 }
 
+function OpenSourceTable({
+  servers,
+  search,
+  onClear,
+}: {
+  servers: McpCatalogItem[];
+  search: string;
+  onClear: () => void;
+}) {
+  const { t } = useTranslation();
+  if (servers.length === 0) {
+    return (
+      <Card className="p-8">
+        <EmptyState
+          title={t("mcpMarketplace.emptyInternalTitle")}
+          description={
+            search
+              ? t("mcpMarketplace.emptySearchDescription")
+              : t("mcpMarketplace.emptyInternalDescription")
+          }
+          action={
+            search ? (
+              <Button type="button" variant="outline" onClick={onClear}>
+                {t("mcpMarketplace.clearSearch")}
+              </Button>
+            ) : null
+          }
+        />
+      </Card>
+    );
+  }
+  return (
+    <Card className="overflow-hidden">
+      <Table>
+        <TableBody>
+          {servers.map((server) => (
+            <OpenSourceTableRow key={server.id} server={server} />
+          ))}
+        </TableBody>
+      </Table>
+    </Card>
+  );
+}
+
+function OpenSourceTableRow({ server }: { server: McpCatalogItem }) {
+  const { t } = useTranslation();
+  // const [detailType, setDetailType] = useState<AssociatedDetailType | null>(null)
+  // const detailItems = detailType ? server[detailType] : []
+  // const detailCount = detailType === 'tools'
+  //   ? server.toolCount
+  //   : detailType === 'resources'
+  //     ? server.resourceCount
+  //     : detailType === 'prompts'
+  //       ? server.promptCount
+  //       : 0
+  // const detailTitle = detailType ? t(associatedDetailTitleKey(detailType)) : ''
+  // //准备行点击参数
+  const [rowDetail, setRowDetail] = useState<Boolean>(false);
+
+  return (
+    <>
+      <TableRow
+        className="align-top hover:bg-muted/50"
+        onClick={() => setRowDetail(true)}
+      >
+        {/* Server Name */}
+        <TableCell className="p-7">
+          <div className="flex gap-3">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+              {server.iconUrl ? (
+                <img
+                  src={server.iconUrl}
+                  alt=""
+                  className="h-8 w-8 object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <Server className="h-8 w-8" aria-hidden="true" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex justify-between">
+                <p className="break-words text-sm font-semibold leading-5 text-foreground [overflow-wrap:anywhere]">
+                  {server.name}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  <StatusBadge
+                    active={server.available}
+                    label={
+                      server.available
+                        ? t("mcpMarketplace.available")
+                        : t("mcpMarketplace.unavailable")
+                    }
+                  />
+                  <StatusBadge
+                    active={server.registered}
+                    label={
+                      server.registered
+                        ? t("mcpMarketplace.registered")
+                        : t("mcpMarketplace.notRegistered")
+                    }
+                  />
+                  <StatusBadge
+                    active={server.secure}
+                    label={
+                      server.secure
+                        ? t("mcpMarketplace.secure")
+                        : t("mcpMarketplace.unverified")
+                    }
+                    icon="shield"
+                  />
+                  {server.requiresApiKey ? (
+                    <StatusBadge
+                      active
+                      label={t("mcpMarketplace.requiresApiKey")}
+                      icon="key"
+                    />
+                  ) : null}
+                  {server.requiresOauthConfig ? (
+                    <StatusBadge
+                      active
+                      label={t("mcpMarketplace.requiresOauth")}
+                      icon="key"
+                    />
+                  ) : null}
+                </div>
+              </div>
+
+              <p className="mt-2 break-all text-xs leading-4 text-muted-foreground">
+                {server.description}
+              </p>
+            </div>
+          </div>
+        </TableCell>
+      </TableRow>
+      {/* 点击行展示弹窗 */}
+      <Dialog
+        open={rowDetail === true}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRowDetail(false);
+          }
+        }}
+      >
+        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
+          <DialogHeader className="border-b px-6 py-5 text-left">
+            <DialogTitle className="text-left text-lg">
+              {server.name}
+            </DialogTitle>
+            <DialogDescription className="text-left">
+              {[
+                server.category,
+                server.provider,
+                server.authType,
+                server.transport,
+              ]
+                .filter(Boolean)
+                .join(" / ")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-7 pt-0">
+            <div>
+              {server.tags.length > 0 ? (
+                <TagList className="mt-1" tags={server.tags} />
+              ) : null}
+            </div>
+            <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
+              <MetaRow
+                label={t("mcpMarketplace.provider")}
+                value={server.provider}
+              />
+              <MetaRow
+                label={t("mcpMarketplace.authType")}
+                value={server.authType}
+              />
+              <MetaRow
+                label={t("mcpMarketplace.transport")}
+                value={server.transport}
+              />
+              <MetaRow
+                label={t("mcpMarketplace.sourceUrl")}
+                value={server.url}
+                breakAll
+              />
+            </dl>
+            <div className="mt-auto flex flex-wrap gap-2 pt-5">
+              {server.url ? (
+                <ExternalAnchor
+                  href={server.url}
+                  label={t("mcpMarketplace.openServer")}
+                />
+              ) : null}
+              {server.documentationUrl ? (
+                <ExternalAnchor
+                  href={server.documentationUrl}
+                  label={t("mcpMarketplace.openDocs")}
+                />
+              ) : null}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 function ConnectionUrl({ label, value }: { label: string; value?: string | null }) {
   const { t } = useTranslation()
   const [copied, copy] = useCopyToClipboard()
@@ -417,9 +846,9 @@ function MetaRow({ label, value, breakAll = false }: { label: string; value?: st
   )
 }
 
-function TagList({ tags }: { tags: string[] }) {
+function TagList({ tags, className }: { tags: string[]; className?: string }) {
   return (
-    <div className="mt-4 flex flex-wrap gap-2">
+    <div className={cn("mt-4 flex flex-wrap gap-2", className)}>
       {tags.slice(0, 8).map((tag) => (
         <span key={tag} className="max-w-full truncate rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground">
           {tag}
@@ -444,7 +873,7 @@ function StatusBadge({ active, label, icon }: { active: boolean; label: string; 
   )
 }
 
-function CountBadgeButton({ label, onClick }: { label: string; onClick: () => void }) {
+function CountBadgeButton({ label, onClick }: { label: string; onClick: (event: { stopPropagation: () => void }) => void }) {
   return (
     <button
       type="button"

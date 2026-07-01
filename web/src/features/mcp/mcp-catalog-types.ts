@@ -1,6 +1,7 @@
 export interface McpCatalogItem {
   id: string
   name: string
+  iconUrl?: string | null
   category?: string | null
   provider?: string | null
   description?: string | null
@@ -37,6 +38,7 @@ export interface McpAssociatedItem {
 export interface McpInternalServerItem {
   id: string
   name: string
+  iconUrl?: string | null
   description?: string | null
   enabled: boolean
   visibility?: string | null

@@ -395,7 +395,15 @@
     "requiresApiKey": "API key required",
     "requiresOauth": "OAuth config required",
     "openServer": "Server",
-    "openDocs": "Docs"
+    "openDocs": "Docs",
+    "viewToggleLabel": "View toggle",
+    "gridView": "Card",
+    "listView": "List",
+    "serverName": "Server Name",
+    "description": "Description",
+    "associatedItems": "Associated Items",
+    "connectionUrls": "Connection URLs",
+    "metadata": "Metadata"
   },
   "mySkills": {
     "title": "My Skills",
