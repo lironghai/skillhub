@@ -74,7 +74,7 @@ export function Layout() {
       {/* Header */}
       <header className={getAppHeaderClassName(isHeaderElevated)} style={{ borderColor: 'hsl(var(--border))' }}>
         <Link to="/" className="text-xl font-semibold tracking-tight text-brand-gradient">
-          SkillHub
+          HERO SkillHub
         </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>

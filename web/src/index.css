@@ -37,9 +37,9 @@
     --warning: 38 92% 58%;
 
     /* Brand */
-    --brand-start: #6A6DFF;
-    --brand-end: #B85EFF;
-    --brand-gradient: linear-gradient(135deg, #6A6DFF 0%, #B85EFF 100%);
+    --brand-start: #BF3732;
+    --brand-end: #ED6C30;
+    --brand-gradient: linear-gradient(90deg, #BF3732 0%, #ED6C30 102.2%);
 
     /* Text semantic */
     --text-secondary: 215 19% 35%;
