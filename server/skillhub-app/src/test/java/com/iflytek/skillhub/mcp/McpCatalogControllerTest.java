@@ -2,6 +2,7 @@ package com.iflytek.skillhub.mcp;
 
 import com.iflytek.skillhub.dto.ApiResponse;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.StaticMessageSource;
 
@@ -17,6 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class McpCatalogControllerTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void serversDelegatesReadOnlyCatalogSearchAndWrapsResponse() {
@@ -86,13 +89,14 @@ class McpCatalogControllerTest {
     }
 
     @Test
-    void internalServersDelegatesReadOnlyVirtualServerSearchAndWrapsResponse() {
+    void internalServersDelegatesReadOnlyVirtualServerSearchAndWrapsResponse() throws Exception {
         McpCatalogService service = mock(McpCatalogService.class);
         McpInternalServerResponse internalServers = new McpInternalServerResponse(
                 List.of(new McpInternalServerItemResponse(
                         "34eaa0d257da49608da2c6b079ed0b5",
                         "bdc4_group",
                         "bdc4_group",
+                        "https://static.example.com/icons/bdc4.png",
                         true,
                         "public",
                         "admin@mcp-context-forge.yingxiong.com",
@@ -103,7 +107,23 @@ class McpCatalogControllerTest {
                         List.of(new McpAssociatedItemResponse(
                                 "tool-a",
                                 "query_report_by_code",
-                                "Query BDC report data by code"
+                                "Query BDC report data by code",
+                                objectMapper.readTree("""
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "reportCode": {"type": "string"}
+                                          }
+                                        }
+                                        """),
+                                objectMapper.readTree("""
+                                        {
+                                          "type": "object",
+                                          "properties": {
+                                            "rows": {"type": "array"}
+                                          }
+                                        }
+                                        """)
                         )),
                         List.of(new McpAssociatedItemResponse(
                                 "res-a",
@@ -133,6 +153,52 @@ class McpCatalogControllerTest {
         assertThat(response.data()).isSameAs(internalServers);
         assertThat(response.data().items().getFirst().streamableHttpUrl()).contains("/servers/34eaa0d257da49608da2c6b079ed0b5/mcp");
         verify(service).internalServers("bdc", "0", "24");
+    }
+
+    @Test
+    void internalServerResponseSerializesIconUrlAndToolSchemasWithCamelCaseNames() throws Exception {
+        McpInternalServerResponse internalServers = new McpInternalServerResponse(
+                List.of(new McpInternalServerItemResponse(
+                        "srv-bdc4",
+                        "bdc4_group",
+                        "bdc4_group",
+                        "https://static.example.com/icons/bdc4.png",
+                        true,
+                        "public",
+                        "admin@example.com",
+                        "Platform Admin",
+                        1,
+                        0,
+                        0,
+                        List.of(new McpAssociatedItemResponse(
+                                "tool-a",
+                                "query_report_by_code",
+                                "Query BDC report data by code",
+                                objectMapper.readTree("""
+                                        {"type":"object","properties":{"reportCode":{"type":"string"}}}
+                                        """),
+                                objectMapper.readTree("""
+                                        {"type":"object","properties":{"rows":{"type":"array"}}}
+                                        """)
+                        )),
+                        List.of(),
+                        List.of(),
+                        List.of("bdc4"),
+                        "http://skillhub.example/contextforge/servers/srv-bdc4/mcp",
+                        "http://skillhub.example/contextforge/servers/srv-bdc4/sse"
+                )),
+                1,
+                0,
+                24
+        );
+
+        var json = objectMapper.valueToTree(internalServers);
+        var firstItem = json.path("items").get(0);
+        var firstTool = firstItem.path("tools").get(0);
+
+        assertThat(firstItem.path("iconUrl").asText()).isEqualTo("https://static.example.com/icons/bdc4.png");
+        assertThat(firstTool.path("inputSchema").path("properties").path("reportCode").path("type").asText()).isEqualTo("string");
+        assertThat(firstTool.path("outputSchema").path("properties").path("rows").path("type").asText()).isEqualTo("array");
     }
 
     private ApiResponseFactory responseFactory() {

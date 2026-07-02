@@ -277,6 +277,7 @@ public class ContextForgeMcpCatalogClient {
                         id,
                         text(server, "name"),
                         text(server, "description"),
+                        firstText(server, "icon", "iconUrl"),
                         server.path("enabled").asBoolean(false),
                         text(server, "visibility"),
                         firstText(server, "ownerEmail", "owner_email"),
@@ -346,9 +347,14 @@ public class ContextForgeMcpCatalogClient {
         return node.path(field).asBoolean(false);
     }
 
-    private String firstText(JsonNode node, String firstField, String secondField) {
-        String first = text(node, firstField);
-        return StringUtils.hasText(first) ? first : text(node, secondField);
+    private String firstText(JsonNode node, String... fields) {
+        for (String field : fields) {
+            String value = text(node, field);
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private int countArray(JsonNode node, String firstField, String secondField) {
@@ -420,10 +426,21 @@ public class ContextForgeMcpCatalogClient {
             if (!StringUtils.hasText(name)) {
                 name = id;
             }
-            return new McpAssociatedItemResponse(id, name, description);
+            return new McpAssociatedItemResponse(
+                    id,
+                    name,
+                    description,
+                    object(item, "inputSchema"),
+                    object(item, "outputSchema")
+            );
         }
 
         return new McpAssociatedItemResponse(fallbackId, fallbackId, null);
+    }
+
+    private JsonNode object(JsonNode node, String field) {
+        JsonNode value = node.path(field);
+        return value.isObject() ? value.deepCopy() : null;
     }
 
     private void putAssociatedItem(Map<String, McpAssociatedItemResponse> items, String key, McpAssociatedItemResponse item) {

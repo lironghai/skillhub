@@ -165,6 +165,7 @@ class ContextForgeMcpCatalogClientTest {
                               "id": "34eaa0d257da49608da2c6b079ed0b5",
                               "name": "bdc4_group",
                               "description": "bdc4_group",
+                              "icon": "https://static.example.com/icons/bdc4.png",
                               "enabled": true,
                               "associatedTools": ["query_report_by_code", "legacy-tool-b"],
                               "associatedToolIds": ["tool-a", "legacy-tool-b"],
@@ -195,7 +196,20 @@ class ContextForgeMcpCatalogClientTest {
                               "id": "tool-a",
                               "name": "query_report_by_code",
                               "displayName": "Query report by code",
-                              "description": "Query BDC report data by code"
+                              "description": "Query BDC report data by code",
+                              "inputSchema": {
+                                "type": "object",
+                                "properties": {
+                                  "reportCode": {"type": "string"}
+                                },
+                                "required": ["reportCode"]
+                              },
+                              "outputSchema": {
+                                "type": "object",
+                                "properties": {
+                                  "rows": {"type": "array"}
+                                }
+                              }
                             }
                           ],
                           "pagination": {"page": 1, "per_page": 100, "total_items": 1, "total_pages": 1},
@@ -250,6 +264,7 @@ class ContextForgeMcpCatalogClientTest {
         McpInternalServerItemResponse item = response.items().getFirst();
         assertThat(item.id()).isEqualTo("34eaa0d257da49608da2c6b079ed0b5");
         assertThat(item.name()).isEqualTo("bdc4_group");
+        assertThat(item.iconUrl()).isEqualTo("https://static.example.com/icons/bdc4.png");
         assertThat(item.streamableHttpUrl()).isEqualTo("https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp");
         assertThat(item.sseUrl()).isEqualTo("https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse");
         assertThat(item.toolCount()).isEqualTo(2);
@@ -259,6 +274,8 @@ class ContextForgeMcpCatalogClientTest {
                 .extracting(McpAssociatedItemResponse::name)
                 .containsExactly("query_report_by_code", "legacy-tool-b");
         assertThat(item.tools().getFirst().description()).isEqualTo("Query BDC report data by code");
+        assertThat(item.tools().getFirst().inputSchema().path("properties").path("reportCode").path("type").asText()).isEqualTo("string");
+        assertThat(item.tools().getFirst().outputSchema().path("properties").path("rows").path("type").asText()).isEqualTo("array");
         assertThat(item.resources())
                 .extracting(McpAssociatedItemResponse::name)
                 .containsExactly("BDC schema");

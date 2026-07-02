@@ -33,6 +33,8 @@ export interface McpAssociatedItem {
   id?: string | null
   name?: string | null
   description?: string | null
+  inputSchema?: unknown | null
+  outputSchema?: unknown | null
 }
 
 export interface McpInternalServerItem {

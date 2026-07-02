@@ -2,6 +2,8 @@ server:
   port: 8080
   shutdown: graceful
   forward-headers-strategy: framework
+  tomcat:
+    keep-alive-timeout: ${SERVER_TOMCAT_KEEP_ALIVE_TIMEOUT:75s}
   servlet:
     session:
       timeout: ${SERVER_SERVLET_SESSION_TIMEOUT:8h}
