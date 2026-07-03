@@ -62,22 +62,13 @@ export function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-x-clip" style={{ background: 'var(--bg-page, hsl(var(--background)))' }}>
-      {/* Decorative gradient orb */}
-      <div
-        className="absolute top-0 right-0 w-[600px] h-[500px] rounded-full opacity-90 pointer-events-none z-0"
-        style={{
-          background: 'radial-gradient(ellipse at 70% 20%, rgba(184,94,255,0.25) 0%, rgba(106,109,255,0.15) 40%, transparent 70%)',
-          filter: 'blur(60px)',
-        }}
-      />
-
       {/* Header */}
       <header className={getAppHeaderClassName(isHeaderElevated)} style={{ borderColor: 'hsl(var(--border))' }}>
         <Link to="/" className="text-xl font-semibold tracking-tight text-brand-gradient">
-          HERO SkillHub
+          HeroSkillHub
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <nav className="hidden md:flex items-center gap-10 text-[15px] font-medium h-full">
           {navItems.map((item) => {
             if (item.auth && !user) return null
             const active = isActive(item.to, item.exact)
@@ -88,8 +79,8 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'px-4 py-1.5 rounded-full bg-brand-gradient text-white shadow-sm'
-                    : 'hover:opacity-80 transition-opacity duration-150'
+                    ? 'flex items-center h-full text-[#bf3732] border-b-2 border-[#bf3732]'
+                    : 'flex items-center h-full text-[#666] hover:text-[#bf3732] transition-colors duration-150'
                 }
               >
                 {item.label}
@@ -98,8 +89,9 @@ export function Layout() {
           })}
         </nav>
 
-        <div className="flex items-center gap-6 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <div className="flex items-center gap-4 text-[15px] font-normal">
           <LanguageSwitcher />
+          <span className="text-[#ccc] select-none">|</span>
           {user && <NotificationBell />}
           {isLoading ? null : user ? (
             <UserMenu user={user} />
@@ -107,7 +99,7 @@ export function Layout() {
             <Link
               to="/login"
               search={{ returnTo: '' }}
-              className="hover:opacity-80 transition-opacity"
+              className="flex items-center justify-center min-w-[52px] px-3 h-[32px] bg-white border border-[#ccc] rounded-[8px] text-sm text-[#333] hover:border-[#bf3732] hover:text-[#bf3732] transition-colors duration-150"
             >
               {t('nav.login')}
             </Link>
@@ -133,18 +125,16 @@ export function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t rounded-t-2xl mt-auto" style={{ background: '#F1F5F9', borderColor: 'hsl(var(--border))' }}>
+      <footer className="relative z-10 border-t mt-auto" style={{ background: '#fff', borderColor: 'hsl(var(--border))' }}>
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 md:gap-12">
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm bg-brand-gradient">
-                  S
-                </div>
-                <span className="text-lg font-bold text-brand-gradient">SkillHub</span>
+                <div className="w-9 h-9 rounded-[12px] bg-brand-gradient" />
+                <span className="text-lg font-bold text-brand-gradient">HeroSkillHub</span>
               </div>
               <p className="text-sm max-w-xs" style={{ color: 'hsl(var(--text-secondary))' }}>
-                {t('layout.footerDescription')}
+                {t('footerDescription')}
               </p>
             </div>
             <div className="flex flex-wrap gap-12 md:gap-16">
@@ -172,6 +162,28 @@ export function Layout() {
                     <Link to="/dashboard" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
                       {t('nav.dashboard')}
                     </Link>
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold mb-3" style={{ color: 'hsl(var(--foreground))' }}>
+                  {t('footer.resources')}
+                </h4>
+                <ul className="space-y-2 text-sm">
+                  <li>
+                    <a href="/docs" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
+                      {t('footer.docs')}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/api" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
+                      {t('footer.api')}
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/community" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
+                      {t('footer.community')}
+                    </a>
                   </li>
                 </ul>
               </div>

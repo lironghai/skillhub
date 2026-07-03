@@ -64,21 +64,21 @@ describe('LandingPage', () => {
     expect(typeof LandingPage).toBe('function')
   })
 
-  it('renders the brand name in the hero section', () => {
+  it('renders the brand logo mark in the hero section', () => {
     const html = renderToStaticMarkup(<LandingPage />)
 
-    expect(html).toContain('SkillHub')
+    expect(html).toContain('bg-brand-gradient')
     expect(html).toContain('landing.hero.title')
   })
 
-  it('does not render the product metrics block on the landing page', () => {
+  it('renders the product metrics stats on the landing page', () => {
     const html = renderToStaticMarkup(<LandingPage />)
 
-    expect(html).not.toContain('1000+')
-    expect(html).not.toContain('50K+')
-    expect(html).not.toContain('200+')
-    expect(html).not.toContain('landing.stats.skills')
-    expect(html).not.toContain('landing.stats.downloads')
-    expect(html).not.toContain('landing.stats.teams')
+    expect(html).toContain('1000+')
+    expect(html).toContain('50K+')
+    expect(html).toContain('200+')
+    expect(html).toContain('landing.stats.skills')
+    expect(html).toContain('landing.stats.downloads')
+    expect(html).toContain('landing.stats.teams')
   })
 })
