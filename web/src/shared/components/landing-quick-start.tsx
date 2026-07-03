@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next'
 import { Bot, Check, Copy, Terminal, UserRound } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useCopyToClipboard } from '@/shared/lib/clipboard'
+import { SvgIcon } from './svg-icon'
 
 type LandingQuickStartTabId = 'agent' | 'human' | 'cli'
 
 interface LandingQuickStartTab {
   id: LandingQuickStartTabId
+  iconName: string
   label: string
   description: string
   command: string
@@ -80,18 +82,21 @@ export function LandingQuickStartSection() {
   const tabs: LandingQuickStartTab[] = [
     {
       id: 'agent',
+      iconName: 'begin_agent',
       label: t('landing.quickStart.tabs.agent'),
       description: t('landing.quickStart.agent.description'),
       command: agentCommand,
     },
     {
       id: 'human',
+      iconName: 'begin_human',
       label: t('landing.quickStart.tabs.human'),
       description: t('landing.quickStart.human.description'),
       command: t('landing.quickStart.human.command'),
     },
     {
       id: 'cli',
+      iconName: 'begin_cli',
       label: t('landing.quickStart.tabs.cli'),
       description: t('landing.quickStart.cli.description'),
       command: t('landing.quickStart.cli.command'),
@@ -101,10 +106,10 @@ export function LandingQuickStartSection() {
   const currentTab = tabs.find((tab) => tab.id === activeTab) ?? tabs[0]
 
   return (
-    <section className="relative z-10 w-full px-6 py-14 md:py-16" style={{ background: 'var(--bg-page, hsl(var(--background)))' }}>
+    <section className="relative z-10 w-full px-6" style={{ background: 'var(--bg-page, hsl(var(--background)))' }}>
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-7 md:mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-3" style={{ color: 'hsl(var(--foreground))' }}>
+        <div className="text-center mb-9 md:mb-10">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4" style={{ color: 'hsl(var(--foreground))' }}>
             {t('landing.quickStart.title')}
           </h2>
           <p className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed" style={{ color: 'hsl(var(--text-secondary))' }}>
@@ -122,7 +127,7 @@ export function LandingQuickStartSection() {
           >
             {tabs.map((tab) => {
               const isActive = tab.id === currentTab.id
-              const Icon = tabIcons[tab.id]
+              // const Icon = tabIcons[tab.id]
 
               return (
                 <button
@@ -132,15 +137,22 @@ export function LandingQuickStartSection() {
                   aria-pressed={isActive}
                   className="flex min-h-11 items-center justify-center gap-2 rounded-[14px] px-4 py-3 text-base font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer"
                   style={{
-                    background: isActive ? 'rgba(255,255,255,0.96)' : 'transparent',
-                    color: isActive ? 'hsl(var(--foreground))' : 'hsl(var(--muted-foreground))',
-                    boxShadow: isActive ? '0 6px 18px rgba(15, 23, 42, 0.08)' : 'none',
+                    background: isActive
+                      ? "linear-gradient(90deg, #BF3732 0%, #ED6C30 102.2%)"
+                      : "transparent",
+                    color: isActive
+                      ? "#fff"
+                      : "hsl(var(--muted-foreground))",
+                    boxShadow: isActive
+                      ? "0 6px 18px rgba(15, 23, 42, 0.08)"
+                      : "none",
                   }}
                 >
-                  <Icon className="h-4 w-4" strokeWidth={1.75} />
+                  {/* <Icon className="h-4 w-4" strokeWidth={1.75} /> */}
+                  <SvgIcon name={'svg-' + tab.iconName} className="h-5 w-5" />
                   <span>{tab.label}</span>
                 </button>
-              )
+              );
             })}
           </div>
 

@@ -51,31 +51,37 @@ export function LandingPage() {
   const features = [
     {
       icon: <Shield className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_shield",
       title: t('landing.features.secure.title'),
       description: t('landing.features.secure.description'),
     },
     {
       icon: <Users className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_peoples",
       title: t('landing.features.community.title'),
       description: t('landing.features.community.description'),
     },
     {
       icon: <PackageOpen className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_dropbox",
       title: t('landing.features.integration.title'),
       description: t('landing.features.integration.description'),
     },
     {
       icon: <GitBranch className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_branch-two",
       title: t('landing.features.versionControl.title', { defaultValue: 'Version control' }),
       description: t('landing.features.versionControl.description', { defaultValue: 'Managed release flows keep skill packages traceable and easier to review.' }),
     },
     {
       icon: <Terminal className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_code",
       title: t('landing.features.cli.title', { defaultValue: 'CLI tooling' }),
       description: t('landing.features.cli.description', { defaultValue: 'Command-line workflows support publishing, installing, and operating skills quickly.' }),
     },
     {
       icon: <Settings className="w-6 h-6" strokeWidth={2} style={{ color: '#bf3732' }} />,
+      iconName: "home_audit",
       title: t('landing.features.governance.title', { defaultValue: 'Governance' }),
       description: t('landing.features.governance.description', { defaultValue: 'Built-in review and permission flows help teams enforce skill quality.' }),
     },
@@ -96,18 +102,21 @@ export function LandingPage() {
         </div> */}
 
         {/* Brand logo mark */}
-        <div className="w-[352px] h-[44px] rounded-[12px] flex items-center justify-center mb-5">
+        <div className="w-[500px] h-[44px] rounded-[12px] flex items-center justify-center mb-[30px]">
           {/* <span className="text-white text-[22px] font-bold leading-none" style={{ fontFamily: 'Arial Rounded MT Bold, Syne, sans-serif' }}>R</span> */}
-          <SvgIcon name="svg-text-HeroSkillhub" className="h-[44px] w-[352px]" />
+          <SvgIcon
+            name="svg-text-HeroSkillhub"
+            className="h-[44px] w-[500px]"
+          />
         </div>
         <h1
-          className="text-xl md:text-2xl font-semibold tracking-tight text-center mb-3"
+          className="text-xl md:text-2xl font-semibold tracking-tight text-center mb-[20px]"
           style={{ color: "hsl(var(--foreground))" }}
         >
           {t("landing.hero.title")}
         </h1>
         <p
-          className="text-base md:text-lg text-center max-w-2xl mb-10 leading-relaxed"
+          className="text-base md:text-lg text-center max-w-2xl mb-[72px] leading-relaxed"
           style={{ color: "hsl(var(--text-secondary))" }}
         >
           {t("landing.hero.subtitle")}
@@ -182,13 +191,13 @@ export function LandingPage() {
       {/* Features Section */}
       <section
         ref={featuresView.ref}
-        className={`relative z-10 w-full pt-[96px] pb-20 md:pb-24 px-6 scroll-fade-up${featuresView.inView ? " in-view" : ""}`}
+        className={`relative z-10 w-full pt-[89px] pb-20 md:pb-24 px-6 scroll-fade-up${featuresView.inView ? " in-view" : ""}`}
         style={{ background: "var(--bg-page, hsl(var(--background)))" }}
       >
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <h2
-              className="text-3xl md:text-4xl font-bold tracking-tight mb-3"
+              className="text-3xl md:text-4xl font-bold tracking-tight mb-5"
               style={{ color: "#333" }}
             >
               {t("landing.whyTitle", { defaultValue: "为什么选择" })}{" "}
@@ -224,9 +233,18 @@ export function LandingPage() {
               >
                 <div
                   className="w-12 h-12 rounded-[12px] flex items-center justify-center mb-6 mx-auto bg-brand-gradient/10"
-                  style={{ boxShadow: "0 2px 8px rgba(159,69,66,0.12)" }}
+                  style={{
+                    boxShadow: "0 2px 8px rgba(159,69,66,0.12)",
+                    backgroundColor: "rgba(191,55,50,0.1)",
+                  }}
                 >
-                  <div className="text-brand-gradient">{feature.icon}</div>
+                  {/* <div className="text-brand-gradient"> */}
+                  {/* {feature.icon} */}
+                  <SvgIcon
+                    name={"svg-" + feature.iconName}
+                    className="h-6 w-6"
+                  />
+                  {/* </div> */}
                 </div>
                 <h3
                   className="text-lg font-semibold text-center mb-3"
@@ -275,8 +293,8 @@ export function LandingPage() {
             </div>
             <Button
               variant="ghost"
-              className="text-[14px] font-medium"
-              style={{ color: "#333" }}
+              className="text-[14px] font-medium hover:text-[#bf3732] text-[#333]"
+              style={{ background: "transparent" }}
               onClick={() =>
                 navigate({
                   to: "/search",
@@ -289,7 +307,7 @@ export function LandingPage() {
                 })
               }
             >
-              {t("home.viewAll")} →
+              {t("home.viewAll")}
             </Button>
           </div>
           {isLoadingPopular ? (
@@ -335,8 +353,8 @@ export function LandingPage() {
             </div>
             <Button
               variant="ghost"
-              className="text-[14px] font-medium"
-              style={{ color: "#bf3732" }}
+              className="text-[14px] font-medium hover:text-[#bf3732] text-[#333]"
+              style={{ background: "transparent" }}
               onClick={() =>
                 navigate({
                   to: "/search",
@@ -349,7 +367,7 @@ export function LandingPage() {
                 })
               }
             >
-              {t("home.viewAll")} →
+              {t("home.viewAll")}
             </Button>
           </div>
           {isLoadingLatest ? (

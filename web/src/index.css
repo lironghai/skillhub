@@ -20,7 +20,8 @@
     --muted: 210 25% 95%;
     --muted-foreground: 215 14% 46%;
     /* Violet accent (#B85EFF) */
-    --accent: 271 100% 68%;
+    /* --accent: 271 100% 68%; */
+    --accent: 19, 84%, 56%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -421,6 +422,10 @@
 .hljs-bullet,
 .hljs-addition {
   color: hsl(var(--accent) / 0.9);
+}
+
+.hljs-tag-bg{
+  background: rgba(237, 108, 48, 0.10);;
 }
 
 .hljs-number,
