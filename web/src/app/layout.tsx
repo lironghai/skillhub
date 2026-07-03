@@ -7,6 +7,8 @@ import { UserMenu } from '@/shared/components/user-menu'
 import { NotificationBell } from '@/features/notification/notification-bell'
 import { getAppHeaderClassName } from './layout-header-style'
 import { getAppMainContentLayout, resolveAppMainContentPathname } from './layout-main-content'
+import { SvgIcon } from '@/shared/components/svg-icon'
+import footerLogo from '@/assets/footer_logo.png'
 
 /**
  * Application shell shared by all routed pages.
@@ -64,8 +66,8 @@ export function Layout() {
     <div className="min-h-screen flex flex-col relative overflow-x-clip" style={{ background: 'var(--bg-page, hsl(var(--background)))' }}>
       {/* Header */}
       <header className={getAppHeaderClassName(isHeaderElevated)} style={{ borderColor: 'hsl(var(--border))' }}>
-        <Link to="/" className="text-xl font-semibold tracking-tight text-brand-gradient">
-          HeroSkillHub
+        <Link to="/" className="inline-flex items-center">
+          <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-10 text-[15px] font-medium h-full">
@@ -79,7 +81,7 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'flex items-center h-full text-[#bf3732] border-b-2 border-[#bf3732]'
+                    ? 'flex items-center h-full text-[#bf3732] border-b-[3px] border-[#bf3732] font-bold'
                     : 'flex items-center h-full text-[#666] hover:text-[#bf3732] transition-colors duration-150'
                 }
               >
@@ -130,8 +132,7 @@ export function Layout() {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 md:gap-12">
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-[12px] bg-brand-gradient" />
-                <span className="text-lg font-bold text-brand-gradient">HeroSkillHub</span>
+                <img src={footerLogo} alt="HeroSkillHub" className="h-9 w-auto" />
               </div>
               <p className="text-sm max-w-xs" style={{ color: 'hsl(var(--text-secondary))' }}>
                 {t('footerDescription')}

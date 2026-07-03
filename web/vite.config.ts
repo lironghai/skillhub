@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import path from 'path'
 import type { IncomingMessage } from 'node:http'
 
@@ -35,7 +36,10 @@ function rewriteContextForgeProxyRedirect(proxyRes: IncomingMessage): void {
 }
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), createSvgIconsPlugin({
+    iconDirs: [path.resolve(__dirname, 'src/assets/svg')],
+    symbolId: 'svg-[name]',
+  })],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
