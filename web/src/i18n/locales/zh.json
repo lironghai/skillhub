@@ -201,7 +201,7 @@
     "clear": "清空搜索"
   },
   "login": {
-    "title": "登录 SkillHub",
+    "title": "登录 Hero SkillHub",
     "subtitle": "选择一个方式登录以继续",
     "tabPassword": "账号密码",
     "tabOAuth": "OAuth",
