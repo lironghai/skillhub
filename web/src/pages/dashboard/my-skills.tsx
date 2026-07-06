@@ -374,7 +374,7 @@ export function MySkillsPage() {
                           <p className="text-sm text-muted-foreground mb-3 leading-relaxed">{skill.summary}</p>
                         )}
                         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                          <span className="handle-tag">@{skill.namespace}</span>
+                          <span className="handle-tag hljs-tag-bg" style={{color:"var(--brand-end)",borderColor:"rgba(237, 108, 48, 0.10)"}}>@{skill.namespace}</span>
                           {headlineVersion ? (
                             <span className="font-mono text-xs">v{headlineVersion.version}</span>
                           ) : null}

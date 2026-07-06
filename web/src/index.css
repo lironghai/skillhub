@@ -12,7 +12,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 26% 14%;
     /* Indigo primary (#6A6DFF) */
-    --primary: 239 100% 71%;
+    /* --primary: 239 100% 71%; */
+    --primary: 2 59% 47%;
     --primary-foreground: 0 0% 100%;
     /* Surface tones */
     --secondary: 210 30% 96%;
@@ -145,10 +146,14 @@
 }
 
 .glass-strong {
-  background: hsl(var(--surface-glass) / 0.85);
+  /* background: hsl(var(--surface-glass) / 0.85);
   backdrop-filter: blur(24px) saturate(1.6);
   -webkit-backdrop-filter: blur(24px) saturate(1.6);
-  border: 1px solid hsl(var(--border) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.6); */
+  border-radius: 12px;
+  border: 1px solid #E5E5E5;
+  background: #FFF;
+  box-shadow: 0 2px 15px 1px rgba(159, 69, 66, 0.10);
 }
 
 /* ─── Animations ─── */
@@ -324,6 +329,12 @@
   background: linear-gradient(0deg, rgba(191, 55, 50, 0.05) 0%, rgba(191, 55, 50, 0.05) 100%), #FFF;
 }
 
+.hover\:bg-brand-light:hover {
+  border-radius: 12px;
+  border: 1px solid rgba(191, 55, 50, 0.20) !important;
+  background: linear-gradient(0deg, rgba(191, 55, 50, 0.05) 0%, rgba(191, 55, 50, 0.05) 100%), #FFF;
+}
+
 /* ─── Handle tag (namespace @ pill) ─── */
 .handle-tag {
   display: inline-flex;
@@ -349,10 +360,14 @@
   color: white;
 }
 
-.status-pill--published { background: #16a34a; }
+.status-pill--published {  background: rgba(24, 168, 120, 0.1);color: #18A878; }
+.status-pill--review { background: rgba(234, 88, 12, 0.1); color: #ea580c; }
+.status-pill--archived { background: rgba(107, 114, 128, 0.1); color:#6b7280; }
+.status-pill--rejected { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+/* .status-pill--published { background: #16a34a; }
 .status-pill--review { background: #ea580c; }
 .status-pill--archived { background: #6b7280; }
-.status-pill--rejected { background: #dc2626; }
+.status-pill--rejected { background: #dc2626; } */
 
 /* ─── Role pill ─── */
 .role-pill {

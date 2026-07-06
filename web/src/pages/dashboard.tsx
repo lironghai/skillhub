@@ -119,7 +119,7 @@ export function DashboardPage() {
           </Card>
         ) : null}
       </div>
-
+      {/* 我的技能卡片 */}
       <div className="space-y-8">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -145,7 +145,7 @@ export function DashboardPage() {
                         key={skill.id}
                         to="/space/$namespace/$slug"
                         params={{ namespace: skill.namespace, slug: encodeURIComponent(skill.slug) }}
-                        className="rounded-lg border border-border/60 px-3 py-3 transition-colors hover:bg-accent/40"
+                        className="rounded-lg border border-border/60 px-3 py-3 hover:bg-brand-light"
                       >
                         <div className="truncate text-sm font-medium">{skill.displayName}</div>
                         <div className="mt-1 truncate text-xs text-muted-foreground">@{skill.namespace}</div>
@@ -158,7 +158,7 @@ export function DashboardPage() {
                     ))}
                     <Link
                       to="/dashboard/skills"
-                      className="flex min-h-20 flex-col items-center justify-center rounded-lg border border-dashed border-border/70 px-3 py-3 text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+                      className="flex min-h-20 flex-col items-center justify-center rounded-lg border border-dashed border-border/70 px-3 py-3 text-muted-foreground  hover:bg-brand-light hover:text-foreground"
                     >
                       <span className="text-lg font-semibold leading-none">{t('dashboard.previewMore')}</span>
                       <span className="mt-2 text-xs font-medium">{t('dashboard.previewMoreLabel')}</span>
