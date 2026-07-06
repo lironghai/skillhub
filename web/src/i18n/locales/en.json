@@ -1249,7 +1249,8 @@
   },
   "upload": {
     "dropHint": "Drop to upload...",
-    "dragHint": "Drag a ZIP file here, or click to select",
+    "dragHint": "Drag a ZIP file here, or ",
+    "dragHintDeep": "Click to select",
     "formatHint": "Only .zip format supported"
   },
   "layout": {

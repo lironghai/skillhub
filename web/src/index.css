@@ -49,6 +49,7 @@
 
     /* Border semantic */
     --border-card: 220 26% 94%;
+    /* --border-card: 2 59% 47%; */
   }
 
   .dark {
@@ -315,6 +316,12 @@
 
 .bg-brand-gradient {
   background: var(--brand-gradient);
+}
+
+.bg-brand-light {
+  border-radius: 12px;
+  border: 1px solid rgba(191, 55, 50, 0.20) !important;
+  background: linear-gradient(0deg, rgba(191, 55, 50, 0.05) 0%, rgba(191, 55, 50, 0.05) 100%), #FFF;
 }
 
 /* ─── Handle tag (namespace @ pill) ─── */

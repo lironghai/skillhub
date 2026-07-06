@@ -1187,7 +1187,8 @@
   },
   "upload": {
     "dropHint": "放开以上传文件...",
-    "dragHint": "拖拽 ZIP 文件到此处，或点击选择",
+    "dragHint": "拖拽 ZIP 文件到此处，或",
+    "dragHintDeep": "点击选择",
     "formatHint": "仅支持 .zip 格式"
   },
   "layout": {

@@ -66,7 +66,9 @@ export function UploadZone({ onFileSelect, disabled }: UploadZoneProps) {
           <p className="text-sm text-primary font-medium">{t('upload.dropHint')}</p>
         ) : (
           <>
-            <p className="text-sm font-medium text-foreground">{t('upload.dragHint')}</p>
+            <p className="text-sm font-medium text-foreground">
+              {t('upload.dragHint')}<span style={{ color: '#BF3732', fontWeight: 'bold' }}>{t('upload.dragHintDeep')}</span>
+            </p>
             <p className="text-xs text-muted-foreground">{t('upload.formatHint')}</p>
           </>
         )}
