@@ -16,6 +16,7 @@ import { useCopyToClipboard } from '@/shared/lib/clipboard'
 import { MCP_CATALOG_PAGE_SIZE } from './mcp-catalog-query'
 import type { McpAssociatedItem, McpCatalogItem, McpInternalServerItem } from './mcp-catalog-types'
 import { useMcpCatalog, useMcpInternalServers } from './use-mcp-catalog'
+import { SvgIcon } from '@/shared/components/svg-icon'
 
 type McpMarketplaceTab = 'internal' | 'opensource'
 type AssociatedDetailType = 'tools' | 'resources' | 'prompts'
@@ -79,6 +80,8 @@ export function McpMarketplacePage() {
             variant="outline"
             onClick={() => activeQuery.refetch()}
             disabled={activeQuery.isFetching}
+            style={{ boxShadow: "0 2px 8px 0 rgba(159, 69, 66, 0.12)" }}
+            className="bg-[#fff]"
           >
             {activeQuery.isFetching ? (
               <Loader2
@@ -86,19 +89,16 @@ export function McpMarketplacePage() {
                 aria-hidden="true"
               />
             ) : (
-              <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+              // <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
+              <SvgIcon name="svg-mcp_refresh" className="mr-2 h-4 w-4" />
             )}
             {t("mcpMarketplace.refresh")}
           </Button>
         }
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div
-          className="inline-flex rounded-lg border bg-card p-1 shadow-sm"
-          role="tablist"
-          aria-label={t("mcpMarketplace.tabsLabel")}
-        >
-          <div>
+        <div>
+          {/* <div>
             <TabButton
               active={activeTab === "internal"}
               onClick={() => handleTabChange("internal")}
@@ -111,28 +111,75 @@ export function McpMarketplacePage() {
             >
               {t("mcpMarketplace.openSourceTab")}
             </TabButton>
-          </div>
+          </div> */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleTabChange("internal")}
+            style={{
+              height: "32px",
+              width: "auto",
+              marginRight: "8px",
+            }}
+            className={cn(
+              "rounded-[8px] px-2 text-sm font-medium transition-colors",
+              activeTab === "internal"
+                ? "bg-brand-gradient text-primary-foreground hover:text-primary-foreground "
+                : "bg-[#fff] hover:text-foreground",
+            )}
+          >
+            {t("mcpMarketplace.internalTab")}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleTabChange("opensource")}
+            style={{
+              height: "32px",
+              width: "auto",
+            }}
+            className={cn(
+              "rounded-[8px] px-2 text-sm font-medium transition-colors",
+              activeTab === "opensource"
+                ? "bg-brand-gradient text-primary-foreground hover:text-primary-foreground "
+                : "bg-[#fff] hover:text-foreground ",
+            )}
+          >
+            {t("mcpMarketplace.openSourceTab")}
+          </Button>
         </div>
-
         <div
-          className="inline-flex rounded-lg border bg-card p-1 shadow-sm"
+          className="inline-flex border bg-card p-1 shadow-sm rounded-[8px] justify-center items-center  hover:border-primary/30"
           role="tablist"
           aria-label={t("mcpMarketplace.tabsLabel")}
         >
           <div>
             <TabButton
               active={viewMode === "list"}
+              title={t("mcpMarketplace.listView")}
+              style={{ marginRight: "4px" }}
               onClick={() => setViewMode("list")}
             >
               {/* <List className="h-4 w-4" aria-hidden="true" /> */}
-              {t("mcpMarketplace.listView")}
+              {/* {t("mcpMarketplace.listView")} */}
+              <SvgIcon
+                name="svg-mcp_list"
+                className="h-4 w-4 color-[var(--brand-gradient)]"
+                style={viewMode === "list" ? { color: "#fff" } : {}}
+              />
             </TabButton>
             <TabButton
               active={viewMode === "grid"}
+              title={t("mcpMarketplace.gridView")}
               onClick={() => setViewMode("grid")}
             >
               {/* <LayoutGrid className="h-4 w-4" aria-hidden="true" /> */}
-              {t("mcpMarketplace.gridView")}
+              {/* {t("mcpMarketplace.gridView")} */}
+              <SvgIcon
+                name="svg-mcp_card"
+                className="h-4 w-4 color-[var(--brand-gradient)]"
+                style={viewMode === "grid" ? { color: "#fff" } : {}}
+              />
             </TabButton>
           </div>
         </div>
@@ -247,21 +294,25 @@ export function McpMarketplacePage() {
   );
 }
 
-function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+function TabButton({ active, onClick, children, style, title }: { active: boolean; onClick: () => void; children: ReactNode; style?: React.CSSProperties; title?: string }) {
   return (
     <button
       type="button"
       role="tab"
+      title={title}
       aria-selected={active}
       onClick={onClick}
+      style={{ height: "28px", width: "28px", ...style }}
       className={cn(
-        'h-9 rounded-md px-4 text-sm font-medium transition-colors',
-        active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+        "rounded-[6px] px-1.5 text-sm font-medium transition-colors",
+        active
+          ? "bg-brand-gradient text-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground",
       )}
     >
       {children}
     </button>
-  )
+  );
 }
 
 function InternalServerList({ servers, search, onClear }: { servers: McpInternalServerItem[]; search: string; onClear: () => void }) {
@@ -355,12 +406,13 @@ function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
         {/* Server Name */}
         <TableCell className='p-7'>
           <div className="flex gap-3">
-            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground" style={{background: 'rgba(191,55,50,0.1)',boxShadow:"0 2px 8px rgba(159,69,66,0.12)" }}>
               {
                 server.iconUrl ? (
                   <img src={server.iconUrl} alt="" className="h-8 w-8 object-contain" loading="lazy" />
                 ) : (
-                  <Server className="h-8 w-8" aria-hidden="true" />
+                  // <Server className="h-8 w-8" aria-hidden="true" />
+                  <SvgIcon name="svg-mcp_icon" className="h-8 w-8" />
                 )
               }
 
@@ -452,56 +504,107 @@ function InternalServerCard({ server }: { server: McpInternalServerItem }) {
     <>
       <Card className="flex min-h-80 flex-col p-5">
         <div className="flex gap-3">
-          <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+          <div
+            className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground"
+            style={{
+              background: "rgba(191,55,50,0.1)",
+              boxShadow: "0 2px 8px rgba(159,69,66,0.12)",
+            }}
+          >
             {/* <Server className="h-5 w-5" aria-hidden="true" /> */}
-            {
-                server.iconUrl ? (
-                  <img src={server.iconUrl} alt="" className="h-8 w-8 object-contain" loading="lazy" />
-                ) : (
-                  <Server className="h-5 w-5" aria-hidden="true" />
-                )
-              }
+            {server.iconUrl ? (
+              <img
+                src={server.iconUrl}
+                alt=""
+                className="h-8 w-8 object-contain"
+                loading="lazy"
+              />
+            ) : (
+              // <Server className="h-5 w-5 color-[var(--brand-gradient)]" aria-hidden="true" />
+              <SvgIcon name="svg-mcp_icon" className="h-5 w-5" />
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{server.name}</h2>
-            <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">{server.id}</p>
+            <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">
+              {server.name}
+            </h2>
+            <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">
+              {server.id}
+            </p>
           </div>
         </div>
 
         <p className="mt-4 min-h-12 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-          {server.description || t('mcpMarketplace.noDescription')}
+          {server.description || t("mcpMarketplace.noDescription")}
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          <StatusBadge active={server.enabled} label={server.enabled ? t('mcpMarketplace.enabled') : t('mcpMarketplace.disabled')} />
-          <CountBadgeButton label={t('mcpMarketplace.toolsCount', { count: server.toolCount })} onClick={() => setDetailType('tools')} />
-          <CountBadgeButton label={t('mcpMarketplace.resourcesCount', { count: server.resourceCount })} onClick={() => setDetailType('resources')} />
-          <CountBadgeButton label={t('mcpMarketplace.promptsCount', { count: server.promptCount })} onClick={() => setDetailType('prompts')} />
+          <StatusBadge
+            active={server.enabled}
+            label={
+              server.enabled
+                ? t("mcpMarketplace.enabled")
+                : t("mcpMarketplace.disabled")
+            }
+          />
+          <CountBadgeButton
+            label={t("mcpMarketplace.toolsCount", { count: server.toolCount })}
+            onClick={() => setDetailType("tools")}
+          />
+          <CountBadgeButton
+            label={t("mcpMarketplace.resourcesCount", {
+              count: server.resourceCount,
+            })}
+            onClick={() => setDetailType("resources")}
+          />
+          <CountBadgeButton
+            label={t("mcpMarketplace.promptsCount", {
+              count: server.promptCount,
+            })}
+            onClick={() => setDetailType("prompts")}
+          />
         </div>
 
         {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
 
         <div className="mt-5 space-y-3">
-          <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
-          <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} />
+          <ConnectionUrl
+            label={t("mcpMarketplace.streamableHttpUrl")}
+            value={server.streamableHttpUrl}
+          />
+          <ConnectionUrl
+            label={t("mcpMarketplace.sseUrl")}
+            value={server.sseUrl}
+          />
         </div>
 
         <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
-          <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
-          <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
-          <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
+          <MetaRow
+            label={t("mcpMarketplace.owner")}
+            value={server.ownerEmail}
+          />
+          <MetaRow label={t("mcpMarketplace.team")} value={server.team} />
+          <MetaRow
+            label={t("mcpMarketplace.visibility")}
+            value={server.visibility}
+          />
         </dl>
       </Card>
-      <Dialog open={detailType !== null} onOpenChange={(open) => {
-        if (!open) {
-          setDetailType(null)
-        }
-      }}>
+      <Dialog
+        open={detailType !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetailType(null);
+          }
+        }}
+      >
         <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
           <DialogHeader className="border-b px-6 py-5 text-left">
-            <DialogTitle className="text-left text-lg">{detailTitle}</DialogTitle>
+            <DialogTitle className="text-left text-lg">
+              {detailTitle}
+            </DialogTitle>
             <DialogDescription className="text-left">
-              {t('mcpMarketplace.associatedDialogDescription', {
+              {t("mcpMarketplace.associatedDialogDescription", {
                 server: server.name,
                 count: detailCount,
               })}
@@ -509,13 +612,19 @@ function InternalServerCard({ server }: { server: McpInternalServerItem }) {
           </DialogHeader>
           <AssociatedDetailList
             items={detailItems}
-            emptyLabel={t('mcpMarketplace.emptyAssociatedItems', { type: detailTitle })}
-            unnamedLabel={t(detailType ? associatedDetailUnnamedKey(detailType) : 'mcpMarketplace.unnamedItem')}
+            emptyLabel={t("mcpMarketplace.emptyAssociatedItems", {
+              type: detailTitle,
+            })}
+            unnamedLabel={t(
+              detailType
+                ? associatedDetailUnnamedKey(detailType)
+                : "mcpMarketplace.unnamedItem",
+            )}
           />
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }
 
 export function AssociatedDetailList({
@@ -560,48 +669,120 @@ function OpenSourceServerCard({ server }: { server: McpCatalogItem }) {
   return (
     <Card className="flex min-h-96 flex-col p-5">
       <div className="flex gap-3">
-        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+        <div
+          className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground"
+          style={{
+            background: "rgba(191,55,50,0.1)",
+            boxShadow: "0 2px 8px rgba(159,69,66,0.12)",
+          }}
+        >
           {server.iconUrl ? (
-            <img src={server.iconUrl} alt="" className="h-7 w-7 object-contain" loading="lazy" />
+            <img
+              src={server.iconUrl}
+              alt=""
+              className="h-7 w-7 object-contain"
+              loading="lazy"
+            />
           ) : (
-            <Server className="h-5 w-5" aria-hidden="true" />
+            // <Server className="h-5 w-5" aria-hidden="true" />
+            <SvgIcon name="svg-mcp_icon" className="h-5 w-5" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">{server.name}</h2>
+          <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">
+            {server.name}
+          </h2>
           <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-            {[server.category, server.provider, server.authType, server.transport].filter(Boolean).join(' / ')}
+            {[
+              server.category,
+              server.provider,
+              server.authType,
+              server.transport,
+            ]
+              .filter(Boolean)
+              .join(" / ")}
           </p>
         </div>
       </div>
 
       <p className="mt-4 line-clamp-4 min-h-20 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-        {server.description || t('mcpMarketplace.noDescription')}
+        {server.description || t("mcpMarketplace.noDescription")}
       </p>
 
       <dl className="mt-4 grid gap-2 text-xs text-muted-foreground">
-        <MetaRow label={t('mcpMarketplace.provider')} value={server.provider} />
-        <MetaRow label={t('mcpMarketplace.authType')} value={server.authType} />
-        <MetaRow label={t('mcpMarketplace.transport')} value={server.transport} />
-        <MetaRow label={t('mcpMarketplace.sourceUrl')} value={server.url} breakAll />
+        <MetaRow label={t("mcpMarketplace.provider")} value={server.provider} />
+        <MetaRow label={t("mcpMarketplace.authType")} value={server.authType} />
+        <MetaRow
+          label={t("mcpMarketplace.transport")}
+          value={server.transport}
+        />
+        <MetaRow
+          label={t("mcpMarketplace.sourceUrl")}
+          value={server.url}
+          breakAll
+        />
       </dl>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        <StatusBadge active={server.available} label={server.available ? t('mcpMarketplace.available') : t('mcpMarketplace.unavailable')} />
-        <StatusBadge active={server.registered} label={server.registered ? t('mcpMarketplace.registered') : t('mcpMarketplace.notRegistered')} />
-        <StatusBadge active={server.secure} label={server.secure ? t('mcpMarketplace.secure') : t('mcpMarketplace.unverified')} icon="shield" />
-        {server.requiresApiKey ? <StatusBadge active label={t('mcpMarketplace.requiresApiKey')} icon="key" /> : null}
-        {server.requiresOauthConfig ? <StatusBadge active label={t('mcpMarketplace.requiresOauth')} icon="key" /> : null}
+        <StatusBadge
+          active={server.available}
+          label={
+            server.available
+              ? t("mcpMarketplace.available")
+              : t("mcpMarketplace.unavailable")
+          }
+        />
+        <StatusBadge
+          active={server.registered}
+          label={
+            server.registered
+              ? t("mcpMarketplace.registered")
+              : t("mcpMarketplace.notRegistered")
+          }
+        />
+        <StatusBadge
+          active={server.secure}
+          label={
+            server.secure
+              ? t("mcpMarketplace.secure")
+              : t("mcpMarketplace.unverified")
+          }
+          icon="shield"
+        />
+        {server.requiresApiKey ? (
+          <StatusBadge
+            active
+            label={t("mcpMarketplace.requiresApiKey")}
+            icon="key"
+          />
+        ) : null}
+        {server.requiresOauthConfig ? (
+          <StatusBadge
+            active
+            label={t("mcpMarketplace.requiresOauth")}
+            icon="key"
+          />
+        ) : null}
       </div>
 
       {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
 
       <div className="mt-auto flex flex-wrap gap-2 pt-5">
-        {server.url ? <ExternalAnchor href={server.url} label={t('mcpMarketplace.openServer')} /> : null}
-        {server.documentationUrl ? <ExternalAnchor href={server.documentationUrl} label={t('mcpMarketplace.openDocs')} /> : null}
+        {server.url ? (
+          <ExternalAnchor
+            href={server.url}
+            label={t("mcpMarketplace.openServer")}
+          />
+        ) : null}
+        {server.documentationUrl ? (
+          <ExternalAnchor
+            href={server.documentationUrl}
+            label={t("mcpMarketplace.openDocs")}
+          />
+        ) : null}
       </div>
     </Card>
-  )
+  );
 }
 
 function OpenSourceTable({
@@ -672,7 +853,13 @@ function OpenSourceTableRow({ server }: { server: McpCatalogItem }) {
         {/* Server Name */}
         <TableCell className="p-7">
           <div className="flex gap-3">
-            <div className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+            <div
+              className="flex h-14 w-14 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground"
+              style={{
+                background: "rgba(191,55,50,0.1)",
+                boxShadow: "0 2px 8px rgba(159,69,66,0.12)",
+              }}
+            >
               {server.iconUrl ? (
                 <img
                   src={server.iconUrl}
@@ -681,7 +868,8 @@ function OpenSourceTableRow({ server }: { server: McpCatalogItem }) {
                   loading="lazy"
                 />
               ) : (
-                <Server className="h-8 w-8" aria-hidden="true" />
+                // <Server className="h-8 w-8" aria-hidden="true" />
+                <SvgIcon name="svg-mcp_icon" className="h-8 w-8" />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -865,6 +1053,7 @@ function StatusBadge({ active, label, icon }: { active: boolean; label: string; 
         'inline-flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-xs',
         active ? 'bg-primary/10 text-primary' : 'bg-secondary text-muted-foreground',
       )}
+      style={{ background: active ? 'rgba(24, 168, 120, 0.10)' : '', color: active ? '#18A878' : '' }}
     >
       {icon === 'shield' ? <ShieldCheck className="h-3.5 w-3.5 flex-none" aria-hidden="true" /> : null}
       {icon === 'key' ? <KeyRound className="h-3.5 w-3.5 flex-none" aria-hidden="true" /> : null}

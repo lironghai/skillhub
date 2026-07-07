@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
+import { cn } from "@/shared/lib/utils";
 
 interface PaginationProps {
   page: number
@@ -53,12 +54,12 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         disabled={page <= 0}
         className="min-w-[90px]"
       >
-        {t('pagination.prev')}
+        {t("pagination.prev")}
       </Button>
 
       <div className="flex items-center gap-1.5">
         {pageItems.map((item, index) =>
-          item === 'ellipsis' ? (
+          item === "ellipsis" ? (
             <span
               key={`ellipsis-${index}`}
               className="px-2 text-sm text-muted-foreground select-none"
@@ -70,12 +71,15 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
             <Button
               key={item}
               type="button"
-              variant={item === page ? 'default' : 'ghost'}
+              variant={item === page ? "default" : "ghost"}
               size="sm"
               onClick={() => onPageChange(item)}
-              aria-label={t('pagination.goToPage', { page: item + 1 })}
-              aria-current={item === page ? 'page' : undefined}
-              className="min-w-[2.25rem] h-9 px-2"
+              aria-label={t("pagination.goToPage", { page: item + 1 })}
+              aria-current={item === page ? "page" : undefined}
+              className={cn(
+                "min-w-[2.25rem] h-9 px-2 ",
+                item !== page && "hover:bg-card-light",
+              )}
             >
               {item + 1}
             </Button>
@@ -90,8 +94,8 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         disabled={page >= totalPages - 1}
         className="min-w-[90px]"
       >
-        {t('pagination.next')}
+        {t("pagination.next")}
       </Button>
     </div>
-  )
+  );
 }
