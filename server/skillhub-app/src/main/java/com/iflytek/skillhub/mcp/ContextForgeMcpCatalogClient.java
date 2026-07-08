@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Component
@@ -264,6 +265,9 @@ public class ContextForgeMcpCatalogClient {
             JsonNode root = objectMapper.readTree(body);
             List<McpInternalServerItemResponse> items = new ArrayList<>();
             for (JsonNode server : root.path("data")) {
+                if (!matchesInternalServerSearch(server, query.search())) {
+                    continue;
+                }
                 String id = text(server, "id");
                 List<McpAssociatedItemResponse> tools = associatedItems(
                         server,
@@ -294,7 +298,9 @@ public class ContextForgeMcpCatalogClient {
                 ));
             }
             JsonNode pagination = root.path("pagination");
-            long total = pagination.path("total_items").asLong(items.size());
+            long total = StringUtils.hasText(query.search())
+                    ? items.size()
+                    : pagination.path("total_items").asLong(items.size());
             return new McpInternalServerResponse(
                     List.copyOf(items),
                     total,
@@ -304,6 +310,21 @@ public class ContextForgeMcpCatalogClient {
         } catch (JsonProcessingException ex) {
             throw new McpCatalogUnavailableException("Unable to parse internal MCP servers from ContextForge", ex);
         }
+    }
+
+    private boolean matchesInternalServerSearch(JsonNode server, String search) {
+        if (!StringUtils.hasText(search)) {
+            return true;
+        }
+        String normalizedSearch = search.trim().toLowerCase(Locale.ROOT);
+        return containsIgnoreCase(text(server, "id"), normalizedSearch)
+                || containsIgnoreCase(text(server, "name"), normalizedSearch)
+                || containsIgnoreCase(text(server, "description"), normalizedSearch);
+    }
+
+    private boolean containsIgnoreCase(String value, String normalizedSearch) {
+        return StringUtils.hasText(value)
+                && value.toLowerCase(Locale.ROOT).contains(normalizedSearch);
     }
 
     private void validateConfigured() {

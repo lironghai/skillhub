@@ -6,7 +6,7 @@ interface NamespaceBadgeProps {
   className?: string
 }
 
-export function NamespaceBadge({ type, name, className }: NamespaceBadgeProps) {
+export function NamespaceBadge({ name, className }: NamespaceBadgeProps) {
   return (
     // type === "GLOBAL"
     //   ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/15"

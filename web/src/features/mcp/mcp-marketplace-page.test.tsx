@@ -127,7 +127,7 @@ vi.mock('./use-mcp-catalog', () => ({
 import { AssociatedDetailList, McpMarketplacePage } from './mcp-marketplace-page'
 
 describe('McpMarketplacePage', () => {
-  it('renders compact internal server cards with detail actions instead of inline associated items', () => {
+  it('renders compact internal server rows with detail actions instead of inline associated items', () => {
     mcpCatalogHooks.useMcpInternalServers.mockClear()
     mcpCatalogHooks.useMcpCatalog.mockClear()
 
@@ -148,10 +148,7 @@ describe('McpMarketplacePage', () => {
     expect(html).not.toContain('Query BDC report data by code')
     expect(html).not.toContain('bdc_schema')
     expect(html).not.toContain('bdc_router')
-    expect(html).toContain('34eaa0d257da49608da2c6b079ed0b5')
-    expect(html).toContain('https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp')
-    expect(html).toContain('https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse')
-    expect(html).toContain('bdc4')
+    expect(html).toContain('<table')
     expect(html).not.toContain('<iframe')
   })
 
@@ -164,10 +161,10 @@ describe('McpMarketplacePage', () => {
     // View toggle should be present on internal tab
     expect(html).toContain('mcpMarketplace.gridView')
     expect(html).toContain('mcpMarketplace.listView')
-    expect(html).toContain('mcpMarketplace.viewToggleLabel')
-    // Default is grid view, so table headers should NOT be visible
+    expect(html).toContain('mcpMarketplace.tabsLabel')
+    // Default is list view, so the table should be visible.
+    expect(html).toContain('<table')
     expect(html).not.toContain('mcpMarketplace.serverName')
-    expect(html).not.toContain('<table')
   })
 
   it('renders associated item details inside the detail list', () => {

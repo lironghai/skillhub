@@ -285,4 +285,77 @@ class ContextForgeMcpCatalogClientTest {
         assertThat(item.tags()).containsExactly("bdc4");
         server.verify();
     }
+
+    @Test
+    void fetchInternalServersFiltersJsonListBySearchTerm() {
+        RestClient.Builder builder = RestClient.builder();
+        MockRestServiceServer server = MockRestServiceServer.bindTo(builder).build();
+        ContextForgeMcpProperties properties = new ContextForgeMcpProperties();
+        properties.setBaseUrl("https://contextforge.internal");
+        properties.setUsername("admin@example.com");
+        properties.setPassword("secret");
+        ContextForgeMcpCatalogClient client = new ContextForgeMcpCatalogClient(builder.build(), objectMapper, properties);
+
+        server.expect(once(), requestTo("https://contextforge.internal/auth/email/login"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("""
+                        {
+                          "access_token": "ctx-token",
+                          "token_type": "bearer",
+                          "expires_in": 3600
+                        }
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=true&page=1&per_page=24&search=bdc"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("Authorization", "Bearer ctx-token"))
+                .andRespond(withSuccess("""
+                        {
+                          "data": [
+                            {
+                              "id": "senti",
+                              "name": "senti_mcp",
+                              "description": "舆情mcp",
+                              "enabled": true,
+                              "associatedTools": [],
+                              "associatedResources": [],
+                              "associatedPrompts": [],
+                              "tags": []
+                            },
+                            {
+                              "id": "34eaa0d257da49608da2c6b079ed0b5",
+                              "name": "bdc4_group",
+                              "description": "bdc4.0 MCP 服务",
+                              "enabled": true,
+                              "associatedTools": [],
+                              "associatedResources": [],
+                              "associatedPrompts": [],
+                              "tags": []
+                            }
+                          ],
+                          "pagination": {
+                            "page": 1,
+                            "per_page": 24,
+                            "total_items": 2,
+                            "total_pages": 1
+                          },
+                          "links": null
+                        }
+                        """, MediaType.APPLICATION_JSON));
+
+        McpInternalServerResponse response = client.fetchInternalServers(new McpCatalogQuery(
+                "bdc",
+                null,
+                null,
+                null,
+                List.of(),
+                0,
+                24
+        ));
+
+        assertThat(response.total()).isEqualTo(1);
+        assertThat(response.items())
+                .extracting(McpInternalServerItemResponse::name)
+                .containsExactly("bdc4_group");
+        server.verify();
+    }
 }
