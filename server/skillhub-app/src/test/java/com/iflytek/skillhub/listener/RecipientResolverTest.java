@@ -80,4 +80,20 @@ class RecipientResolverTest {
 
         assertThat(result).containsExactly("skill-admin", "super-admin");
     }
+
+    @Test
+    void resolvePlatformUserAdmins_shouldReturnUserAdminsAndSuperAdmins() {
+        UserRoleBinding userAdmin = mock(UserRoleBinding.class);
+        UserRoleBinding superAdmin = mock(UserRoleBinding.class);
+        UserRoleBinding duplicate = mock(UserRoleBinding.class);
+        when(userAdmin.getUserId()).thenReturn("user-admin");
+        when(superAdmin.getUserId()).thenReturn("super-admin");
+        when(duplicate.getUserId()).thenReturn("user-admin");
+        when(userRoleBindingRepository.findByRole_CodeIn(Set.of("USER_ADMIN", "SUPER_ADMIN")))
+                .thenReturn(List.of(userAdmin, superAdmin, duplicate));
+
+        List<String> result = resolver.resolvePlatformUserAdmins();
+
+        assertThat(result).containsExactly("user-admin", "super-admin");
+    }
 }

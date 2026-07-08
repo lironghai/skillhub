@@ -3,10 +3,13 @@ package com.iflytek.skillhub.domain.user;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.iflytek.skillhub.domain.audit.AuditLogService;
+import com.iflytek.skillhub.domain.event.ProfileReviewSubmittedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,19 +32,22 @@ public class UserProfileService {
     private final ProfileModerationConfig moderationConfig;
     private final ProfileFieldPolicyConfig fieldPolicyConfig;
     private final AuditLogService auditLogService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public UserProfileService(UserAccountRepository userAccountRepository,
                                ProfileChangeRequestRepository changeRequestRepository,
                                ProfileModerationService moderationService,
                                ProfileModerationConfig moderationConfig,
                                ProfileFieldPolicyConfig fieldPolicyConfig,
-                               AuditLogService auditLogService) {
+                               AuditLogService auditLogService,
+                               ApplicationEventPublisher eventPublisher) {
         this.userAccountRepository = userAccountRepository;
         this.changeRequestRepository = changeRequestRepository;
         this.moderationService = moderationService;
         this.moderationConfig = moderationConfig;
         this.fieldPolicyConfig = fieldPolicyConfig;
         this.auditLogService = auditLogService;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -112,8 +118,10 @@ public class UserProfileService {
         // 5. Queue review changes
         if (!reviewChanges.isEmpty()) {
             cancelPendingRequests(userId);
-            saveChangeRequest(userId, reviewChanges, oldValues, ProfileChangeStatus.PENDING,
-                              machineTag, null);
+            ProfileChangeRequest pendingRequest = saveChangeRequest(userId, reviewChanges, oldValues,
+                    ProfileChangeStatus.PENDING, machineTag, null);
+            eventPublisher.publishEvent(new ProfileReviewSubmittedEvent(
+                    pendingRequest.getId(), userId, List.copyOf(reviewChanges.keySet())));
         }
 
         // 6. Return appropriate result
@@ -166,9 +174,9 @@ public class UserProfileService {
     /**
      * Persist a change request record for audit and review purposes.
      */
-    private void saveChangeRequest(String userId, Map<String, String> changes,
-                                     Map<String, String> oldValues, ProfileChangeStatus status,
-                                     String machineResult, String machineReason) {
+    private ProfileChangeRequest saveChangeRequest(String userId, Map<String, String> changes,
+                                                   Map<String, String> oldValues, ProfileChangeStatus status,
+                                                   String machineResult, String machineReason) {
         ProfileChangeRequest request = new ProfileChangeRequest(
                 userId,
                 toJson(changes),
@@ -177,7 +185,7 @@ public class UserProfileService {
                 machineResult,
                 machineReason
         );
-        changeRequestRepository.save(request);
+        return changeRequestRepository.save(request);
     }
 
     private String toJson(Object obj) {

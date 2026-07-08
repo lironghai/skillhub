@@ -1,6 +1,7 @@
 package com.iflytek.skillhub.controller;
 
 import com.iflytek.skillhub.auth.rbac.PlatformPrincipal;
+import com.iflytek.skillhub.auth.local.LocalCredentialRepository;
 import com.iflytek.skillhub.auth.repository.UserRoleBindingRepository;
 import com.iflytek.skillhub.domain.namespace.NamespaceMemberRepository;
 import com.iflytek.skillhub.domain.user.UserAccount;
@@ -64,6 +65,9 @@ class AuthControllerTest {
     @MockBean
     private UserRoleBindingRepository userRoleBindingRepository;
 
+    @MockBean
+    private LocalCredentialRepository localCredentialRepository;
+
     @Test
     void meShouldReturnUnauthorizedForAnonymousRequest() throws Exception {
         mockMvc.perform(get("/api/v1/auth/me"))
@@ -77,6 +81,7 @@ class AuthControllerTest {
         given(userAccountRepository.findById("user-42"))
             .willReturn(java.util.Optional.of(new UserAccount("user-42", "tester", "tester@example.com", "https://example.com/avatar.png")));
         given(userRoleBindingRepository.findByUserId("user-42")).willReturn(List.of());
+        given(localCredentialRepository.existsByUserId("user-42")).willReturn(false);
 
         PlatformPrincipal principal = new PlatformPrincipal(
             "user-42",
@@ -102,6 +107,7 @@ class AuthControllerTest {
             .andExpect(jsonPath("$.data.userId").value("user-42"))
             .andExpect(jsonPath("$.data.displayName").value("tester"))
             .andExpect(jsonPath("$.data.oauthProvider").value("github"))
+            .andExpect(jsonPath("$.data.canChangePassword").value(false))
             .andExpect(jsonPath("$.data.platformRoles[0]").value("USER"))
             .andExpect(jsonPath("$.timestamp").isNotEmpty())
             .andExpect(jsonPath("$.requestId").isNotEmpty());
@@ -115,6 +121,7 @@ class AuthControllerTest {
         var user = new UserAccount("user-42", "UpdatedName", "tester@example.com", "https://example.com/avatar.png");
         given(userAccountRepository.findById("user-42")).willReturn(java.util.Optional.of(user));
         given(userRoleBindingRepository.findByUserId("user-42")).willReturn(List.of());
+        given(localCredentialRepository.existsByUserId("user-42")).willReturn(true);
 
         PlatformPrincipal principal = new PlatformPrincipal(
             "user-42",
@@ -134,7 +141,8 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/v1/auth/me").with(authentication(auth)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(0))
-            .andExpect(jsonPath("$.data.displayName").value("UpdatedName"));  // should return DB value
+            .andExpect(jsonPath("$.data.displayName").value("UpdatedName"))  // should return DB value
+            .andExpect(jsonPath("$.data.canChangePassword").value(true));
     }
 
     @Test

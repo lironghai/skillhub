@@ -17,6 +17,7 @@ import com.iflytek.skillhub.exception.UnauthorizedException;
 import com.iflytek.skillhub.metrics.SkillHubMetrics;
 import com.iflytek.skillhub.ratelimit.RateLimit;
 import com.iflytek.skillhub.security.AuthFailureThrottleService;
+import com.iflytek.skillhub.service.AuthMeResponseAssembler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -38,19 +39,22 @@ public class LocalAuthController extends BaseApiController {
     private final PlatformSessionService platformSessionService;
     private final AuthFailureThrottleService authFailureThrottleService;
     private final PasswordResetService passwordResetService;
+    private final AuthMeResponseAssembler authMeResponseAssembler;
 
     public LocalAuthController(ApiResponseFactory responseFactory,
                                LocalAuthService localAuthService,
                                SkillHubMetrics skillHubMetrics,
                                PlatformSessionService platformSessionService,
                                AuthFailureThrottleService authFailureThrottleService,
-                               PasswordResetService passwordResetService) {
+                               PasswordResetService passwordResetService,
+                               AuthMeResponseAssembler authMeResponseAssembler) {
         super(responseFactory);
         this.localAuthService = localAuthService;
         this.skillHubMetrics = skillHubMetrics;
         this.platformSessionService = platformSessionService;
         this.authFailureThrottleService = authFailureThrottleService;
         this.passwordResetService = passwordResetService;
+        this.authMeResponseAssembler = authMeResponseAssembler;
     }
 
     @PostMapping("/register")
@@ -60,7 +64,7 @@ public class LocalAuthController extends BaseApiController {
         PlatformPrincipal principal = localAuthService.register(request.username(), request.password(), request.email());
         skillHubMetrics.incrementUserRegister();
         platformSessionService.establishSession(principal, httpRequest);
-        return ok("response.success.created", AuthMeResponse.from(principal));
+        return ok("response.success.created", authMeResponseAssembler.from(principal));
     }
 
     @PostMapping("/login")
@@ -84,7 +88,7 @@ public class LocalAuthController extends BaseApiController {
         authFailureThrottleService.resetIdentifier("local", request.username());
         skillHubMetrics.recordLocalLogin(true);
         platformSessionService.establishSession(principal, httpRequest);
-        return ok("response.success.read", AuthMeResponse.from(principal));
+        return ok("response.success.read", authMeResponseAssembler.from(principal));
     }
 
     @PostMapping("/change-password")

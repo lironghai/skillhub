@@ -23,7 +23,7 @@ SkillHub 采用基于角色的访问控制（RBAC）系统。
 
 | 角色 | 代码 | 实际能力 |
 |------|------|----------|
-| 超级管理员 | `SUPER_ADMIN` | 拥有全部权限；`RbacService#getUserPermissions` 会直接返回全部权限码；可访问所有 `SUPER_ADMIN`/`SKILL_ADMIN`/`USER_ADMIN`/`AUDITOR` 能访问的接口；可分配 `SUPER_ADMIN`；发布技能时可绕过命名空间成员校验并直接自动发布；但仍不能审批自己提交的 promotion，且普通审核单若是自己提交的，也只有 `SUPER_ADMIN` 能特判审批。 |
+| 超级管理员 | `SUPER_ADMIN` | 拥有全部权限；`RbacService#getUserPermissions` 会直接返回全部权限码；可访问所有 `SUPER_ADMIN`/`SKILL_ADMIN`/`USER_ADMIN`/`AUDITOR` 能访问的接口；可分配 `SUPER_ADMIN`；发布技能时可绕过命名空间成员校验并直接自动发布；可以审批自己提交的 promotion；普通审核单若是自己提交的，也只有 `SUPER_ADMIN` 能特判审批。 |
 | 技能管理员 | `SKILL_ADMIN` | 可访问技能治理后台接口；可隐藏/取消隐藏技能、撤回版本（yank）、处理技能举报；可查看和处理全局空间审核、promotion 审核、治理工作台收件箱中的 review/promotion/report；不能分配平台角色、不能看审计日志、不能管理用户。 |
 | 用户管理员 | `USER_ADMIN` | 可访问用户管理接口；可列表用户、审批用户、启用/禁用用户、修改平台角色；不能分配 `SUPER_ADMIN`；不能处理技能治理、不能看审计日志。 |
 | 审计员 | `AUDITOR` | 只读查看审计日志；可访问 `/api/v1/admin/audit-logs` 和 `/actuator/prometheus`；治理工作台中只能看 activity，不能处理 review/promotion/report，也不能管理用户或技能。 |

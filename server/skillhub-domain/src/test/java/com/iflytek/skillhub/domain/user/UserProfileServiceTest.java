@@ -1,16 +1,21 @@
 package com.iflytek.skillhub.domain.user;
 
 import com.iflytek.skillhub.domain.audit.AuditLogService;
+import com.iflytek.skillhub.domain.event.ProfileReviewSubmittedEvent;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -41,8 +46,23 @@ class UserProfileServiceTest {
     @Mock
     private AuditLogService auditLogService;
 
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private UserProfileService userProfileService;
+
+    @BeforeEach
+    void setUp() {
+        AtomicLong ids = new AtomicLong(1L);
+        lenient().when(changeRequestRepository.save(any(ProfileChangeRequest.class))).thenAnswer(invocation -> {
+            ProfileChangeRequest request = invocation.getArgument(0);
+            if (request.getId() == null) {
+                setField(request, "id", ids.getAndIncrement());
+            }
+            return request;
+        });
+    }
 
     // -- Helper --
 
@@ -136,6 +156,32 @@ class UserProfileServiceTest {
         verify(auditLogService, never()).record(any(), any(), any(), any(), any(), any(), any(), any());
     }
 
+    @Test
+    void updateProfile_humanReviewEnabled_shouldPublishProfileReviewSubmittedEvent() {
+        var user = testUser();
+        when(userAccountRepository.findById("user-1")).thenReturn(Optional.of(user));
+        when(moderationConfig.machineReview()).thenReturn(false);
+        when(moderationConfig.humanReview()).thenReturn(true);
+        stubFieldPolicies(true);
+        when(changeRequestRepository.findByUserIdAndStatus("user-1", ProfileChangeStatus.PENDING))
+                .thenReturn(List.of());
+        when(changeRequestRepository.save(any(ProfileChangeRequest.class))).thenAnswer(invocation -> {
+            ProfileChangeRequest request = invocation.getArgument(0);
+            setField(request, "id", 77L);
+            return request;
+        });
+
+        userProfileService.updateProfile(
+                "user-1", displayNameChange("NewName"), "req-1", "127.0.0.1", "TestAgent");
+
+        var eventCaptor = ArgumentCaptor.forClass(ProfileReviewSubmittedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        ProfileReviewSubmittedEvent event = eventCaptor.getValue();
+        assertEquals(77L, event.profileReviewId());
+        assertEquals("user-1", event.submitterId());
+        assertEquals(List.of("displayName"), event.fields());
+    }
+
     // ===== AC-P-005: Overwrite existing PENDING request =====
 
     @Test
@@ -220,5 +266,15 @@ class UserProfileServiceTest {
         assertThrows(IllegalArgumentException.class, () ->
                 userProfileService.updateProfile(
                         "nonexistent", displayNameChange("Name"), "req-1", "127.0.0.1", "TestAgent"));
+    }
+
+    private static void setField(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (ReflectiveOperationException e) {
+            throw new AssertionError(e);
+        }
     }
 }

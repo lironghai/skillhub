@@ -27,6 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -440,6 +441,17 @@ class SkillQueryServiceTest {
     }
 
     @Test
+    void testIsDownloadAvailable_ShouldReturnFalseWhenVersionIsYanked() throws Exception {
+        SkillVersion version = new SkillVersion(1L, "1.0.0", "user-100");
+        setId(version, 10L);
+        version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(true);
+        version.setYankedAt(Instant.parse("2026-06-12T00:00:00Z"));
+
+        assertFalse(service.isDownloadAvailable(version));
+    }
+
+    @Test
     void testIsDownloadAvailable_ShouldNotHitObjectStorageForListSignals() throws Exception {
         SkillVersion version = new SkillVersion(1L, "1.0.0", "user-100");
         setId(version, 10L);
@@ -565,9 +577,11 @@ class SkillQueryServiceTest {
         SkillVersion version100 = new SkillVersion(1L, "1.0.0", "user-100");
         setId(version100, 9L);
         version100.setStatus(SkillVersionStatus.PUBLISHED);
+        version100.setDownloadReady(true);
         SkillVersion version110 = new SkillVersion(1L, "1.1.0", "user-100");
         setId(version110, 10L);
         version110.setStatus(SkillVersionStatus.PUBLISHED);
+        version110.setDownloadReady(true);
 
         SkillFile version100File = new SkillFile(9L, "SKILL.md", 10L, "text/markdown", "hash100", "key100");
         SkillFile version110File = new SkillFile(10L, "SKILL.md", 10L, "text/markdown", "hash110", "key110");
@@ -611,6 +625,7 @@ class SkillQueryServiceTest {
         SkillVersion version = new SkillVersion(3L, "1.0.0 beta", "user-100");
         setId(version, 11L);
         version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(true);
         SkillFile file = new SkillFile(11L, "SKILL.md", 10L, "text/markdown", "hash", "key");
 
         when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
@@ -630,6 +645,214 @@ class SkillQueryServiceTest {
         );
 
         assertEquals("/api/v1/skills/global/smoke-skill-two/versions/1.0.0%20beta/download", result.downloadUrl());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectDownloadUnavailableLatestVersion() throws Exception {
+        String namespaceSlug = "global";
+        String skillSlug = "not-ready";
+
+        Namespace namespace = new Namespace(namespaceSlug, "Global", "owner-1");
+        setId(namespace, 1L);
+        Skill skill = new Skill(1L, skillSlug, "owner-1", SkillVisibility.PUBLIC);
+        setId(skill, 3L);
+        skill.setStatus(SkillStatus.ACTIVE);
+        skill.setLatestVersionId(11L);
+
+        SkillVersion version = new SkillVersion(3L, "1.0.0", "owner-1");
+        setId(version, 11L);
+        version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(false);
+
+        when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, skillSlug)).thenReturn(List.of(skill));
+        when(skillVersionRepository.findBySkillIdAndStatus(3L, SkillVersionStatus.PUBLISHED)).thenReturn(List.of(version));
+        when(skillVersionRepository.findById(11L)).thenReturn(Optional.of(version));
+
+        DomainBadRequestException ex = assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion(namespaceSlug, skillSlug, null, null, null, null, Map.of()));
+
+        assertEquals("error.skill.version.notDownloadable", ex.messageCode());
+        assertArrayEquals(new Object[]{"1.0.0"}, ex.messageArgs());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectSkillWithoutLatest() throws Exception {
+        String namespaceSlug = "global";
+        String skillSlug = "missing-latest";
+
+        Namespace namespace = new Namespace(namespaceSlug, "Global", "owner-1");
+        setId(namespace, 1L);
+        Skill skill = new Skill(1L, skillSlug, "owner-1", SkillVisibility.PUBLIC);
+        setId(skill, 3L);
+        skill.setStatus(SkillStatus.ACTIVE);
+
+        when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, skillSlug)).thenReturn(List.of(skill));
+
+        DomainBadRequestException ex = assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion(namespaceSlug, skillSlug, null, null, null, null, Map.of()));
+
+        assertEquals("error.skill.notFound", ex.messageCode());
+        assertArrayEquals(new Object[]{skillSlug}, ex.messageArgs());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectYankedLatestVersion() throws Exception {
+        String namespaceSlug = "global";
+        String skillSlug = "yanked-latest";
+
+        Namespace namespace = new Namespace(namespaceSlug, "Global", "owner-1");
+        setId(namespace, 1L);
+        Skill skill = new Skill(1L, skillSlug, "owner-1", SkillVisibility.PUBLIC);
+        setId(skill, 3L);
+        skill.setStatus(SkillStatus.ACTIVE);
+        skill.setLatestVersionId(11L);
+
+        SkillVersion version = new SkillVersion(3L, "1.0.0", "owner-1");
+        setId(version, 11L);
+        version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(true);
+        version.setYankedAt(Instant.parse("2026-06-12T00:00:00Z"));
+
+        when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, skillSlug)).thenReturn(List.of(skill));
+        when(skillVersionRepository.findBySkillIdAndStatus(3L, SkillVersionStatus.PUBLISHED)).thenReturn(List.of(version));
+        when(skillVersionRepository.findById(11L)).thenReturn(Optional.of(version));
+
+        DomainBadRequestException ex = assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion(namespaceSlug, skillSlug, null, null, null, null, Map.of()));
+
+        assertEquals("error.skill.version.notDownloadable", ex.messageCode());
+        assertArrayEquals(new Object[]{"1.0.0"}, ex.messageArgs());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectDownloadUnavailableExplicitVersion() throws Exception {
+        String namespaceSlug = "global";
+        String skillSlug = "explicit-not-ready";
+
+        Namespace namespace = new Namespace(namespaceSlug, "Global", "owner-1");
+        setId(namespace, 1L);
+        Skill skill = new Skill(1L, skillSlug, "owner-1", SkillVisibility.PUBLIC);
+        setId(skill, 3L);
+        skill.setStatus(SkillStatus.ACTIVE);
+        skill.setLatestVersionId(11L);
+
+        SkillVersion version = new SkillVersion(3L, "1.0.0", "owner-1");
+        setId(version, 11L);
+        version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(false);
+
+        when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, skillSlug)).thenReturn(List.of(skill));
+        when(skillVersionRepository.findBySkillIdAndVersion(3L, "1.0.0")).thenReturn(Optional.of(version));
+
+        DomainBadRequestException ex = assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion(namespaceSlug, skillSlug, "1.0.0", null, null, null, Map.of()));
+
+        assertEquals("error.skill.version.notDownloadable", ex.messageCode());
+        assertArrayEquals(new Object[]{"1.0.0"}, ex.messageArgs());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectDownloadUnavailableTaggedVersion() throws Exception {
+        String namespaceSlug = "global";
+        String skillSlug = "tag-not-ready";
+
+        Namespace namespace = new Namespace(namespaceSlug, "Global", "owner-1");
+        setId(namespace, 1L);
+        Skill skill = new Skill(1L, skillSlug, "owner-1", SkillVisibility.PUBLIC);
+        setId(skill, 3L);
+        skill.setStatus(SkillStatus.ACTIVE);
+        skill.setLatestVersionId(11L);
+
+        SkillVersion version = new SkillVersion(3L, "1.0.0", "owner-1");
+        setId(version, 11L);
+        version.setStatus(SkillVersionStatus.PUBLISHED);
+        version.setDownloadReady(false);
+        SkillTag tag = new SkillTag(3L, "stable", 11L, "owner-1");
+
+        when(namespaceRepository.findBySlug(namespaceSlug)).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, skillSlug)).thenReturn(List.of(skill));
+        when(skillTagRepository.findBySkillIdAndTagName(3L, "stable")).thenReturn(Optional.of(tag));
+        when(skillVersionRepository.findById(11L)).thenReturn(Optional.of(version));
+
+        DomainBadRequestException ex = assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion(namespaceSlug, skillSlug, null, "stable", null, null, Map.of()));
+
+        assertEquals("error.skill.version.notDownloadable", ex.messageCode());
+        assertArrayEquals(new Object[]{"1.0.0"}, ex.messageArgs());
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectAnonymousHiddenPrivateArchivedAndUnpublishedSkills() throws Exception {
+        Namespace activeNamespace = new Namespace("global", "Global", "owner-1");
+        setId(activeNamespace, 1L);
+        Namespace archivedNamespace = new Namespace("archived", "Archived", "owner-1");
+        setId(archivedNamespace, 2L);
+        archivedNamespace.setStatus(NamespaceStatus.ARCHIVED);
+
+        Skill hiddenSkill = new Skill(1L, "hidden", "owner-1", SkillVisibility.PUBLIC);
+        setId(hiddenSkill, 10L);
+        hiddenSkill.setStatus(SkillStatus.ACTIVE);
+        hiddenSkill.setLatestVersionId(101L);
+        hiddenSkill.setHidden(true);
+
+        Skill privateSkill = new Skill(1L, "private", "owner-1", SkillVisibility.PRIVATE);
+        setId(privateSkill, 11L);
+        privateSkill.setStatus(SkillStatus.ACTIVE);
+        privateSkill.setLatestVersionId(102L);
+
+        Skill archivedSkill = new Skill(2L, "archived", "owner-1", SkillVisibility.PUBLIC);
+        setId(archivedSkill, 12L);
+        archivedSkill.setStatus(SkillStatus.ACTIVE);
+        archivedSkill.setLatestVersionId(103L);
+
+        Skill unpublishedSkill = new Skill(1L, "unpublished", "owner-1", SkillVisibility.PUBLIC);
+        setId(unpublishedSkill, 13L);
+        unpublishedSkill.setStatus(SkillStatus.ACTIVE);
+
+        when(namespaceRepository.findBySlug("global")).thenReturn(Optional.of(activeNamespace));
+        when(namespaceRepository.findBySlug("archived")).thenReturn(Optional.of(archivedNamespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, "hidden")).thenReturn(List.of(hiddenSkill));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, "private")).thenReturn(List.of(privateSkill));
+        when(skillRepository.findByNamespaceIdAndSlug(2L, "archived")).thenReturn(List.of(archivedSkill));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, "unpublished")).thenReturn(List.of(unpublishedSkill));
+
+        assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion("global", "hidden", null, null, null, null, Map.of()));
+        assertThrows(DomainForbiddenException.class, () ->
+                service.resolveVersion("global", "private", null, null, null, null, Map.of()));
+        assertThrows(DomainForbiddenException.class, () ->
+                service.resolveVersion("archived", "archived", null, null, null, null, Map.of()));
+        assertThrows(DomainBadRequestException.class, () ->
+                service.resolveVersion("global", "unpublished", null, null, null, null, Map.of()));
+    }
+
+    @Test
+    void testResolveVersion_ShouldRejectAnonymousPrivateAndNamespaceOnlyWhenRolesAreMissing() throws Exception {
+        Namespace namespace = new Namespace("global", "Global", "owner-1");
+        setId(namespace, 1L);
+
+        Skill privateSkill = new Skill(1L, "private", "owner-1", SkillVisibility.PRIVATE);
+        setId(privateSkill, 11L);
+        privateSkill.setStatus(SkillStatus.ACTIVE);
+        privateSkill.setLatestVersionId(101L);
+
+        Skill namespaceOnlySkill = new Skill(1L, "team-only", "owner-1", SkillVisibility.NAMESPACE_ONLY);
+        setId(namespaceOnlySkill, 12L);
+        namespaceOnlySkill.setStatus(SkillStatus.ACTIVE);
+        namespaceOnlySkill.setLatestVersionId(102L);
+
+        when(namespaceRepository.findBySlug("global")).thenReturn(Optional.of(namespace));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, "private")).thenReturn(List.of(privateSkill));
+        when(skillRepository.findByNamespaceIdAndSlug(1L, "team-only")).thenReturn(List.of(namespaceOnlySkill));
+
+        assertThrows(DomainForbiddenException.class, () ->
+                service.resolveVersion("global", "private", null, null, null, null, null));
+        assertThrows(DomainForbiddenException.class, () ->
+                service.resolveVersion("global", "team-only", null, null, null, null, null));
     }
 
     @Test

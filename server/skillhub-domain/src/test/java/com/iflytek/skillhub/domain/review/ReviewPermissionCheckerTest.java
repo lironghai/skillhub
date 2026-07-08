@@ -234,10 +234,26 @@ class ReviewPermissionCheckerTest {
     }
 
     @Test
-    void cannotReviewOwnPromotion() {
+    void skillAdminCannotReviewOwnPromotion() {
         String userId = "user-2";
         PromotionRequest req = new PromotionRequest(1L, 1L, 1L, userId);
         assertFalse(checker.canReviewPromotion(req, userId,
                 Set.of("SKILL_ADMIN")));
+    }
+
+    @Test
+    void regularUserCannotReviewOwnPromotion() {
+        String userId = "user-2";
+        PromotionRequest req = new PromotionRequest(1L, 1L, 1L, userId);
+        assertFalse(checker.canReviewPromotion(req, userId,
+                Set.of()));
+    }
+
+    @Test
+    void superAdminCanReviewOwnPromotion() {
+        String userId = "user-2";
+        PromotionRequest req = new PromotionRequest(1L, 1L, 1L, userId);
+        assertTrue(checker.canReviewPromotion(req, userId,
+                Set.of("SUPER_ADMIN")));
     }
 }

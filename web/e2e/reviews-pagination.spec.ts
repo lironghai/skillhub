@@ -81,4 +81,12 @@ test.describe('Review Management Pagination (Real API)', () => {
       }
     }
   })
+
+  test('opens the profile review queue from the review type search param', async ({ page }) => {
+    await page.goto('/dashboard/reviews?type=profile')
+
+    await expect(page).toHaveURL(/\/dashboard\/reviews\?type=profile$/)
+    await expect(page.getByRole('heading', { name: 'Review Center' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Profile Review Queue' })).toBeVisible()
+  })
 })

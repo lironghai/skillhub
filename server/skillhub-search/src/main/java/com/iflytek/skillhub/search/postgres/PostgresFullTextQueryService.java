@@ -107,6 +107,9 @@ public class PostgresFullTextQueryService implements SearchQueryService {
         sql.append("FROM skill_search_document d ");
         sql.append("JOIN skill s ON s.id = d.skill_id ");
         sql.append("JOIN namespace n ON n.id = d.namespace_id ");
+        if (query.requireInstallableLatest()) {
+            sql.append("JOIN skill_version latest ON latest.id = s.latest_version_id ");
+        }
         sql.append("WHERE 1=1 ");
 
         // Visibility filtering
@@ -120,6 +123,11 @@ public class PostgresFullTextQueryService implements SearchQueryService {
         sql.append("AND d.status = 'ACTIVE' ");
         sql.append("AND s.status = 'ACTIVE' ");
         sql.append("AND s.hidden = FALSE ");
+        if (query.requireInstallableLatest()) {
+            sql.append("AND latest.status = 'PUBLISHED' ");
+            sql.append("AND latest.download_ready = TRUE ");
+            sql.append("AND latest.yanked_at IS NULL ");
+        }
         sql.append("AND (n.status <> 'ARCHIVED' ");
         if (query.visibilityScope().userId() != null) {
             sql.append("OR d.namespace_id IN :memberNamespaceIds ");

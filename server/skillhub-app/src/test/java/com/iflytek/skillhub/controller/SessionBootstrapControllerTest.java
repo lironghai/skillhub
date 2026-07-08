@@ -1,6 +1,7 @@
 package com.iflytek.skillhub.controller;
 
 import com.iflytek.skillhub.auth.bootstrap.PassiveSessionAuthenticator;
+import com.iflytek.skillhub.auth.local.LocalCredentialRepository;
 import com.iflytek.skillhub.auth.repository.UserRoleBindingRepository;
 import com.iflytek.skillhub.auth.rbac.PlatformPrincipal;
 import com.iflytek.skillhub.domain.namespace.NamespaceMemberRepository;
@@ -48,12 +49,16 @@ class SessionBootstrapControllerTest {
     @MockBean
     private UserRoleBindingRepository userRoleBindingRepository;
 
+    @MockBean
+    private LocalCredentialRepository localCredentialRepository;
+
     @Test
     void sessionBootstrapShouldEstablishSessionWhenAuthenticatorSucceeds() throws Exception {
         given(namespaceMemberRepository.findByUserId("sso-user-1")).willReturn(List.of());
         given(userAccountRepository.findById("sso-user-1"))
             .willReturn(Optional.of(new UserAccount("sso-user-1", "Private SSO User", null, null)));
         given(userRoleBindingRepository.findByUserId("sso-user-1")).willReturn(List.of());
+        given(localCredentialRepository.existsByUserId("sso-user-1")).willReturn(false);
 
         MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/api/v1/auth/session/bootstrap")
                 .with(csrf())
@@ -65,6 +70,7 @@ class SessionBootstrapControllerTest {
             .andExpect(jsonPath("$.code").value(0))
             .andExpect(jsonPath("$.data.userId").value("sso-user-1"))
             .andExpect(jsonPath("$.data.displayName").value("Private SSO User"))
+            .andExpect(jsonPath("$.data.canChangePassword").value(false))
             .andReturn()
             .getRequest()
             .getSession(false);
@@ -73,7 +79,8 @@ class SessionBootstrapControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(0))
             .andExpect(jsonPath("$.data.userId").value("sso-user-1"))
-            .andExpect(jsonPath("$.data.oauthProvider").value("private-sso"));
+            .andExpect(jsonPath("$.data.oauthProvider").value("private-sso"))
+            .andExpect(jsonPath("$.data.canChangePassword").value(false));
     }
 
     @Test

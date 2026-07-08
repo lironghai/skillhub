@@ -364,6 +364,88 @@ class PostgresFullTextQueryServiceTest {
     }
 
     @Test
+    void anonymousSearchSqlShouldOnlyReadPublicActiveVisibleNonArchivedSkills() {
+        EntityManager entityManager = mock(EntityManager.class);
+        Query nativeQuery = mock(Query.class);
+        Query countQuery = mock(Query.class);
+        when(entityManager.createNativeQuery(anyString()))
+                .thenReturn(nativeQuery)
+                .thenReturn(countQuery);
+        when(nativeQuery.setParameter(anyString(), org.mockito.ArgumentMatchers.any())).thenReturn(nativeQuery);
+        when(countQuery.setParameter(anyString(), org.mockito.ArgumentMatchers.any())).thenReturn(countQuery);
+        when(nativeQuery.getResultList()).thenReturn(List.of());
+        when(countQuery.getSingleResult()).thenReturn(0L);
+
+        PostgresFullTextQueryService service = new PostgresFullTextQueryService(entityManager);
+
+        service.search(new SearchQuery(
+                null,
+                null,
+                new SearchVisibilityScope(null, Set.of(), Set.of()),
+                "newest",
+                0,
+                12
+        ));
+
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        verify(entityManager, org.mockito.Mockito.times(2)).createNativeQuery(sqlCaptor.capture());
+        assertThat(sqlCaptor.getAllValues().getFirst())
+                .contains("AND (d.visibility = 'PUBLIC' )")
+                .contains("AND d.status = 'ACTIVE'")
+                .contains("AND s.status = 'ACTIVE'")
+                .contains("AND s.hidden = FALSE")
+                .contains("AND (n.status <> 'ARCHIVED' )")
+                .doesNotContain("memberNamespaceIds");
+        verify(nativeQuery, never()).setParameter(org.mockito.ArgumentMatchers.eq("memberNamespaceIds"), org.mockito.ArgumentMatchers.any());
+        verify(countQuery, never()).setParameter(org.mockito.ArgumentMatchers.eq("memberNamespaceIds"), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void installableLatestFilterShouldApplyToSearchAndCountQueries() {
+        EntityManager entityManager = mock(EntityManager.class);
+        Query nativeQuery = mock(Query.class);
+        Query countQuery = mock(Query.class);
+        when(entityManager.createNativeQuery(anyString()))
+                .thenReturn(nativeQuery)
+                .thenReturn(countQuery);
+        when(nativeQuery.setParameter(anyString(), org.mockito.ArgumentMatchers.any())).thenReturn(nativeQuery);
+        when(countQuery.setParameter(anyString(), org.mockito.ArgumentMatchers.any())).thenReturn(countQuery);
+        when(nativeQuery.getResultList()).thenReturn(List.of(2L));
+        when(countQuery.getSingleResult()).thenReturn(1L);
+
+        PostgresFullTextQueryService service = new PostgresFullTextQueryService(entityManager);
+
+        var result = service.search(new SearchQuery(
+                "demo",
+                null,
+                SearchVisibilityScope.anonymous(),
+                "newest",
+                0,
+                1,
+                List.of(),
+                true
+        ));
+
+        ArgumentCaptor<String> sqlCaptor = ArgumentCaptor.forClass(String.class);
+        verify(entityManager, org.mockito.Mockito.times(2)).createNativeQuery(sqlCaptor.capture());
+        assertThat(sqlCaptor.getAllValues().getFirst())
+                .contains("JOIN skill_version latest ON latest.id = s.latest_version_id")
+                .contains("AND latest.status = 'PUBLISHED'")
+                .contains("AND latest.download_ready = TRUE")
+                .contains("AND latest.yanked_at IS NULL")
+                .contains("LIMIT :limit OFFSET :offset");
+        assertThat(sqlCaptor.getAllValues().get(1))
+                .contains("JOIN skill_version latest ON latest.id = s.latest_version_id")
+                .contains("AND latest.status = 'PUBLISHED'")
+                .contains("AND latest.download_ready = TRUE")
+                .contains("AND latest.yanked_at IS NULL")
+                .doesNotContain("LIMIT :limit")
+                .doesNotContain("ORDER BY");
+        assertThat(result.skillIds()).containsExactly(2L);
+        assertThat(result.total()).isEqualTo(1L);
+    }
+
+    @Test
     void authenticatedQueriesShouldAllowArchivedNamespacesForMembers() {
         EntityManager entityManager = mock(EntityManager.class);
         Query nativeQuery = mock(Query.class);

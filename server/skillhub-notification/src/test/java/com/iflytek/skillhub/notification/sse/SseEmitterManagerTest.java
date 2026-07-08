@@ -7,10 +7,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 class SseEmitterManagerTest {
@@ -30,13 +34,19 @@ class SseEmitterManagerTest {
 
     @Test
     void register_shouldReturnEmitter() {
-        emitters.add(new TestEmitter());
+        TestEmitter testEmitter = new TestEmitter();
+        emitters.add(testEmitter);
 
         SseEmitter emitter = manager.register("user-1");
 
         assertNotNull(emitter);
         assertEquals(1, manager.totalEmitters());
         assertEquals(1, manager.emittersForUser("user-1"));
+        assertEquals(1, testEmitter.sentEventCount());
+        assertTrue(testEmitter.sentEventData(0).stream()
+                .anyMatch(value -> value.toString().contains("event:connected")));
+        assertTrue(testEmitter.sentEventData(0).contains("ok"));
+        assertTrue(testEmitter.isOpen());
     }
 
     @Test
@@ -89,6 +99,27 @@ class SseEmitterManagerTest {
 
         manager.push("user-1", "payload");
 
+        assertEquals(1, manager.totalEmitters());
+        assertEquals(1, manager.emittersForUser("user-1"));
+    }
+
+    @Test
+    void push_shouldSendNotificationEventToRegisteredOpenEmitter() {
+        TestEmitter emitter = new TestEmitter();
+        emitters.add(emitter);
+        manager.register("user-1");
+
+        Map<String, Object> payload = Map.of(
+                "id", 42L,
+                "eventType", "PROFILE_REVIEW_SUBMITTED"
+        );
+        manager.push("user-1", payload);
+
+        assertEquals(2, emitter.sentEventCount());
+        assertTrue(emitter.sentEventData(1).stream()
+                .anyMatch(value -> value.toString().contains("event:notification")));
+        assertTrue(emitter.sentEventData(1).contains(payload));
+        assertTrue(emitter.isOpen());
         assertEquals(1, manager.totalEmitters());
         assertEquals(1, manager.emittersForUser("user-1"));
     }
@@ -152,6 +183,8 @@ class SseEmitterManagerTest {
         private boolean failAfterConnected;
         private boolean throwOnComplete;
         private int sendCount;
+        private boolean completed;
+        private final List<List<Object>> sentEvents = new ArrayList<>();
 
         private TestEmitter() {
             super(60_000L);
@@ -171,6 +204,18 @@ class SseEmitterManagerTest {
 
         void fireError() {
             errorCallback.accept(new IOException("boom-" + userId + "-" + errorCallbacks.incrementAndGet()));
+        }
+
+        boolean isOpen() {
+            return !completed;
+        }
+
+        int sentEventCount() {
+            return sentEvents.size();
+        }
+
+        List<Object> sentEventData(int index) {
+            return sentEvents.get(index);
         }
 
         @Override
@@ -193,6 +238,7 @@ class SseEmitterManagerTest {
             if (throwOnComplete) {
                 throw new IllegalStateException("already complete");
             }
+            completed = true;
             completionCallback.run();
         }
 
@@ -202,6 +248,9 @@ class SseEmitterManagerTest {
             if (failAfterConnected && sendCount > 1) {
                 throw new IOException("send failed");
             }
+            sentEvents.add(builder.build().stream()
+                    .map(ResponseBodyEmitter.DataWithMediaType::getData)
+                    .toList());
         }
     }
 }

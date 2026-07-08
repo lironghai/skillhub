@@ -65,6 +65,8 @@ cp secret.yaml.example secret.yaml
 | oauth2-feishu-client-id | Feishu App ID | 否 |
 | oauth2-feishu-client-secret | Feishu App Secret | 否 |
 | skill-scanner-llm-api-key | LLM API 密钥 | 否 |
+| skill-scanner-llm-base-url | 本地/自定义 LLM 服务地址 | 否 |
+| skill-scanner-llm-model | Scanner 使用的 LLM 模型名 | 否 |
 
 Feishu OAuth 需要在飞书开放平台应用的安全设置中配置回调地址：
 `https://<skillhub-domain>/login/oauth2/code/feishu`。
@@ -199,6 +201,7 @@ kubectl apply -k overlays/with-infra/  # 或 overlays/external/
 | oauth2-feishu-client-id | Feishu App ID | 否 |
 | oauth2-feishu-client-secret | Feishu App Secret | 否 |
 | skill-scanner-llm-api-key | LLM API 密钥 | 否 |
+| skill-scanner-llm-base-url | 本地/自定义 LLM 服务地址 | 否 |
 | skill-scanner-llm-model | LLM 模型名称 | 否 |
 
 Feishu OAuth 回调地址为：`https://<skillhub-domain>/login/oauth2/code/feishu`。

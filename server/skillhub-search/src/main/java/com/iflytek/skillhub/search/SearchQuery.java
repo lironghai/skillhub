@@ -12,7 +12,8 @@ public record SearchQuery(
         String sortBy,
         int page,
         int size,
-        List<String> labelSlugs
+        List<String> labelSlugs,
+        boolean requireInstallableLatest
 ) {
     public SearchQuery(
             String keyword,
@@ -20,7 +21,18 @@ public record SearchQuery(
             SearchVisibilityScope visibilityScope,
             String sortBy,
             int page,
+            int size,
+            List<String> labelSlugs) {
+        this(keyword, namespaceId, visibilityScope, sortBy, page, size, labelSlugs, false);
+    }
+
+    public SearchQuery(
+            String keyword,
+            Long namespaceId,
+            SearchVisibilityScope visibilityScope,
+            String sortBy,
+            int page,
             int size) {
-        this(keyword, namespaceId, visibilityScope, sortBy, page, size, List.of());
+        this(keyword, namespaceId, visibilityScope, sortBy, page, size, List.of(), false);
     }
 }

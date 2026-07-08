@@ -27,6 +27,9 @@ public class UserAccount {
     @Column(name = "merged_to_user_id")
     private String mergedToUserId;
 
+    @Column(name = "system_account", nullable = false)
+    private boolean systemAccount = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -41,6 +44,12 @@ public class UserAccount {
         this.email = email;
         this.avatarUrl = avatarUrl;
         this.status = UserStatus.ACTIVE;
+    }
+
+    public static UserAccount systemAccount(String id, String displayName, String email, String avatarUrl) {
+        UserAccount user = new UserAccount(id, displayName, email, avatarUrl);
+        user.systemAccount = true;
+        return user;
     }
 
     @PrePersist
@@ -65,6 +74,7 @@ public class UserAccount {
     public void setStatus(UserStatus status) { this.status = status; }
     public String getMergedToUserId() { return mergedToUserId; }
     public void setMergedToUserId(String mergedToUserId) { this.mergedToUserId = mergedToUserId; }
+    public boolean isSystemAccount() { return systemAccount; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
     public boolean isActive() { return this.status == UserStatus.ACTIVE; }

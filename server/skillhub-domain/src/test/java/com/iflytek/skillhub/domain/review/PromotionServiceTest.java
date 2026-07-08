@@ -401,6 +401,51 @@ class PromotionServiceTest {
 
             verify(governanceNotificationService).notifyUser(eq(USER_ID), eq("PROMOTION"), eq("PROMOTION_REQUEST"), eq(PROMOTION_ID), eq("Promotion rejected"), any());
         }
+
+        @Test
+        void shouldNotifySubmitterWhenSuperAdminApprovesOwnPromotion() {
+            PromotionRequest request = createPendingPromotion();
+            PromotionRequest approvedRequest = approvedPromotion(request, "self approve");
+            approvedRequest.setReviewedBy(USER_ID);
+            Skill sourceSkill = createSourceSkill();
+            SkillVersion sourceVersion = createPublishedVersion();
+            Skill newSkill = new Skill(TARGET_NAMESPACE_ID, "my-skill", USER_ID, SkillVisibility.PUBLIC);
+            setField(newSkill, "id", NEW_SKILL_ID);
+            SkillVersion newVersion = new SkillVersion(NEW_SKILL_ID, sourceVersion.getVersion(), USER_ID);
+            setField(newVersion, "id", NEW_VERSION_ID);
+
+            when(promotionRequestRepository.findById(PROMOTION_ID))
+                    .thenReturn(Optional.of(request), Optional.of(approvedRequest));
+            when(permissionChecker.canReviewPromotion(request, USER_ID, Set.of("SUPER_ADMIN"))).thenReturn(true);
+            when(promotionRequestRepository.updateStatusWithVersion(
+                    PROMOTION_ID, ReviewTaskStatus.APPROVED, USER_ID, "self approve", null, request.getVersion()))
+                    .thenReturn(1);
+            when(skillRepository.findById(SOURCE_SKILL_ID)).thenReturn(Optional.of(sourceSkill));
+            when(skillVersionRepository.findById(SOURCE_VERSION_ID)).thenReturn(Optional.of(sourceVersion));
+            when(skillRepository.save(any(Skill.class))).thenReturn(newSkill);
+            when(skillVersionRepository.save(any(SkillVersion.class))).thenReturn(newVersion);
+            when(skillFileRepository.findByVersionId(SOURCE_VERSION_ID)).thenReturn(List.of());
+            when(promotionRequestRepository.save(approvedRequest)).thenReturn(approvedRequest);
+
+            promotionService.approvePromotion(PROMOTION_ID, USER_ID, "self approve", Set.of("SUPER_ADMIN"));
+
+            verify(governanceNotificationService).notifyUser(eq(USER_ID), eq("PROMOTION"), eq("PROMOTION_REQUEST"), eq(PROMOTION_ID), eq("Promotion approved"), any());
+        }
+
+        @Test
+        void shouldNotifySubmitterWhenSuperAdminRejectsOwnPromotion() {
+            PromotionRequest request = createPendingPromotion();
+
+            when(promotionRequestRepository.findById(PROMOTION_ID)).thenReturn(Optional.of(request));
+            when(permissionChecker.canReviewPromotion(request, USER_ID, Set.of("SUPER_ADMIN"))).thenReturn(true);
+            when(promotionRequestRepository.updateStatusWithVersion(
+                    PROMOTION_ID, ReviewTaskStatus.REJECTED, USER_ID, "self reject", null, request.getVersion()))
+                    .thenReturn(1);
+
+            promotionService.rejectPromotion(PROMOTION_ID, USER_ID, "self reject", Set.of("SUPER_ADMIN"));
+
+            verify(governanceNotificationService).notifyUser(eq(USER_ID), eq("PROMOTION"), eq("PROMOTION_REQUEST"), eq(PROMOTION_ID), eq("Promotion rejected"), any());
+        }
     }
 
     @Nested

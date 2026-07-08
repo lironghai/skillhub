@@ -90,6 +90,32 @@ class AdminUserAppServiceTest {
     }
 
     @Test
+    void updateUserRole_nonSuperAdminCannotReplaceExistingSuperAdminRole() {
+        when(userAccountRepository.findById("user-1"))
+                .thenReturn(Optional.of(user("user-1", "alice", "alice@example.com", UserStatus.ACTIVE)));
+        when(userRoleBindingRepository.findByUserId("user-1"))
+                .thenReturn(List.of(new UserRoleBinding("user-1", role("SUPER_ADMIN"))));
+
+        assertThrows(DomainForbiddenException.class,
+                () -> service.updateUserRole("user-1", "USER", Set.of("USER_ADMIN")));
+
+        verify(userRoleBindingRepository, never()).deleteByUserId(any());
+        verify(userRoleBindingRepository, never()).save(any(UserRoleBinding.class));
+    }
+
+    @Test
+    void updateUserRole_rejectsSystemAccount() {
+        when(userAccountRepository.findById("builtin-skill-publisher"))
+                .thenReturn(Optional.of(systemUser()));
+
+        assertThrows(DomainForbiddenException.class,
+                () -> service.updateUserRole("builtin-skill-publisher", "AUDITOR", Set.of("SUPER_ADMIN")));
+
+        verify(userRoleBindingRepository, never()).deleteByUserId(any());
+        verify(userRoleBindingRepository, never()).save(any(UserRoleBinding.class));
+    }
+
+    @Test
     void updateUserRole_replacesExistingBindings() {
         when(userAccountRepository.findById("user-1"))
                 .thenReturn(Optional.of(user("user-1", "alice", "alice@example.com", UserStatus.ACTIVE)));
@@ -138,6 +164,17 @@ class AdminUserAppServiceTest {
     }
 
     @Test
+    void updateUserStatus_rejectsSystemAccount() {
+        when(userAccountRepository.findById("builtin-skill-publisher"))
+                .thenReturn(Optional.of(systemUser()));
+
+        assertThrows(DomainForbiddenException.class,
+                () -> service.updateUserStatus("builtin-skill-publisher", "DISABLED"));
+
+        verify(userAccountRepository, never()).save(any(UserAccount.class));
+    }
+
+    @Test
     void updateUserStatus_withUnknownUser_throwsNotFound() {
         when(userAccountRepository.findById("missing")).thenReturn(Optional.empty());
 
@@ -147,6 +184,18 @@ class AdminUserAppServiceTest {
     private UserAccount user(String id, String displayName, String email, UserStatus status) {
         UserAccount user = new UserAccount(id, displayName, email, null);
         user.setStatus(status);
+        ReflectionTestUtils.setField(user, "createdAt", Instant.parse("2026-03-13T09:00:00Z"));
+        ReflectionTestUtils.setField(user, "updatedAt", Instant.parse("2026-03-13T09:00:00Z"));
+        return user;
+    }
+
+    private UserAccount systemUser() {
+        UserAccount user = UserAccount.systemAccount(
+                "builtin-skill-publisher",
+                "Built-in Skill Publisher",
+                null,
+                null
+        );
         ReflectionTestUtils.setField(user, "createdAt", Instant.parse("2026-03-13T09:00:00Z"));
         ReflectionTestUtils.setField(user, "updatedAt", Instant.parse("2026-03-13T09:00:00Z"));
         return user;

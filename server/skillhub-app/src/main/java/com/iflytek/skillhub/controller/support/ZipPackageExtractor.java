@@ -3,6 +3,7 @@ package com.iflytek.skillhub.controller.support;
 import com.iflytek.skillhub.config.SkillPublishProperties;
 import com.iflytek.skillhub.domain.shared.exception.DomainBadRequestException;
 import com.iflytek.skillhub.domain.skill.validation.PackageEntry;
+import com.iflytek.skillhub.domain.skill.validation.SkillPackagePolicy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -112,7 +113,7 @@ public class ZipPackageExtractor {
                 throw new DomainBadRequestException("error.skill.publish.package.invalid",
                         "Unsafe package path: " + path);
             }
-            return normalizedPath;
+            return SkillPackagePolicy.canonicalizeSkillMdPath(normalizedPath);
         } catch (InvalidPathException ex) {
             throw new DomainBadRequestException("error.skill.publish.package.invalid",
                     "Invalid package path: " + path);

@@ -19,6 +19,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 public class NotificationEventListener {
@@ -53,7 +54,7 @@ public class NotificationEventListener {
     @TransactionalEventListener
     public void onSkillPublished(SkillPublishedEvent event) {
         skillRepository.findById(event.skillId()).ifPresent(skill -> {
-            if (!event.publisherId().equals(skill.getCreatedBy())) {
+            if (!Objects.equals(event.publisherId(), skill.getOwnerId())) {
                 return;
             }
             String title = "Skill published: " + skillDisplayName(skill);
@@ -125,6 +126,22 @@ public class NotificationEventListener {
                         "REVIEW_SUBMITTED", title, json, "REVIEW", event.reviewId());
             }
         });
+    }
+
+    @Async("skillhubEventExecutor")
+    @TransactionalEventListener
+    public void onProfileReviewSubmitted(ProfileReviewSubmittedEvent event) {
+        String title = "Profile review submitted";
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("profileReviewId", event.profileReviewId());
+        body.put("submitterId", event.submitterId());
+        body.put("fields", event.fields());
+        String json = toJson(body);
+        List<String> admins = recipientResolver.resolvePlatformUserAdmins();
+        for (String admin : admins.stream().distinct().toList()) {
+            dispatcher.dispatch(admin, NotificationCategory.REVIEW,
+                    "PROFILE_REVIEW_SUBMITTED", title, json, "PROFILE_REVIEW", event.profileReviewId());
+        }
     }
 
     @Async("skillhubEventExecutor")

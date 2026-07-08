@@ -377,6 +377,7 @@ API Token 仍保留，但定位从“CLI 唯一认证方式”调整为“平台
 - 用途：自动化脚本、兼容层调用、手工 Token 管理、后续系统集成
 - 存储：只存 SHA-256 哈希，明文只展示一次
 - 校验：从 `Authorization: Bearer <token>` 提取 → 哈希比对 → 加载关联用户 → 检查用户状态
+- 失败闭合：公共读接口只有在缺少 `Authorization` 头时才按匿名访问处理；只要出现 Bearer 凭证，空值、格式错误、未知、过期、已吊销、用户缺失或用户禁用均返回 401，不能回退为匿名访问
 - 作用域：`skill:read`, `skill:publish`, `skill:delete`, `token:manage`
 
 > **一期作用域说明（非最小权限）**：一期 Token 作用域为粗粒度动作级别，不与 namespace 绑定。Token 继承用户的全部权限——如果用户是某个 namespace 的 MEMBER，则该用户的任何 Token（只要包含 `skill:publish` scope）都可以向该 namespace 发布技能。这是有意的一期简化，不满足最小权限原则。后续版本计划引入 namespace 级别的 Token 作用域限定（如 `namespace:ai-team:skill:publish`），或通过 `api_token_scope` 子表实现 Token 与 namespace 的绑定。
@@ -484,23 +485,20 @@ Session 中存储以下字段：
   "code": 0,
   "msg": "获取成功",
   "data": {
-    "userId": 42,
+    "userId": "usr_42",
     "displayName": "zhangsan",
     "email": "zhangsan@company.com",
     "avatarUrl": "https://...",
-    "oauthProvider": "github",
-    "platformRoles": ["SKILL_ADMIN", "AUDITOR"],
-    "namespaces": [
-      { "slug": "ai-team", "role": "ADMIN" },
-      { "slug": "global", "role": "MEMBER" }
-    ]
+    "oauthProvider": "local",
+    "canChangePassword": true,
+    "platformRoles": ["SKILL_ADMIN", "AUDITOR"]
   },
   "timestamp": "2026-03-12T06:00:00Z",
   "requestId": "req-123"
 }
 ```
 
-前端权限判定基于 `platformRoles` + `namespaces[].role`，后端通过 `role_permission` 表查询权限码。
+前端平台级权限判定基于 `platformRoles`；是否展示修改密码入口和表单基于后端返回的 `canChangePassword`。后端通过 `role_permission` 表查询权限码。
 
 统一约束：
 - `/api/v1/auth/me`、`/api/v1/auth/providers` 等 JSON 响应必须统一使用 `code/msg/data/timestamp/requestId` 外层结构。
@@ -604,8 +602,8 @@ window.location.href = '/oauth2/authorization/github'
 | `GET /api/v1/skills`（搜索） | 仅 `PUBLIC`，且仅搜索 `ACTIVE`、非 hidden、已索引 skill | `PUBLIC + NAMESPACE_ONLY（成员空间）+ PRIVATE（owner/admin）` | `SearchVisibilityScope` + 搜索索引状态 |
 | `GET /api/v1/skills/{ns}/{slug}` | 仅已发布且可见的 `PUBLIC` skill | 同左，另加 owner 可读未发布 skill、namespace `ADMIN` / `OWNER` 可读 hidden | `visibility + latest_version_id + hidden + namespace 成员关系` |
 | `GET /api/v1/skills/{ns}/{slug}/versions` | 仅 `PUBLISHED` 版本 | owner / namespace `ADMIN` / `OWNER` 可见全部五种状态 | 同上 + version status 过滤 |
-| `GET /api/v1/skills/{ns}/{slug}/download` | 仅全局 namespace 下的 `PUBLIC` skill 支持匿名下载 | 已登录后按 visibility 判定；下载目标版本必须是 `PUBLISHED` | visibility + namespace type + version status |
-| `GET /api/v1/skills/{ns}/{slug}/resolve` | 仅全局 namespace 下的 `PUBLIC` skill 可匿名 | 同上 | visibility + namespace type + version status |
+| `GET /api/v1/skills/{ns}/{slug}/download` | 仅 `PUBLIC`、`ACTIVE`、非 hidden、命名空间未归档且目标版本可安装的 skill 支持匿名下载 | 已登录后按 visibility 判定；下载目标版本必须可安装 | visibility + namespace status + `SkillInstallability` |
+| `GET /api/v1/skills/{ns}/{slug}/resolve` | 仅 `PUBLIC`、`ACTIVE`、非 hidden、命名空间未归档且目标版本可安装的 skill 可匿名 | 同上 | visibility + namespace status + `SkillInstallability` |
 | `GET /api/v1/namespaces` | 全部 | 全部 | 无限制 |
 
 ### 10.2 Authenticated API
@@ -654,6 +652,6 @@ window.location.href = '/oauth2/authorization/github'
 |------|---------|---------|
 | `GET /api/v1/whoami` | 任意有效 Bearer Token | 无 |
 | `GET /api/v1/search` | 可选（匿名限 PUBLIC） | `SearchVisibilityScope` |
-| `GET /api/v1/resolve` | 可选（匿名仅限全局 namespace 下的 PUBLIC） | visibility + namespace type + version status |
-| `GET /api/v1/download/{slug}/{version}` | 可选（匿名仅限全局 namespace 下的 PUBLIC） | visibility + namespace type + version status |
+| `GET /api/v1/resolve` | 可选（匿名仅限 `PUBLIC`、`ACTIVE`、非 hidden、命名空间未归档且目标版本可安装） | visibility + namespace status + `SkillInstallability` |
+| `GET /api/v1/download/{slug}/{version}` | 可选（匿名仅限 `PUBLIC`、`ACTIVE`、非 hidden、命名空间未归档且目标版本可安装） | visibility + namespace status + `SkillInstallability` |
 | `POST /api/v1/publish` | Bearer Token + `skill:publish` | 普通用户要求目标 namespace 成员；`SUPER_ADMIN` 可绕过（namespace 由 canonical slug 解析） |

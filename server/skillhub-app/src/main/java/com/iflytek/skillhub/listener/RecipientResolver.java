@@ -39,4 +39,14 @@ public class RecipientResolver {
                         List::copyOf
                 ));
     }
+
+    public List<String> resolvePlatformUserAdmins() {
+        return userRoleBindingRepository.findByRole_CodeIn(Set.of("USER_ADMIN", "SUPER_ADMIN"))
+                .stream()
+                .map(binding -> binding.getUserId())
+                .collect(java.util.stream.Collectors.collectingAndThen(
+                        java.util.stream.Collectors.toCollection(LinkedHashSet::new),
+                        List::copyOf
+                ));
+    }
 }

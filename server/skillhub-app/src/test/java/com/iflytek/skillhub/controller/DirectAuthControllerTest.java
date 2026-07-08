@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.iflytek.skillhub.auth.local.LocalCredentialRepository;
 import com.iflytek.skillhub.auth.local.LocalAuthService;
 import com.iflytek.skillhub.auth.repository.UserRoleBindingRepository;
 import com.iflytek.skillhub.auth.rbac.PlatformPrincipal;
@@ -52,6 +53,9 @@ class DirectAuthControllerTest {
     @MockBean
     private UserRoleBindingRepository userRoleBindingRepository;
 
+    @MockBean
+    private LocalCredentialRepository localCredentialRepository;
+
     @Test
     void directLoginShouldAuthenticateViaConfiguredProvider() throws Exception {
         PlatformPrincipal principal = new PlatformPrincipal(
@@ -67,6 +71,7 @@ class DirectAuthControllerTest {
         given(userAccountRepository.findById("usr_direct_1"))
             .willReturn(java.util.Optional.of(new UserAccount("usr_direct_1", "direct-user", null, null)));
         given(userRoleBindingRepository.findByUserId("usr_direct_1")).willReturn(List.of());
+        given(localCredentialRepository.existsByUserId("usr_direct_1")).willReturn(true);
 
         MockHttpSession session = (MockHttpSession) mockMvc.perform(post("/api/v1/auth/direct/login")
                 .with(csrf())
@@ -77,6 +82,7 @@ class DirectAuthControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(0))
             .andExpect(jsonPath("$.data.userId").value("usr_direct_1"))
+            .andExpect(jsonPath("$.data.canChangePassword").value(true))
             .andReturn()
             .getRequest()
             .getSession(false);
@@ -84,7 +90,8 @@ class DirectAuthControllerTest {
         mockMvc.perform(get("/api/v1/auth/me").session(session))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.code").value(0))
-            .andExpect(jsonPath("$.data.userId").value("usr_direct_1"));
+            .andExpect(jsonPath("$.data.userId").value("usr_direct_1"))
+            .andExpect(jsonPath("$.data.canChangePassword").value(true));
     }
 
     @Test

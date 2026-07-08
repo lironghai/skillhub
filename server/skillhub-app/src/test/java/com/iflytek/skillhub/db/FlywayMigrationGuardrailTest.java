@@ -72,6 +72,36 @@ class FlywayMigrationGuardrailTest {
         assertThat(invalidFiles).isEmpty();
     }
 
+    @Test
+    void systemAccountMigration_mustNotPromoteUsersWithApiTokens() throws IOException {
+        String migration = Files.readString(migrationPath("V43__user_account_system_account.sql"));
+
+        assertThat(migration).contains("FROM api_token");
+        assertThat(migration).contains("api_token.user_id = user_account.id");
+    }
+
+    @Test
+    void systemAccountMigration_mustNotPromoteUsersWithRolesOrNamespaceMemberships() throws IOException {
+        String migration = Files.readString(migrationPath("V43__user_account_system_account.sql"));
+
+        assertThat(migration).contains("FROM user_role_binding");
+        assertThat(migration).contains("user_role_binding.user_id = user_account.id");
+        assertThat(migration).contains("FROM namespace_member");
+        assertThat(migration).contains("namespace_member.user_id = user_account.id");
+    }
+
+    @Test
+    void systemAccountMigration_mustPromoteLegacyBuiltinPublisherSafely() throws IOException {
+        String migration = Files.readString(migrationPath("V43__user_account_system_account.sql"));
+
+        assertThat(migration).contains("SkillHub Built-in Publisher");
+        assertThat(migration).contains("builtin-skill-publisher@example.invalid");
+        assertThat(migration).contains("legacy_namespace.slug = 'global'");
+        assertThat(migration).contains("legacy_member.role = 'OWNER'");
+        assertThat(migration).contains("bad_member.user_id = user_account.id");
+        assertThat(migration).contains("bad_namespace.slug <> 'global'");
+    }
+
     private List<Path> migrationFiles() throws IOException {
         Path root = repoRoot()
                 .resolve("server")
@@ -91,5 +121,13 @@ class FlywayMigrationGuardrailTest {
 
     private String relativeToRepo(Path file) {
         return repoRoot().relativize(file).toString();
+    }
+
+    private Path migrationPath(String fileName) {
+        return repoRoot()
+                .resolve("server")
+                .resolve("skillhub-app")
+                .resolve("src/main/resources/db/migration")
+                .resolve(fileName);
     }
 }

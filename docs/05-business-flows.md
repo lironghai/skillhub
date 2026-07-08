@@ -112,7 +112,7 @@
 | skill owner | 可 | 可 | 不可 | 不可 | 可 | 不可 | 不可 | 不可 |
 | namespace ADMIN / OWNER | 可 | 可为本空间 skill 提交审核 | 可 | 不可 | 可 | 不可 | 不可 | 不可 |
 | SKILL_ADMIN | 可提交并可代提审；但普通发布仍非直发 | 可 | 可 | 可 | 可 | 可，但不能审自己的 promotion | 不可 | 可 |
-| SUPER_ADMIN | 可跨 namespace 发布且直接 `PUBLISHED`，跳过 membership 检查和 review task | 可 | 可 | 可 | 可 | 可；review 场景下还能审自己的提交 | 可 | 可 |
+| SUPER_ADMIN | 可跨 namespace 发布且直接 `PUBLISHED`，跳过 membership 检查和 review task | 可 | 可 | 可 | 可 | 可；promotion 和 review 场景下还能审自己的提交 | 可 | 可 |
 
 ### 对象存储写入策略
 

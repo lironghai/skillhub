@@ -63,6 +63,8 @@ cp secret.yaml.example secret.yaml
 | oauth2-github-client-id | GitHub OAuth ID | No |
 | oauth2-github-client-secret | GitHub OAuth secret | No |
 | skill-scanner-llm-api-key | LLM API key | No |
+| skill-scanner-llm-base-url | Local/custom LLM service base URL | No |
+| skill-scanner-llm-model | LLM model name used by the scanner | No |
 
 ### 3. Choose Deployment Method
 

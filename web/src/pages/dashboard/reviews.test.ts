@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
 
+const useSearchMock = vi.fn()
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => vi.fn(),
+  useSearch: () => useSearchMock(),
 }))
 
 vi.mock('lucide-react', () => ({
@@ -119,6 +121,7 @@ describe('ReviewsPage', () => {
       data: [],
       isLoading: false,
     })
+    useSearchMock.mockReturnValue({})
     useReviewListMock.mockImplementation((status: string, _namespaceId: unknown, page: number, _size: number, _sortDirection: string, enabled: boolean) => {
       if (!enabled) {
         return { data: null, isLoading: false }
@@ -179,5 +182,16 @@ describe('ReviewsPage', () => {
     expect(paginationProps).toHaveLength(1)
     expect(paginationProps[0]?.page).toBe(0)
     expect(paginationProps[0]?.totalPages).toBe(1)
+  })
+
+  it('uses the profile review tab when the review type search param requests it', () => {
+    hasRoleMock.mockImplementation((role: string) => role === 'SKILL_ADMIN' || role === 'USER_ADMIN')
+    userMock.platformRoles = ['SUPER_ADMIN']
+    useSearchMock.mockReturnValue({ type: 'profile' })
+
+    renderToStaticMarkup(createElement(ReviewsPage))
+
+    expect(useReviewListMock).toHaveBeenCalled()
+    expect(useReviewListMock.mock.calls.every((call) => call[5] === false)).toBe(true)
   })
 })

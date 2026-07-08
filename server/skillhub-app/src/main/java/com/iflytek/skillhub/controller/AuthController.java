@@ -16,6 +16,7 @@ import com.iflytek.skillhub.dto.AuthProviderResponse;
 import com.iflytek.skillhub.dto.DirectLoginRequest;
 import com.iflytek.skillhub.dto.SessionBootstrapRequest;
 import com.iflytek.skillhub.auth.exception.AuthFlowException;
+import com.iflytek.skillhub.service.AuthMeResponseAssembler;
 import com.iflytek.skillhub.service.AuthMethodCatalog;
 import com.iflytek.skillhub.service.DirectAuthService;
 import com.iflytek.skillhub.service.SessionBootstrapService;
@@ -56,6 +57,7 @@ public class AuthController extends BaseApiController {
     private final UserRoleBindingRepository userRoleBindingRepository;
     private final PlatformSessionService platformSessionService;
     private final UserAccountRepository userAccountRepository;
+    private final AuthMeResponseAssembler authMeResponseAssembler;
 
     public AuthController(ApiResponseFactory responseFactory,
                           AuthMethodCatalog authMethodCatalog,
@@ -64,7 +66,8 @@ public class AuthController extends BaseApiController {
                           AuthFailureThrottleService authFailureThrottleService,
                           UserRoleBindingRepository userRoleBindingRepository,
                           PlatformSessionService platformSessionService,
-                          UserAccountRepository userAccountRepository) {
+                          UserAccountRepository userAccountRepository,
+                          AuthMeResponseAssembler authMeResponseAssembler) {
         super(responseFactory);
         this.authMethodCatalog = authMethodCatalog;
         this.sessionBootstrapService = sessionBootstrapService;
@@ -73,6 +76,7 @@ public class AuthController extends BaseApiController {
         this.userRoleBindingRepository = userRoleBindingRepository;
         this.platformSessionService = platformSessionService;
         this.userAccountRepository = userAccountRepository;
+        this.authMeResponseAssembler = authMeResponseAssembler;
     }
 
     /**
@@ -111,7 +115,7 @@ public class AuthController extends BaseApiController {
                     freshRoles);
             platformSessionService.establishSession(principal, request, false);
         }
-        return ok("response.success.read", AuthMeResponse.from(principal));
+        return ok("response.success.read", authMeResponseAssembler.from(principal));
     }
 
     /**
@@ -146,7 +150,7 @@ public class AuthController extends BaseApiController {
                                                         HttpServletRequest httpRequest) {
         return ok(
             "response.success.read",
-            AuthMeResponse.from(sessionBootstrapService.bootstrap(request.provider(), httpRequest))
+            authMeResponseAssembler.from(sessionBootstrapService.bootstrap(request.provider(), httpRequest))
         );
     }
 
@@ -178,7 +182,7 @@ public class AuthController extends BaseApiController {
         authFailureThrottleService.resetIdentifier(category, request.username());
         return ok(
             "response.success.read",
-            AuthMeResponse.from(principal)
+            authMeResponseAssembler.from(principal)
         );
     }
 

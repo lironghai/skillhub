@@ -4,6 +4,7 @@ import com.iflytek.skillhub.domain.event.SkillDownloadedEvent;
 import com.iflytek.skillhub.domain.namespace.Namespace;
 import com.iflytek.skillhub.domain.namespace.NamespaceRepository;
 import com.iflytek.skillhub.domain.namespace.NamespaceRole;
+import com.iflytek.skillhub.domain.namespace.NamespaceStatus;
 import com.iflytek.skillhub.domain.shared.exception.DomainBadRequestException;
 import com.iflytek.skillhub.domain.shared.exception.DomainForbiddenException;
 import com.iflytek.skillhub.domain.skill.*;
@@ -102,7 +103,7 @@ public class SkillDownloadService {
         SkillVersion version = skillVersionRepository.findById(skill.getLatestVersionId())
                 .orElseThrow(() -> new DomainBadRequestException("error.skill.version.latest.notFound"));
 
-        return downloadVersion(skill, version);
+        return downloadVersion(skill, version, currentUserId, userNsRoles);
     }
 
     /**
@@ -123,7 +124,7 @@ public class SkillDownloadService {
         SkillVersion version = skillVersionRepository.findBySkillIdAndVersion(skill.getId(), versionStr)
                 .orElseThrow(() -> new DomainBadRequestException("error.skill.version.notFound", versionStr));
 
-        return downloadVersion(skill, version);
+        return downloadVersion(skill, version, currentUserId, userNsRoles);
     }
 
     /**
@@ -150,7 +151,7 @@ public class SkillDownloadService {
         SkillVersion version = skillVersionRepository.findById(tag.getVersionId())
                 .orElseThrow(() -> new DomainBadRequestException("error.skill.tag.version.notFound", tagName));
 
-        return downloadVersion(skill, version);
+        return downloadVersion(skill, version, currentUserId, userNsRoles);
     }
 
     /**
@@ -161,23 +162,30 @@ public class SkillDownloadService {
         return buildDownloadResult(skill, version);
     }
 
-    private DownloadResult downloadVersion(Skill skill, SkillVersion version) {
+    private DownloadResult downloadVersion(Skill skill,
+                                           SkillVersion version,
+                                           String currentUserId,
+                                           Map<Long, NamespaceRole> userNsRoles) {
         assertPublishedAccessible(skill);
-        assertDownloadableVersion(skill, version);
+        assertDownloadableVersion(skill, version, currentUserId, userNsRoles);
         DownloadResult result = buildDownloadResult(skill, version);
 
         // Only increment download count for PUBLISHED versions
         if (version.getStatus() == SkillVersionStatus.PUBLISHED) {
-            skillRepository.incrementDownloadCount(skill.getId());
-            skillVersionStatsRepository.incrementDownloadCount(version.getId(), skill.getId());
-            eventPublisher.publishEvent(new SkillDownloadedEvent(skill.getId(), version.getId()));
+            recordPublishedDownload(skill, version);
         }
         return result;
     }
 
+    private void recordPublishedDownload(Skill skill, SkillVersion version) {
+        skillRepository.incrementDownloadCount(skill.getId());
+        skillVersionStatsRepository.incrementDownloadCount(version.getId(), skill.getId());
+        eventPublisher.publishEvent(new SkillDownloadedEvent(skill.getId(), version.getId()));
+    }
+
     private DownloadResult buildDownloadResult(Skill skill, SkillVersion version) {
 
-        String storageKey = String.format("packages/%d/%d/bundle.zip", skill.getId(), version.getId());
+        String storageKey = buildBundleStorageKey(skill, version);
 
         DownloadResult result;
         if (objectStorageService.exists(storageKey)) {
@@ -202,6 +210,10 @@ public class SkillDownloadService {
             result = buildBundleFromFiles(skill, version);
         }
         return result;
+    }
+
+    private String buildBundleStorageKey(Skill skill, SkillVersion version) {
+        return String.format("packages/%d/%d/bundle.zip", skill.getId(), version.getId());
     }
 
     private DownloadResult buildBundleFromFiles(Skill skill, SkillVersion version) {
@@ -273,10 +285,18 @@ public class SkillDownloadService {
         if (!visibilityChecker.canAccess(skill, currentUserId, userNsRoles)) {
             throw new DomainForbiddenException("error.skill.access.denied", skill.getSlug());
         }
+        if (namespace.getStatus() == NamespaceStatus.ARCHIVED
+                && !isNamespaceMember(namespace.getId(), currentUserId, userNsRoles)) {
+            throw new DomainForbiddenException("error.namespace.archived", namespace.getSlug());
+        }
     }
 
     private boolean isAnonymousDownloadAllowed(Skill skill) {
         return skill.getVisibility() == SkillVisibility.PUBLIC;
+    }
+
+    private boolean isNamespaceMember(Long namespaceId, String currentUserId, Map<Long, NamespaceRole> userNsRoles) {
+        return currentUserId != null && userNsRoles != null && userNsRoles.containsKey(namespaceId);
     }
 
     private Skill resolveVisibleSkill(Long namespaceId, String slug, String currentUserId) {
@@ -295,19 +315,36 @@ public class SkillDownloadService {
 
     /**
      * Asserts that the version can be downloaded.
-     * - PUBLISHED: anyone with skill access can download
-     * - UPLOADED/PENDING_REVIEW: only skill owner can download
+     * - PUBLISHED: must be installable before public download
+     * - UPLOADED/PENDING_REVIEW: only skill owner or namespace admin can download
      */
-    private void assertDownloadableVersion(Skill skill, SkillVersion version) {
+    private void assertDownloadableVersion(Skill skill,
+                                           SkillVersion version,
+                                           String currentUserId,
+                                           Map<Long, NamespaceRole> userNsRoles) {
         switch (version.getStatus()) {
             case PUBLISHED -> {
-                // Anyone with skill access can download published versions
+                if (!SkillInstallability.isInstallableVersion(version)) {
+                    throw new DomainBadRequestException("error.skill.version.notDownloadable", version.getVersion());
+                }
             }
             case UPLOADED, PENDING_REVIEW -> {
-                // Only owner can download UPLOADED/PENDING_REVIEW versions
-                // Note: This check is already done in assertCanDownload via visibilityChecker
+                if (!canManageSkillDraft(skill, currentUserId, userNsRoles)) {
+                    throw new DomainForbiddenException("error.skill.access.denied", skill.getSlug());
+                }
             }
             default -> throw new DomainBadRequestException("error.skill.version.notDownloadable", version.getVersion());
         }
+    }
+
+    private boolean canManageSkillDraft(Skill skill, String currentUserId, Map<Long, NamespaceRole> userNsRoles) {
+        if (currentUserId == null) {
+            return false;
+        }
+        if (skill.getOwnerId().equals(currentUserId)) {
+            return true;
+        }
+        NamespaceRole role = userNsRoles == null ? null : userNsRoles.get(skill.getNamespaceId());
+        return role == NamespaceRole.OWNER || role == NamespaceRole.ADMIN;
     }
 }

@@ -170,6 +170,9 @@ public class SkillPublishService {
                 errors.add("Publisher is not a member of namespace: " + namespaceSlug);
             }
         }
+        if (requiresSecurityScanner(visibility) && !securityScanService.isEnabled()) {
+            errors.add("error.security.scanner.required");
+        }
 
         // 3. Package validation
         ValidationResult packageValidation = skillPackageValidator.validate(entries);
@@ -380,6 +383,9 @@ public class SkillPublishService {
                     "error.skill.publish.precheck.confirmRequired",
                     formatValidationMessages(publishWarnings));
         }
+        if (requiresSecurityScanner(visibility) && !securityScanService.isEnabled()) {
+            throw new DomainBadRequestException("error.security.scanner.required");
+        }
 
         // 6. Find or create Skill record (with owner isolation)
         List<Skill> existingSkills = skillRepository.findByNamespaceIdAndSlug(namespace.getId(), skillSlug);
@@ -564,8 +570,7 @@ public class SkillPublishService {
             throw new DomainBadRequestException("error.skill.version.exists", version.getVersion());
         }
 
-        // FK 约束 fk_skill_latest_version 阻止删除 skill_version 当 skill.latest_version_id 还指向它。
-        // 必须先解开引用并 flush，让 PG 在 delete 时看不到引用。
+        // PostgreSQL prevents deleting a skill_version while skill.latest_version_id still references it.
         if (version.getId().equals(skill.getLatestVersionId())) {
             skill.setLatestVersionId(null);
             skillRepository.save(skill);
@@ -587,6 +592,10 @@ public class SkillPublishService {
         securityScanService.softDeleteByVersionId(version.getId());
         skillVersionRepository.delete(version);
         skillVersionRepository.flush();
+    }
+
+    private boolean requiresSecurityScanner(SkillVisibility visibility) {
+        return visibility == SkillVisibility.PUBLIC || visibility == SkillVisibility.NAMESPACE_ONLY;
     }
 
     private String resolveNamespaceSlug(Long namespaceId) {

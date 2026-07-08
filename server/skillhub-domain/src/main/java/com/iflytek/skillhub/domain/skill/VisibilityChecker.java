@@ -16,19 +16,20 @@ public class VisibilityChecker {
     }
 
     public boolean canAccess(Skill skill, String currentUserId, Map<Long, NamespaceRole> userNamespaceRoles, Set<String> platformRoles) {
+        Map<Long, NamespaceRole> roles = userNamespaceRoles != null ? userNamespaceRoles : Map.of();
         if (isSuperAdmin(platformRoles)) {
             return true;
         }
         if (skill.isHidden()) {
-            return isOwner(skill, currentUserId) || isAdminOrAbove(userNamespaceRoles.get(skill.getNamespaceId()));
+            return isOwner(skill, currentUserId) || isAdminOrAbove(roles.get(skill.getNamespaceId()));
         }
         if (skill.getLatestVersionId() == null) {
             return isOwner(skill, currentUserId);
         }
         return switch (skill.getVisibility()) {
             case PUBLIC -> true;
-            case NAMESPACE_ONLY -> userNamespaceRoles.containsKey(skill.getNamespaceId());
-            case PRIVATE -> isOwner(skill, currentUserId) || isAdminOrAbove(userNamespaceRoles.get(skill.getNamespaceId()));
+            case NAMESPACE_ONLY -> roles.containsKey(skill.getNamespaceId());
+            case PRIVATE -> isOwner(skill, currentUserId) || isAdminOrAbove(roles.get(skill.getNamespaceId()));
         };
     }
 

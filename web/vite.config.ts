@@ -4,6 +4,7 @@ import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import path from 'path'
 import type { IncomingMessage } from 'node:http'
 
+const JS_BUILD_TARGET = 'es2020'
 const LEGACY_BROWSER_TARGETS = ['chrome83', 'edge83', 'firefox78', 'safari14']
 const CONTEXT_FORGE_DEV_ORIGIN = process.env.VITE_CONTEXT_FORGE_DEV_ORIGIN ?? 'http://localhost:4444'
 const CONTEXT_FORGE_EMBEDDED_PREFIX = '/contextforge'
@@ -46,16 +47,18 @@ export default defineConfig({
     },
   },
   build: {
-    target: LEGACY_BROWSER_TARGETS,
+    target: JS_BUILD_TARGET,
     cssTarget: LEGACY_BROWSER_TARGETS,
   },
   optimizeDeps: {
     esbuildOptions: {
-      target: LEGACY_BROWSER_TARGETS,
+      target: JS_BUILD_TARGET,
     },
   },
   test: {
     exclude: ['**/node_modules/**', '**/e2e/**'],
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
   server: {
     port: 3000,

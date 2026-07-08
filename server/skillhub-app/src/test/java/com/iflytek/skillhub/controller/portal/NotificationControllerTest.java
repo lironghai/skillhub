@@ -71,6 +71,28 @@ class NotificationControllerTest {
     }
 
     @Test
+    void list_shouldExposeProfileReviewTargetRouteForSubmittedProfileReviewNotifications() {
+        Notification notification = notification(
+                15L,
+                NotificationCategory.REVIEW,
+                "PROFILE_REVIEW_SUBMITTED",
+                "{\"profileReviewId\":77,\"submitterId\":\"user-1\",\"fields\":[\"displayName\"]}",
+                "PROFILE_REVIEW",
+                77L
+        );
+        when(notificationService.list(org.mockito.ArgumentMatchers.eq("admin-1"), org.mockito.ArgumentMatchers.eq(NotificationCategory.REVIEW), org.mockito.ArgumentMatchers.any(Pageable.class)))
+                .thenReturn(new PageImpl<>(java.util.List.of(notification)));
+
+        PageResponse<NotificationResponse> page = controller.list("admin-1", "REVIEW", 0, 20).data();
+
+        assertThat(page.items()).singleElement().satisfies(item -> {
+            assertThat(item.targetType()).isEqualTo("PROFILE_REVIEW");
+            assertThat(item.targetId()).isEqualTo(77L);
+            assertThat(item.targetRoute()).isEqualTo("/dashboard/reviews?type=profile");
+        });
+    }
+
+    @Test
     void list_shouldExposeSkillRouteForResolvedWorkflowNotifications() {
         Notification notification = notification(
                 12L,

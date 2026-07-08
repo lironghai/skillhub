@@ -63,6 +63,8 @@ cp secret.yaml.example secret.yaml
 | oauth2-github-client-id | GitHub OAuth ID | 否 |
 | oauth2-github-client-secret | GitHub OAuth 密钥 | 否 |
 | skill-scanner-llm-api-key | LLM API 密钥 | 否 |
+| skill-scanner-llm-base-url | 本地/自定义 LLM 服务地址 | 否 |
+| skill-scanner-llm-model | Scanner 使用的 LLM 模型名 | 否 |
 
 ### 3. 选择部署方式
 
