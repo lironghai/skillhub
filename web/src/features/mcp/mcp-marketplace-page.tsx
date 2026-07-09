@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, Search, Server, ShieldCheck, X } from 'lucide-react'
+import { Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
 import { DashboardPageHeader } from '@/shared/components/dashboard-page-header'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'

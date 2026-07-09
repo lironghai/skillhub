@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Bot, Check, Copy, Terminal, UserRound } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import { useCopyToClipboard } from '@/shared/lib/clipboard'
 import { SvgIcon } from './svg-icon'
 
@@ -13,12 +12,6 @@ interface LandingQuickStartTab {
   label: string
   description: string
   command: string
-}
-
-const tabIcons: Record<LandingQuickStartTabId, LucideIcon> = {
-  agent: Bot,
-  human: UserRound,
-  cli: Terminal,
 }
 
 /**
