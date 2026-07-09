@@ -18,7 +18,7 @@ RUN ./mvnw dependency:go-offline -B
 
 COPY . .
 RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
-RUN ./mvnw package -DskipTests -B
+RUN ./mvnw clean package -DskipTests -B
 
 # ---- Runtime Stage ----
 FROM eclipse-temurin:21-jre-alpine
