@@ -335,7 +335,7 @@ export function LandingPage() {
       {/* Latest Releases Section */}
       <section
         ref={latestView.ref}
-        className={`relative z-10 w-full py-20 md:py-24 px-6 scroll-fade-up${latestView.inView ? " in-view" : ""}`}
+        className={`relative z-10 w-full md:pb-24 px-6 scroll-fade-up${latestView.inView ? " in-view" : ""}`}
         style={{ background: "var(--bg-page, hsl(var(--background)))" }}
       >
         <div className="max-w-6xl mx-auto space-y-6">
