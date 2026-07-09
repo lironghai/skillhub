@@ -92,7 +92,7 @@ export function LandingPage() {
       {/* Hero Section */}
       <main
         ref={heroView.ref}
-        className={`relative z-10 flex flex-col items-center pt-16 pb-20 px-4 md:pt-24 scroll-fade-up${heroView.inView ? " in-view" : ""}`}
+        className={`relative z-10 flex flex-col items-center pt-16 pb-4 px-4 md:pt-24 scroll-fade-up${heroView.inView ? " in-view" : ""}`}
       >
         {/* Decorative background blobs */}
         {/* <div className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block">
@@ -102,7 +102,7 @@ export function LandingPage() {
         </div> */}
 
         {/* Brand logo mark */}
-        <div className="w-[500px] h-[44px] rounded-[12px] flex items-center justify-center mb-[30px]">
+        <div className="w-[500px] h-[44px] rounded-[12px] flex items-center justify-center mb-[32px]">
           {/* <span className="text-white text-[22px] font-bold leading-none" style={{ fontFamily: 'Arial Rounded MT Bold, Syne, sans-serif' }}>R</span> */}
           <SvgIcon
             name="svg-text-HeroSkillhub"
@@ -123,7 +123,7 @@ export function LandingPage() {
         </p>
 
         {/* Search box */}
-        <div className="w-full max-w-[700px] mb-8">
+        <div className="w-full max-w-[700px] mb-12">
           <div
             className="flex items-center bg-white rounded-[12px] border h-[56px] px-5 shadow-[0_2px_15px_1px_rgba(159,69,66,0.1)]"
             style={{ borderColor: "#e5e5e5" }}
@@ -148,7 +148,7 @@ export function LandingPage() {
         </div>
 
         {/* CTA buttons */}
-        <div className="flex flex-wrap justify-center gap-6 mb-16">
+        <div className="flex flex-wrap justify-center gap-6 mb-12">
           <Link
             to="/search"
             search={{ q: "", sort: "relevance", page: 0, starredOnly: false }}

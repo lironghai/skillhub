@@ -185,16 +185,13 @@ export function McpMarketplacePage() {
         </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-lg border bg-card p-3 shadow-sm"
-      >
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-3 sm:flex-row">
           <div className="relative flex-1">
-            <Search
+            {/* <Search
               className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
-            />
+            /> */}
             <Input
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
@@ -204,35 +201,35 @@ export function McpMarketplacePage() {
                   ? t("mcpMarketplace.internalSearchPlaceholder")
                   : t("mcpMarketplace.searchPlaceholder")
               }
-              className="h-11 pl-10 pr-10"
+              className="h-14 pl-10 pr-42 w-full"
             />
             {searchInput ? (
               <button
                 type="button"
                 onClick={handleClear}
-                className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                className="absolute right-[8rem] top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 aria-label={t("mcpMarketplace.clearSearch")}
                 title={t("mcpMarketplace.clearSearch")}
               >
                 <X className="h-4 w-4" aria-hidden="true" />
               </button>
             ) : null}
+            <Button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 sm:min-w-28 p-[8px]"
+              disabled={activeQuery.isFetching}
+            >
+              {activeQuery.isFetching ? (
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
+              ) : (
+                <Search className="mr-2 h-4 w-4" aria-hidden="true" />
+              )}
+              {t("mcpMarketplace.search")}
+            </Button>
           </div>
-          <Button
-            type="submit"
-            className="sm:min-w-28"
-            disabled={activeQuery.isFetching}
-          >
-            {activeQuery.isFetching ? (
-              <Loader2
-                className="mr-2 h-4 w-4 animate-spin"
-                aria-hidden="true"
-              />
-            ) : (
-              <Search className="mr-2 h-4 w-4" aria-hidden="true" />
-            )}
-            {t("mcpMarketplace.search")}
-          </Button>
         </div>
       </form>
 
