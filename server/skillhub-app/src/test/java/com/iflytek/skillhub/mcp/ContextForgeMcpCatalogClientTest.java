@@ -172,7 +172,7 @@ class ContextForgeMcpCatalogClientTest {
                               "associatedResources": ["res-a"],
                               "associatedPrompts": ["prompt-a", "prompt-b", "prompt-c"],
                               "tags": [{"name": "bdc4"}],
-                              "ownerEmail": "admin@mcp-context-forge.yingxiong.com",
+                              "ownerEmail": "admin",
                               "team": "Platform Admin",
                               "visibility": "public"
                             }

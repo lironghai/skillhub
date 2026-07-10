@@ -15,7 +15,7 @@ const mcpCatalogHooks = vi.hoisted(() => {
             description: 'bdc4_group',
             enabled: true,
             visibility: 'public',
-            ownerEmail: 'admin@mcp-context-forge.yingxiong.com',
+            ownerEmail: 'admi',
             team: 'Platform Admin',
             toolCount: 5,
             resourceCount: 11,

@@ -99,7 +99,7 @@ class McpCatalogControllerTest {
                         "https://static.example.com/icons/bdc4.png",
                         true,
                         "public",
-                        "admin@mcp-context-forge.yingxiong.com",
+                        "ad",
                         "Platform Admin",
                         5,
                         11,
