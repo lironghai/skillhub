@@ -66,8 +66,8 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[70vh] items-center justify-center">
-      <div className="w-full max-w-md space-y-8 animate-fade-up">
+    <div className="flex min-h-[70vh] items-center justify-center pb-[36px]">
+      <div className="w-full max-w-md animate-fade-up">
         <div className="text-center space-y-3">
           <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 items-center justify-center shadow-glow mb-4">
             {/* <span className="text-primary-foreground font-bold text-2xl">S</span> */}
@@ -79,7 +79,7 @@ export function LoginPage() {
           <p className="text-muted-foreground text-lg">{t("login.subtitle")}</p>
         </div>
 
-        <div className="glass-strong p-8 rounded-2xl">
+        <div className="glass-strong p-8 rounded-2xl mt-[15px]">
           <div className="space-y-6">
             {disabledMessage ? (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -97,7 +97,7 @@ export function LoginPage() {
             />
 
             <Tabs defaultValue="password" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-2 border-b-1 border-[#e5e5e5]">
                 <TabsTrigger value="password">
                   {t("login.tabPassword")}
                 </TabsTrigger>
@@ -244,7 +244,7 @@ export function LoginPage() {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-muted-foreground mt-[35px]">
           {t("login.agreementPrefix")}
           {isChinese ? null : " "}
           <Link to="/terms" className="text-primary hover:underline">
