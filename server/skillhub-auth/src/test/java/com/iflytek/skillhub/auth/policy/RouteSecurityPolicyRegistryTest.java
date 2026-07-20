@@ -103,6 +103,13 @@ class RouteSecurityPolicyRegistryTest {
     }
 
     @Test
+    void apiTokenPolicySupportsReadonlyStreamableMcpRoute() {
+        assertTrue(registry.authorizeApiToken("POST", "/api/mcp", Set.of()).allowed());
+        assertFalse(registry.authorizeApiToken("GET", "/api/mcp/sse", Set.of()).allowed());
+        assertFalse(registry.authorizeApiToken("POST", "/api/mcp/messages", Set.of()).allowed());
+    }
+
+    @Test
     void routeAuthorizationProtectsNativeCliRemoteDeleteByAuthenticationNotSuperAdminRole() {
         boolean matched = registry.authorizationPolicies().stream()
                 .anyMatch(policy -> policy.method() == HttpMethod.DELETE
@@ -128,6 +135,7 @@ class RouteSecurityPolicyRegistryTest {
     @Test
     void shouldProjectRequestContext_onlyForApiRoutes() {
         assertTrue(registry.shouldProjectRequestContext("/api/web/namespaces/team-a"));
+        assertTrue(registry.shouldProjectRequestContext("/api/mcp"));
         assertFalse(registry.shouldProjectRequestContext("/assets/index.css"));
     }
 }

@@ -2,6 +2,11 @@ server:
   port: 8080
   shutdown: graceful
   forward-headers-strategy: framework
+  error:
+    include-exception: false
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
   tomcat:
     keep-alive-timeout: ${SERVER_TOMCAT_KEEP_ALIVE_TIMEOUT:75s}
   servlet:
@@ -105,6 +110,21 @@ spring:
           auth: ${SPRING_MAIL_SMTP_AUTH:false}
           starttls:
             enable: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE:false}
+  ai:
+    mcp:
+      server:
+        enabled: true
+        name: skillhub-mcp
+        version: 1.0.0
+        type: SYNC
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /api/mcp
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
 
 skillhub:
   builtin-skills:
@@ -160,6 +180,7 @@ skillhub:
       anonymous-cookie-max-age: ${SKILLHUB_DOWNLOAD_ANON_COOKIE_MAX_AGE:P30D}
       anonymous-cookie-secret: ${SKILLHUB_DOWNLOAD_ANON_COOKIE_SECRET:change-me-in-production}
   mcp:
+    enabled: ${SKILLHUB_MCP_ENABLED:true}
     context-forge:
       enabled: ${SKILLHUB_MCP_CONTEXT_FORGE_ENABLED:true}
       base-url: ${SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL:http://localhost:4444}
@@ -195,7 +216,7 @@ skillhub:
     verification-uri: ${DEVICE_AUTH_VERIFICATION_URI:${skillhub.public.base-url:}/cli/auth}
   security:
     scanner:
-      enabled: ${SKILLHUB_SECURITY_SCANNER_ENABLED:false}
+      enabled: ${SKILLHUB_SECURITY_SCANNER_ENABLED:true}
       base-url: ${SKILLHUB_SECURITY_SCANNER_URL:http://localhost:8000}
       health-path: /health
       scan-path: /scan-upload

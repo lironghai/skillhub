@@ -117,7 +117,8 @@ public class ApiTokenAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return !(path.startsWith("/api/v1/")
             || path.startsWith("/api/web/")
-            || path.startsWith("/api/cli/"));
+            || path.startsWith("/api/cli/")
+            || path.equals("/api/mcp"));
     }
 
     private boolean isBearerAuthorization(String authHeader) {

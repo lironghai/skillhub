@@ -170,4 +170,34 @@ class ApiTokenScopeFilterTest {
         assertTrue(response.getErrorMessage().contains("Missing API token scope: skill:publish"));
         verify(chain, never()).doFilter(request, response);
     }
+
+    @Test
+    void shouldAllowReadonlyMcpRequestsWithoutWriteScope() throws Exception {
+        AccessDeniedHandler handler = mock(AccessDeniedHandler.class);
+        ApiTokenScopeFilter filter = new ApiTokenScopeFilter(scopeService, handler);
+
+        PlatformPrincipal principal = new PlatformPrincipal(
+            "user-5",
+            "Mcp User",
+            "mcp@example.com",
+            "",
+            "api_token",
+            Set.of("USER")
+        );
+        var authentication = new UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/mcp");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verify(handler, never()).handle(eq(request), eq(response), any());
+    }
 }

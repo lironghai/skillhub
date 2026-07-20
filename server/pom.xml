@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.5.15</version>
         <relativePath/>
     </parent>
 
@@ -21,6 +21,7 @@
         <java.version>21</java.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <spring-ai.version>1.1.8</spring-ai.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -32,6 +33,7 @@
         <module>skillhub-storage</module>
         <module>skillhub-infra</module>
         <module>skillhub-notification</module>
+        <module>skillhub-mcp</module>
     </modules>
 
     <dependencyManagement>
@@ -64,6 +66,11 @@
             <dependency>
                 <groupId>com.iflytek.skillhub</groupId>
                 <artifactId>skillhub-notification</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iflytek.skillhub</groupId>
+                <artifactId>skillhub-mcp</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

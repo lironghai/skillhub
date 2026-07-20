@@ -227,6 +227,25 @@ class ApiTokenAuthenticationFilterTest {
         verify(apiTokenService).touchLastUsed(token);
     }
 
+    @Test
+    void shouldAuthenticateBearerTokensForMcpRequests() throws Exception {
+        ApiToken token = new ApiToken("user-4", "mcp", "sk_test", "hash", "[]");
+        UserAccount user = new UserAccount("user-4", "Mcp User", "mcp@example.com", "");
+
+        when(apiTokenService.validateToken("raw-token")).thenReturn(Optional.of(token));
+        when(userAccountRepository.findById("user-4")).thenReturn(Optional.of(user));
+        when(roleBindingRepository.findByUserId("user-4")).thenReturn(List.of());
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setRequestURI("/api/mcp");
+        request.addHeader("Authorization", "Bearer raw-token");
+
+        filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain());
+
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        verify(apiTokenService).touchLastUsed(token);
+    }
+
     private static List<String> cliReadRoutes() {
         return Stream.of(
                 "/api/cli/v1/skills/search",
