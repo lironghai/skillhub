@@ -16,6 +16,7 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -246,6 +248,33 @@ class ApiTokenAuthenticationFilterTest {
         verify(apiTokenService).touchLastUsed(token);
     }
 
+    @Test
+    void shouldAllowBearerTokensWithMcpReadScopeForMcpCatalogRoutes() throws Exception {
+        ApiToken token = new ApiToken("user-5", "mcp-catalog", "sk_test", "hash", "[\"mcp:read\"]");
+        UserAccount user = new UserAccount("user-5", "Mcp Catalog User", "mcp-catalog@example.com", "");
+        ApiTokenScopeFilter scopeFilter = scopeFilter();
+
+        when(apiTokenService.validateToken("raw-token")).thenReturn(Optional.of(token));
+        when(userAccountRepository.findById("user-5")).thenReturn(Optional.of(user));
+        when(roleBindingRepository.findByUserId("user-5")).thenReturn(List.of());
+
+        for (String route : List.of("/api/web/mcp/servers", "/api/web/mcp/internal-servers")) {
+            SecurityContextHolder.clearContext();
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", route);
+            request.addHeader("Authorization", "Bearer raw-token");
+            MockHttpServletResponse response = new MockHttpServletResponse();
+
+            filter.doFilter(request, response, new MockFilterChain());
+            MockFilterChain scopedChain = new MockFilterChain();
+            scopeFilter.doFilter(request, response, scopedChain);
+
+            assertEquals(MockHttpServletResponse.SC_OK, response.getStatus(), route);
+            assertNotNull(scopedChain.getRequest(), route);
+        }
+
+        verify(apiTokenService, times(2)).touchLastUsed(token);
+    }
+
     private static List<String> cliReadRoutes() {
         return Stream.of(
                 "/api/cli/v1/skills/search",
@@ -253,5 +282,11 @@ class ApiTokenAuthenticationFilterTest {
                 "/api/cli/v1/skills/global/demo/download",
                 "/api/cli/v1/skills/global/demo/versions/1.0.0/download"
         ).toList();
+    }
+
+    private ApiTokenScopeFilter scopeFilter() {
+        AccessDeniedHandler handler = (request, response, accessDeniedException) ->
+                response.sendError(MockHttpServletResponse.SC_FORBIDDEN, accessDeniedException.getMessage());
+        return new ApiTokenScopeFilter(scopeService, handler);
     }
 }

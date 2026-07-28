@@ -110,6 +110,21 @@ class RouteSecurityPolicyRegistryTest {
     }
 
     @Test
+    void apiTokenPolicyRequiresMcpReadScopeForMcpCatalogRoutes() {
+        var catalogDenied = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("skill:read"));
+        var internalDenied = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("skill:read"));
+        var catalogAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("mcp:read"));
+        var internalAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("mcp:read"));
+
+        assertFalse(catalogDenied.allowed());
+        assertEquals("mcp:read", catalogDenied.requiredScope());
+        assertFalse(internalDenied.allowed());
+        assertEquals("mcp:read", internalDenied.requiredScope());
+        assertTrue(catalogAllowed.allowed());
+        assertTrue(internalAllowed.allowed());
+    }
+
+    @Test
     void routeAuthorizationProtectsNativeCliRemoteDeleteByAuthenticationNotSuperAdminRole() {
         boolean matched = registry.authorizationPolicies().stream()
                 .anyMatch(policy -> policy.method() == HttpMethod.DELETE
