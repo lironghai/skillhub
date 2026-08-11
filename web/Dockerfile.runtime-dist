@@ -1,0 +1,3 @@
+FROM skillhub-web:p3-workbench-runtime
+RUN rm -rf /usr/share/nginx/html/assets /usr/share/nginx/html/index.html /usr/share/nginx/html/favicon.svg
+COPY dist /usr/share/nginx/html

@@ -152,6 +152,60 @@ class RequestLoggingFilterTest {
     }
 
     @Test
+    void doFilterInternal_shouldBypassResponseCachingForWorkbenchMessageStream() throws Exception {
+        RequestLoggingFilter filter = new RequestLoggingFilter();
+        attachAppender();
+        MockHttpServletRequest request = new MockHttpServletRequest(
+                "POST",
+                "/api/web/workbench/sessions/123/messages/stream");
+        request.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        request.setContentType("application/json");
+        request.setContent("{\"message\":\"hello\"}".getBytes(StandardCharsets.UTF_8));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();
+        FilterChain chain = (servletRequest, servletResponse) -> {
+            responseSeenByChain.set(servletResponse);
+            servletRequest.getReader().lines().count();
+            servletResponse.getWriter().write("event: stream_open\n\n");
+            servletResponse.flushBuffer();
+        };
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(responseSeenByChain.get()).isSameAs(response);
+        assertThat(response.getHeader("X-Accel-Buffering")).isEqualTo("no");
+        assertThat(response.getHeader(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-cache, no-transform");
+        assertThat(response.getContentType()).isEqualTo(MediaType.TEXT_EVENT_STREAM_VALUE);
+        assertThat(response.getContentAsString()).isEqualTo("event: stream_open\n\n");
+        assertThat(loggedMessages()).anySatisfy(message -> {
+            assertThat(message).contains("POST /api/web/workbench/sessions/123/messages/stream");
+            assertThat(message).contains("Body: {\"message\":\"hello\"}");
+        });
+    }
+
+    @Test
+    void doFilterInternal_shouldNotTreatInvalidWorkbenchMessageStreamAsSse() throws Exception {
+        RequestLoggingFilter filter = new RequestLoggingFilter();
+        MockHttpServletRequest request = new MockHttpServletRequest(
+                "POST",
+                "/api/web/workbench/sessions/undefined/messages/stream");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();
+        FilterChain chain = (servletRequest, servletResponse) -> {
+            responseSeenByChain.set(servletResponse);
+            servletResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            servletResponse.getWriter().write("{\"error\":\"bad session\"}");
+        };
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(responseSeenByChain.get()).isInstanceOf(ContentCachingResponseWrapper.class);
+        assertThat(response.getHeader("X-Accel-Buffering")).isNull();
+        assertThat(response.getContentType()).isEqualTo(MediaType.APPLICATION_JSON_VALUE);
+        assertThat(response.getContentAsString()).isEqualTo("{\"error\":\"bad session\"}");
+    }
+
+    @Test
     void doFilterInternal_shouldKeepCachingWrapperForRegularApiResponses() throws Exception {
         RequestLoggingFilter filter = new RequestLoggingFilter();
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/notifications/unread-count");

@@ -68,6 +68,8 @@ const RegisterPage = createLazyRouteComponent(() => import('@/pages/register'), 
 const ResetPasswordPage = createLazyRouteComponent(() => import('@/pages/reset-password'), 'ResetPasswordPage')
 const PrivacyPolicyPage = createLazyRouteComponent(() => import('@/pages/privacy'), 'PrivacyPolicyPage')
 const SearchPage = createLazyRouteComponent(() => import('@/pages/search'), 'SearchPage')
+const SkillBundlesPage = createLazyRouteComponent(() => import('@/pages/skill-bundles'), 'SkillBundlesPage')
+const SkillBundleDetailPage = createLazyRouteComponent(() => import('@/pages/skill-bundle-detail'), 'SkillBundleDetailPage')
 const TermsOfServicePage = createLazyRouteComponent(() => import('@/pages/terms'), 'TermsOfServicePage')
 const NamespacePage = createLazyRouteComponent(() => import('@/pages/namespace'), 'NamespacePage')
 const SkillDetailPage = createLazyRouteComponent(() => import('@/pages/skill-detail'), 'SkillDetailPage')
@@ -75,6 +77,9 @@ const SkillVersionComparePage = createLazyRouteComponent(() => import('@/pages/s
 const DashboardPage = createLazyRouteComponent(() => import('@/pages/dashboard'), 'DashboardPage')
 const MySkillsPage = createLazyRouteComponent(() => import('@/pages/dashboard/my-skills'), 'MySkillsPage')
 const PublishPage = createLazyRouteComponent(() => import('@/pages/dashboard/publish'), 'PublishPage')
+const WorkbenchPage = createLazyRouteComponent(() => import('@/pages/dashboard/workbench'), 'WorkbenchPage')
+const CreateSkillBundlePage = createLazyRouteComponent(() => import('@/pages/dashboard/skill-bundles'), 'CreateSkillBundlePage')
+const EditSkillBundlePage = createLazyRouteComponent(() => import('@/pages/dashboard/skill-bundles'), 'EditSkillBundlePage')
 const MyNamespacesPage = createLazyRouteComponent(
   () => import('@/pages/dashboard/my-namespaces'),
   'MyNamespacesPage',
@@ -215,6 +220,19 @@ const searchRoute = createRoute({
   },
 })
 
+const skillBundlesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'skill-bundles',
+  component: SkillBundlesPage,
+  validateSearch: (search: Record<string, unknown>): { q: string; namespace?: string; label?: string; sort: string; page: number } => ({
+    q: normalizeSearchQuery(typeof search.q === 'string' ? search.q : ''),
+    namespace: typeof search.namespace === 'string' && search.namespace ? search.namespace.replace(/^@/, '') : undefined,
+    label: typeof search.label === 'string' && search.label ? search.label : undefined,
+    sort: (search.sort as string) || 'newest',
+    page: Number(search.page) || 0,
+  }),
+})
+
 const termsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'terms',
@@ -247,6 +265,12 @@ const skillVersionCompareRoute = createRoute({
   component: SkillVersionComparePage,
 })
 
+const skillBundleDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/skill-bundles/$namespace/$slug',
+  component: SkillBundleDetailPage,
+})
+
 const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'dashboard',
@@ -276,6 +300,27 @@ const dashboardPublishRoute = createRoute({
     visibility: typeof search.visibility === 'string' && search.visibility ? search.visibility : undefined,
   }),
   component: PublishPage,
+})
+
+const dashboardWorkbenchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'dashboard/workbench',
+  beforeLoad: requireAuth,
+  component: WorkbenchPage,
+})
+
+const dashboardSkillBundlesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'dashboard/skill-bundles',
+  beforeLoad: requireAuth,
+  component: CreateSkillBundlePage,
+})
+
+const dashboardSkillBundleEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'dashboard/skill-bundles/$namespace/$slug',
+  beforeLoad: requireAuth,
+  component: EditSkillBundlePage,
 })
 
 const dashboardNamespacesRoute = createRoute({
@@ -452,13 +497,18 @@ const routeTree = rootRoute.addChildren([
   resetPasswordRoute,
   privacyRoute,
   searchRoute,
+  skillBundlesRoute,
   termsRoute,
   namespaceRoute,
   skillDetailRoute,
   skillVersionCompareRoute,
+  skillBundleDetailRoute,
   dashboardRoute,
   dashboardSkillsRoute,
   dashboardPublishRoute,
+  dashboardWorkbenchRoute,
+  dashboardSkillBundlesRoute,
+  dashboardSkillBundleEditRoute,
   dashboardNamespacesRoute,
   dashboardNamespaceMembersRoute,
   dashboardNamespaceReviewsRoute,

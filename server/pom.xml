@@ -22,6 +22,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <spring-ai.version>1.1.8</spring-ai.version>
+        <agentscope.version>2.0.2-subagent-bugfix</agentscope.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -34,7 +35,17 @@
         <module>skillhub-infra</module>
         <module>skillhub-notification</module>
         <module>skillhub-mcp</module>
+        <module>skillhub-workbench</module>
     </modules>
+
+    <profiles>
+        <profile>
+            <id>workbench-poc</id>
+            <modules>
+                <module>skillhub-workbench-poc</module>
+            </modules>
+        </profile>
+    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -71,6 +82,11 @@
             <dependency>
                 <groupId>com.iflytek.skillhub</groupId>
                 <artifactId>skillhub-mcp</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.iflytek.skillhub</groupId>
+                <artifactId>skillhub-workbench</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

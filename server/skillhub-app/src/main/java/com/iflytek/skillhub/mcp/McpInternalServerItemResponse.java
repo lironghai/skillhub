@@ -1,5 +1,6 @@
 package com.iflytek.skillhub.mcp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 public record McpInternalServerItemResponse(
@@ -18,7 +19,9 @@ public record McpInternalServerItemResponse(
         List<McpAssociatedItemResponse> resources,
         List<McpAssociatedItemResponse> prompts,
         List<String> tags,
+        @JsonIgnore
         String streamableHttpUrl,
+        @JsonIgnore
         String sseUrl
 ) {
     public McpInternalServerItemResponse(String id,

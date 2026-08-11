@@ -148,6 +148,8 @@ describe('McpMarketplacePage', () => {
     expect(html).not.toContain('Query BDC report data by code')
     expect(html).not.toContain('bdc_schema')
     expect(html).not.toContain('bdc_router')
+    expect(html).not.toContain('/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp')
+    expect(html).not.toContain('/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse')
     expect(html).toContain('<table')
     expect(html).not.toContain('<iframe')
   })

@@ -10,8 +10,8 @@ type NotificationEventSource = {
 }
 type EventSourceFactory = (url: string) => NotificationEventSource
 type TimerApi = {
-  setTimeout: typeof setTimeout
-  clearTimeout: typeof clearTimeout
+  setTimeout: (handler: () => void, timeout: number) => ReturnType<typeof setTimeout>
+  clearTimeout: (id: ReturnType<typeof setTimeout>) => void
 }
 
 export type NotificationSseConnection = {
@@ -27,7 +27,10 @@ export function createNotificationSseConnection(
   url: string,
   eventSourceFactory: EventSourceFactory = (targetUrl) =>
     new EventSource(targetUrl, { withCredentials: true }),
-  timerApi: TimerApi = { setTimeout, clearTimeout },
+  timerApi: TimerApi = {
+    setTimeout: (handler, timeout) => setTimeout(handler, timeout),
+    clearTimeout: (id) => clearTimeout(id),
+  },
 ): NotificationSseConnection {
   return new ManagedNotificationSseConnection(url, eventSourceFactory, timerApi)
 }

@@ -11,6 +11,7 @@ COPY skillhub-infra/pom.xml skillhub-infra/
 COPY skillhub-storage/pom.xml skillhub-storage/
 COPY skillhub-notification/pom.xml skillhub-notification/
 COPY skillhub-mcp/pom.xml skillhub-mcp/
+COPY skillhub-workbench/pom.xml skillhub-workbench/
 COPY skillhub-app/pom.xml skillhub-app/
 COPY mvnw .
 COPY .mvn .mvn

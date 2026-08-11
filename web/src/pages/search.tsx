@@ -55,13 +55,20 @@ function scrollToTopOnPageChange() {
  * Search text, sorting, pagination, and the starred-only filter are mirrored into router search
  * params so the page can be shared, restored, and revisited without losing state.
  */
-function filterStarredSkills(skills: SkillSummary[], query: string, namespace: string): SkillSummary[] {
+function filterStarredSkills(skills: SkillSummary[], query: string, namespace: string, label: string): SkillSummary[] {
   const normalizedQuery = query.trim().toLowerCase()
   const normalizedNamespace = namespace.trim().toLowerCase()
+  const normalizedLabel = label.trim().toLowerCase()
 
   return skills.filter((skill) => {
     const matchesNamespace = !normalizedNamespace || skill.namespace.toLowerCase() === normalizedNamespace
     if (!matchesNamespace) {
+      return false
+    }
+    const matchesLabel = !normalizedLabel || (skill.labels ?? []).some((skillLabel) => (
+      skillLabel.type === 'RECOMMENDED' && skillLabel.slug.toLowerCase() === normalizedLabel
+    ))
+    if (!matchesLabel) {
       return false
     }
     if (!normalizedQuery) {
@@ -201,7 +208,7 @@ export function SearchPage() {
   }
 
   const filteredStarredSkills = starredOnly
-    ? sortStarredSkills(filterStarredSkills(starredSkills ?? [], q, namespace), sort)
+    ? sortStarredSkills(filterStarredSkills(starredSkills ?? [], q, namespace, selectedLabel), sort)
     : []
   const starredPageItems = starredOnly
     ? filteredStarredSkills.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
@@ -215,6 +222,7 @@ export function SearchPage() {
   const isPageLoading = starredOnly ? isLoadingStarred : isLoading
   const isUpdatingResults = starredOnly ? isFetchingStarred && !isLoadingStarred : isFetching && !isLoading
   const resultCount = starredOnly ? filteredStarredSkills.length : (data?.total ?? 0)
+  const skillTypeLabels = (labels ?? []).filter((label) => label.type === 'RECOMMENDED')
 
   return (
     <div className={APP_SHELL_PAGE_CLASS_NAME}>
@@ -281,7 +289,7 @@ export function SearchPage() {
           >
             {t('search.filterStarred')}
           </Button>
-          {!starredOnly && labels?.map((label) => (
+          {!starredOnly && skillTypeLabels.map((label) => (
             <Button
               key={label.slug}
               variant={selectedLabel === label.slug ? 'default' : 'outline'}

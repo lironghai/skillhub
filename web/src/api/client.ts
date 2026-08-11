@@ -21,6 +21,7 @@ import type {
   PromotionTask,
   AuditLogItem,
   SkillSummary,
+  SkillVersion,
   SkillReport,
   GovernanceSummary,
   GovernanceInboxItem,
@@ -44,6 +45,31 @@ import type {
   LabelDefinition,
   LabelItem,
   BatchMemberResponse,
+  SearchParams,
+  SkillBundleDetail,
+  SkillBundleDraftRequest,
+  SkillBundleSummary,
+  CreateWorkbenchSessionRequest,
+  ImportWorkbenchSourceResult,
+  WorkbenchDiffResult,
+  WorkbenchFile,
+  WorkbenchFileContent,
+  WorkbenchMcpAssociatedItem,
+  WorkbenchMcpBinding,
+  WorkbenchMcpCatalogItem,
+  WorkbenchMcpCatalogResponse,
+  WorkbenchPackagePreview,
+  WorkbenchPackagePreviewRequest,
+  WorkbenchPublishResult,
+  WorkbenchRuntimeConfig,
+  WorkbenchRuntimeRunResponse,
+  WorkbenchRuntimeStreamEvent,
+  PublishWorkbenchPackageRequest,
+  SaveWorkbenchMcpBindingsRequest,
+  WorkbenchSession,
+  WorkbenchSessionEvent,
+  WorkbenchToolApproval,
+  WriteWorkbenchFileRequest,
 } from './types'
 import { ApiError } from '@/shared/lib/api-error'
 import i18n from '@/i18n/config'
@@ -532,10 +558,472 @@ export const skillLifecycleApi = {
       body: JSON.stringify({ version }),
     })
   },
+
+  async listVersions(namespace: string, slug: string, params?: { page?: number; size?: number }): Promise<{ items: SkillVersion[]; total: number; page: number; size: number }> {
+    const cleanNamespace = namespace.startsWith('@') ? namespace.slice(1) : namespace
+    const searchParams = new URLSearchParams()
+    searchParams.set('page', String(params?.page ?? 0))
+    searchParams.set('size', String(params?.size ?? 50))
+    return fetchJson<{ items: SkillVersion[]; total: number; page: number; size: number }>(
+      `${WEB_API_PREFIX}/skills/${cleanNamespace}/${encodeURIComponent(slug)}/versions?${searchParams.toString()}`,
+    )
+  },
+}
+
+async function fetchSse(
+  input: RequestInfo | URL,
+  init: RequestInit | undefined,
+  onEvent: (event: WorkbenchRuntimeStreamEvent) => void,
+): Promise<void> {
+  const response = await fetch(withBaseUrl(input), {
+    ...init,
+    headers: withRequestHeaders(init?.headers),
+  })
+  if (!response.ok) {
+    throw new ApiError(`HTTP ${response.status}`, response.status)
+  }
+  if (!response.body) {
+    throw new ApiError('Streaming response is not available', response.status)
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const blocks = buffer.split(/\n\n|\r\n\r\n/)
+    buffer = blocks.pop() ?? ''
+    for (const block of blocks) {
+      const parsed = parseSseBlock(block)
+      if (parsed) {
+        onEvent(parsed)
+      }
+    }
+  }
+  buffer += decoder.decode()
+  const parsed = parseSseBlock(buffer)
+  if (parsed) {
+    onEvent(parsed)
+  }
+}
+
+function parseSseBlock(block: string): WorkbenchRuntimeStreamEvent | null {
+  const lines = block.split(/\r?\n/)
+  let event = 'message'
+  const data: string[] = []
+  for (const line of lines) {
+    if (line.startsWith('event:')) {
+      event = line.slice('event:'.length).trim()
+    } else if (line.startsWith('data:')) {
+      data.push(line.slice('data:'.length).trimStart())
+    }
+  }
+  if (data.length === 0) {
+    return null
+  }
+  try {
+    const parsed = JSON.parse(data.join('\n'))
+    return {
+      event,
+      data: typeof parsed === 'object' && parsed !== null ? parsed as Record<string, unknown> : { value: parsed },
+    }
+  } catch {
+    return { event, data: { raw: data.join('\n') } }
+  }
 }
 
 function normalizeNamespaceSlug(namespace: string): string {
   return namespace.startsWith('@') ? namespace.slice(1) : namespace
+}
+
+const WORKBENCH_API_PREFIX = `${WEB_API_PREFIX}/workbench`
+
+function sessionPath(sessionId: number | string, suffix = '') {
+  return `${WORKBENCH_API_PREFIX}/sessions/${encodeURIComponent(String(sessionId))}${suffix}`
+}
+
+function associatedItems(value: unknown): WorkbenchMcpAssociatedItem[] {
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+        .map((item) => ({
+          id: String(item.id ?? item.name ?? ''),
+          name: String(item.name ?? item.id ?? ''),
+          description: typeof item.description === 'string' ? item.description : null,
+        }))
+        .filter((item) => item.id || item.name)
+    : []
+}
+
+function stringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : []
+}
+
+function objectValue(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function arrayValue(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : []
+}
+
+function sanitizeWorkbenchMcpCatalogItem(item: Record<string, unknown>): WorkbenchMcpCatalogItem {
+  return {
+    id: String(item.id ?? ''),
+    name: String(item.name ?? item.id ?? ''),
+    description: typeof item.description === 'string' ? item.description : null,
+    enabled: item.enabled === true,
+    tools: associatedItems(item.tools),
+    resources: associatedItems(item.resources),
+    prompts: associatedItems(item.prompts),
+    tags: stringList(item.tags),
+    catalogSource: String(item.catalogSource ?? ''),
+    runtimeCandidate: item.runtimeCandidate === true,
+  }
+}
+
+function sanitizeWorkbenchMcpBinding(binding: Record<string, unknown>): WorkbenchMcpBinding {
+  return {
+    id: Number(binding.id ?? 0),
+    serverId: String(binding.serverId ?? ''),
+    catalogSource: String(binding.catalogSource ?? ''),
+    enabledToolsJson: arrayValue(binding.enabledToolsJson),
+    disabledToolsJson: arrayValue(binding.disabledToolsJson),
+    toolPolicyJson: objectValue(binding.toolPolicyJson),
+    policyVersion: String(binding.policyVersion ?? ''),
+    status: String(binding.status ?? ''),
+  }
+}
+
+function sanitizeWorkbenchToolApproval(approval: unknown): WorkbenchToolApproval {
+  const raw = objectValue(approval)
+  return {
+    id: Number(raw.id ?? 0),
+    sessionId: Number(raw.sessionId ?? 0),
+    eventId: Number(raw.eventId ?? 0),
+    toolName: String(raw.toolName ?? ''),
+    mcpServerId: typeof raw.mcpServerId === 'string' ? raw.mcpServerId : null,
+    riskLevel: String(raw.riskLevel ?? ''),
+    argumentsRedactedJson: objectValue(raw.argumentsRedactedJson),
+    status: String(raw.status ?? ''),
+    decisionBy: typeof raw.decisionBy === 'string' ? raw.decisionBy : null,
+    decisionAt: typeof raw.decisionAt === 'string' ? raw.decisionAt : null,
+    createdAt: String(raw.createdAt ?? ''),
+  }
+}
+
+function numericValue(...values: unknown[]): number {
+  for (const value of values) {
+    const parsed = typeof value === 'number'
+      ? value
+      : typeof value === 'string'
+        ? Number(value)
+        : Number.NaN
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      return parsed
+    }
+  }
+  return 0
+}
+
+function sanitizeWorkbenchFile(file: unknown): WorkbenchFile {
+  const raw = objectValue(file)
+  return {
+    path: String(raw.path ?? ''),
+    sizeBytes: numericValue(raw.sizeBytes, raw.size),
+    contentType: typeof raw.contentType === 'string' ? raw.contentType : null,
+  }
+}
+
+function sanitizeWorkbenchFileContent(file: unknown): WorkbenchFileContent {
+  const raw = objectValue(file)
+  return {
+    ...sanitizeWorkbenchFile(raw),
+    content: typeof raw.content === 'string' ? raw.content : '',
+  }
+}
+
+function sanitizeWorkbenchPackagePreview(value: unknown): WorkbenchPackagePreview {
+  const raw = objectValue(value)
+  const validation = objectValue(raw.validation)
+  const includedFiles = Array.isArray(raw.includedFiles) ? raw.includedFiles : []
+  const excludedFiles = Array.isArray(raw.excludedFiles) ? raw.excludedFiles : []
+  return {
+    packageFingerprint: String(raw.packageFingerprint ?? ''),
+    readyToPublish: raw.readyToPublish === true,
+    includedFiles: includedFiles
+      .map((file) => objectValue(file))
+      .map((file) => ({
+        path: String(file.path ?? ''),
+        sizeBytes: numericValue(file.sizeBytes, file.size),
+        sha256: typeof file.sha256 === 'string' ? file.sha256 : undefined,
+      }))
+      .filter((file) => file.path),
+    excludedFiles: excludedFiles
+      .map((file) => objectValue(file))
+      .map((file) => ({
+        path: String(file.path ?? ''),
+        reason: String(file.reason ?? ''),
+      }))
+      .filter((file) => file.path),
+    validation: {
+      status: String(validation.status ?? ''),
+      messages: stringList(validation.messages),
+    },
+  }
+}
+
+function sanitizeWorkbenchRuntimeConfig(value: unknown): WorkbenchRuntimeConfig {
+  const raw = objectValue(value)
+  return {
+    modelExecutorEnabled: raw.modelExecutorEnabled === true,
+    modelConfigured: raw.modelConfigured === true,
+    modelProvider: typeof raw.modelProvider === 'string' ? raw.modelProvider : null,
+    modelName: typeof raw.modelName === 'string' ? raw.modelName : null,
+    modelBaseUrlConfigured: raw.modelBaseUrlConfigured === true,
+    displayStatus: String(raw.displayStatus ?? ''),
+    message: typeof raw.message === 'string'
+      ? raw.message
+      : '模型执行器未配置；当前只创建 AgentScope 会话上下文，不会调用真实模型。',
+  }
+}
+
+export const workbenchApi = {
+  async getRuntimeConfig(): Promise<WorkbenchRuntimeConfig> {
+    return sanitizeWorkbenchRuntimeConfig(await fetchJson<unknown>(`${WORKBENCH_API_PREFIX}/runtime-config`))
+  },
+
+  async listSessions(params?: { limit?: number }): Promise<WorkbenchSession[]> {
+    const searchParams = new URLSearchParams()
+    searchParams.set('limit', String(params?.limit ?? 20))
+    return fetchJson<WorkbenchSession[]>(`${WORKBENCH_API_PREFIX}/sessions?${searchParams.toString()}`)
+  },
+
+  async createSession(request: CreateWorkbenchSessionRequest): Promise<WorkbenchSession> {
+    return fetchJson<WorkbenchSession>(`${WORKBENCH_API_PREFIX}/sessions`, {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
+    })
+  },
+
+  async getSession(sessionId: number | string): Promise<WorkbenchSession> {
+    return fetchJson<WorkbenchSession>(sessionPath(sessionId))
+  },
+
+  async importSource(sessionId: number | string): Promise<ImportWorkbenchSourceResult> {
+    const result = await fetchJson<Partial<ImportWorkbenchSourceResult> & { files?: string[] }>(sessionPath(sessionId, '/import-source'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders(),
+    })
+    return {
+      importedFiles: Array.isArray(result.importedFiles)
+        ? result.importedFiles
+        : Array.isArray(result.files)
+          ? result.files
+          : [],
+    }
+  },
+
+  async listEvents(sessionId: number | string, params?: { afterEventId?: number; limit?: number }): Promise<WorkbenchSessionEvent[]> {
+    const searchParams = new URLSearchParams()
+    if (params?.afterEventId !== undefined) {
+      searchParams.set('afterEventId', String(params.afterEventId))
+    }
+    if (params?.limit !== undefined) {
+      searchParams.set('limit', String(params.limit))
+    }
+    const query = searchParams.size > 0 ? `?${searchParams.toString()}` : ''
+    return fetchJson<WorkbenchSessionEvent[]>(sessionPath(sessionId, `/events${query}`))
+  },
+
+  async listFiles(sessionId: number | string): Promise<WorkbenchFile[]> {
+    const response = await fetchJson<unknown[]>(sessionPath(sessionId, '/files'))
+    return response
+      .map(sanitizeWorkbenchFile)
+      .filter((file) => file.path)
+  },
+
+  async listMcpCatalog(
+    sessionId: number | string,
+    params?: { search?: string; page?: number; size?: number },
+  ): Promise<WorkbenchMcpCatalogResponse> {
+    const searchParams = new URLSearchParams()
+    if (params?.search) {
+      searchParams.set('search', params.search)
+    }
+    if (params?.page !== undefined) {
+      searchParams.set('page', String(params.page))
+    }
+    if (params?.size !== undefined) {
+      searchParams.set('size', String(params.size))
+    }
+    const query = searchParams.size > 0 ? `?${searchParams.toString()}` : ''
+    const response = objectValue(await fetchJson<unknown>(sessionPath(sessionId, `/mcp-catalog${query}`)))
+    return {
+      items: Array.isArray(response.items)
+        ? response.items
+            .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+            .map(sanitizeWorkbenchMcpCatalogItem)
+        : [],
+      total: Number(response.total ?? 0),
+      page: Number(response.page ?? params?.page ?? 0),
+      size: Number(response.size ?? params?.size ?? 20),
+    }
+  },
+
+  async listMcpBindings(sessionId: number | string): Promise<WorkbenchMcpBinding[]> {
+    const response = await fetchJson<unknown[]>(sessionPath(sessionId, '/mcp-bindings'))
+    return response
+      .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+      .map(sanitizeWorkbenchMcpBinding)
+      .filter((binding) => binding.id > 0 && binding.serverId)
+  },
+
+  async saveMcpBindings(
+    sessionId: number | string,
+    request: SaveWorkbenchMcpBindingsRequest,
+  ): Promise<WorkbenchMcpBinding[]> {
+    const response = await fetchJson<unknown[]>(sessionPath(sessionId, '/mcp-bindings'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
+    })
+    return response
+      .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+      .map(sanitizeWorkbenchMcpBinding)
+      .filter((binding) => binding.id > 0 && binding.serverId)
+  },
+
+  async listApprovals(sessionId: number | string): Promise<WorkbenchToolApproval[]> {
+    const response = await fetchJson<unknown[]>(sessionPath(sessionId, '/approvals'))
+    return response
+      .filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null)
+      .map(sanitizeWorkbenchToolApproval)
+      .filter((approval) => approval.id > 0)
+  },
+
+  async readFile(sessionId: number | string, path: string): Promise<WorkbenchFileContent> {
+    return sanitizeWorkbenchFileContent(await fetchJson<unknown>(sessionPath(sessionId, `/file?path=${encodeURIComponent(path)}`)))
+  },
+
+  async writeFile(sessionId: number | string, path: string, request: WriteWorkbenchFileRequest): Promise<WorkbenchFileContent> {
+    return fetchJson<WorkbenchFileContent>(sessionPath(sessionId, `/file?path=${encodeURIComponent(path)}`), {
+      method: 'PUT',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
+    })
+  },
+
+  async deleteFile(sessionId: number | string, path: string): Promise<void> {
+    await fetchJson<void>(sessionPath(sessionId, `/file?path=${encodeURIComponent(path)}`), {
+      method: 'DELETE',
+      headers: await ensureCsrfHeaders(),
+    })
+  },
+
+  async getDiff(sessionId: number | string): Promise<WorkbenchDiffResult> {
+    const result = await fetchJson<Partial<WorkbenchDiffResult>>(sessionPath(sessionId, '/diff'))
+    return {
+      files: Array.isArray(result.files) ? result.files : [],
+    }
+  },
+
+  async readyForReview(sessionId: number | string): Promise<WorkbenchSession> {
+    return fetchJson<WorkbenchSession>(sessionPath(sessionId, '/ready-for-review'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders(),
+    })
+  },
+
+  async packagePreview(sessionId: number | string, request?: WorkbenchPackagePreviewRequest): Promise<WorkbenchPackagePreview> {
+    return sanitizeWorkbenchPackagePreview(await fetchJson<unknown>(sessionPath(sessionId, '/package-preview'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders(request?.visibility ? {
+        'Content-Type': 'application/json',
+      } : undefined),
+      body: request?.visibility ? JSON.stringify(request) : undefined,
+    }))
+  },
+
+  async publishPackage(sessionId: number | string, request: PublishWorkbenchPackageRequest): Promise<WorkbenchPublishResult> {
+    return fetchJson<WorkbenchPublishResult>(sessionPath(sessionId, '/publish'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
+    })
+  },
+
+  async sendMessage(sessionId: number | string, message: string): Promise<WorkbenchRuntimeRunResponse> {
+    return fetchJson<WorkbenchRuntimeRunResponse>(sessionPath(sessionId, '/messages'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify({ message }),
+    })
+  },
+
+  async sendMessageStream(
+    sessionId: number | string,
+    message: string,
+    onEvent: (event: WorkbenchRuntimeStreamEvent) => void,
+  ): Promise<void> {
+    await fetchSse(sessionPath(sessionId, '/messages/stream'), {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+        Accept: 'text/event-stream',
+      }),
+      body: JSON.stringify({ message }),
+    }, onEvent)
+  },
+
+  async cancelRun(sessionId: number | string, runId: string): Promise<WorkbenchRuntimeRunResponse> {
+    return fetchJson<WorkbenchRuntimeRunResponse>(
+      sessionPath(sessionId, `/runs/${encodeURIComponent(runId)}/cancel`),
+      {
+        method: 'POST',
+        headers: await ensureCsrfHeaders(),
+      },
+    )
+  },
+
+  async approveApproval(sessionId: number | string, approvalId: number | string): Promise<WorkbenchToolApproval> {
+    const response = await fetchJson<unknown>(
+      sessionPath(sessionId, `/approvals/${encodeURIComponent(String(approvalId))}/approve`),
+      {
+        method: 'POST',
+        headers: await ensureCsrfHeaders(),
+      },
+    )
+    return sanitizeWorkbenchToolApproval(response)
+  },
+
+  async rejectApproval(sessionId: number | string, approvalId: number | string): Promise<WorkbenchToolApproval> {
+    const response = await fetchJson<unknown>(
+      sessionPath(sessionId, `/approvals/${encodeURIComponent(String(approvalId))}/reject`),
+      {
+        method: 'POST',
+        headers: await ensureCsrfHeaders(),
+      },
+    )
+    return sanitizeWorkbenchToolApproval(response)
+  },
 }
 
 export const labelApi = {
@@ -619,6 +1107,63 @@ export const labelApi = {
         'Content-Type': 'application/json',
       }),
       body: JSON.stringify({ items }),
+    })
+  },
+}
+
+export const skillBundleApi = {
+  async search(params: SearchParams): Promise<PagedResponse<SkillBundleSummary>> {
+    const searchParams = new URLSearchParams()
+    if (params.q !== undefined) {
+      searchParams.set('q', params.q)
+    }
+    if (params.namespace) {
+      searchParams.set('namespace', normalizeNamespaceSlug(params.namespace))
+    }
+    if (params.label) {
+      searchParams.set('label', params.label)
+    }
+    if (params.sort) {
+      searchParams.set('sort', params.sort)
+    }
+    if (params.page !== undefined) {
+      searchParams.set('page', String(params.page))
+    }
+    if (params.size !== undefined) {
+      searchParams.set('size', String(params.size))
+    }
+    const query = searchParams.toString()
+    return fetchJson<PagedResponse<SkillBundleSummary>>(`${WEB_API_PREFIX}/skill-bundles${query ? `?${query}` : ''}`)
+  },
+
+  async getDetail(namespace: string, slug: string): Promise<SkillBundleDetail> {
+    const cleanNamespace = normalizeNamespaceSlug(namespace)
+    return fetchJson<SkillBundleDetail>(`${WEB_API_PREFIX}/skill-bundles/${cleanNamespace}/${encodeURIComponent(slug)}`)
+  },
+
+  getDownloadUrl(namespace: string, slug: string): string {
+    const cleanNamespace = normalizeNamespaceSlug(namespace)
+    return buildApiUrl(`${WEB_API_PREFIX}/skill-bundles/${encodeURIComponent(cleanNamespace)}/${encodeURIComponent(slug)}/download`)
+  },
+
+  async create(request: SkillBundleDraftRequest): Promise<SkillBundleDetail> {
+    return fetchJson<SkillBundleDetail>(`${WEB_API_PREFIX}/skill-bundles`, {
+      method: 'POST',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
+    })
+  },
+
+  async update(namespace: string, slug: string, request: SkillBundleDraftRequest): Promise<SkillBundleDetail> {
+    const cleanNamespace = normalizeNamespaceSlug(namespace)
+    return fetchJson<SkillBundleDetail>(`${WEB_API_PREFIX}/skill-bundles/${cleanNamespace}/${encodeURIComponent(slug)}`, {
+      method: 'PUT',
+      headers: await ensureCsrfHeaders({
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify(request),
     })
   },
 }

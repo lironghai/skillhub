@@ -102,6 +102,20 @@ class FlywayMigrationGuardrailTest {
         assertThat(migration).contains("bad_namespace.slug <> 'global'");
     }
 
+    @Test
+    void skillBundleMigration_mustOnlyCreateNewBundleTables() throws IOException {
+        String migration = Files.readString(migrationPath("V45__skill_bundle_tables.sql"));
+
+        assertThat(migration).contains("CREATE TABLE skill_bundle");
+        assertThat(migration).contains("CREATE TABLE skill_bundle_item");
+        assertThat(migration).contains("CREATE TABLE skill_bundle_label");
+        assertThat(migration).doesNotContain("ALTER TABLE skill");
+        assertThat(migration).doesNotContain("ALTER TABLE skill_version");
+        assertThat(migration).doesNotContain("ALTER TABLE label_definition");
+        assertThat(migration).doesNotContain("ALTER TABLE skill_label");
+        assertThat(migration).doesNotContain("ALTER TABLE namespace");
+    }
+
     private List<Path> migrationFiles() throws IOException {
         Path root = repoRoot()
                 .resolve("server")

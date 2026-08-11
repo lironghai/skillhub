@@ -1,6 +1,12 @@
 package com.iflytek.skillhub.service;
 
 import com.iflytek.skillhub.auth.rbac.RbacService;
+import com.iflytek.skillhub.domain.label.LabelDefinition;
+import com.iflytek.skillhub.domain.label.LabelDefinitionService;
+import com.iflytek.skillhub.domain.label.LabelTranslation;
+import com.iflytek.skillhub.domain.label.LabelType;
+import com.iflytek.skillhub.domain.label.SkillLabel;
+import com.iflytek.skillhub.domain.label.SkillLabelService;
 import com.iflytek.skillhub.domain.namespace.Namespace;
 import com.iflytek.skillhub.domain.namespace.NamespaceRepository;
 import com.iflytek.skillhub.domain.namespace.NamespaceRole;
@@ -8,11 +14,13 @@ import com.iflytek.skillhub.domain.namespace.NamespaceService;
 import com.iflytek.skillhub.domain.skill.Skill;
 import com.iflytek.skillhub.domain.skill.SkillRepository;
 import com.iflytek.skillhub.domain.skill.service.SkillLifecycleProjectionService;
+import com.iflytek.skillhub.dto.SkillLabelDto;
 import com.iflytek.skillhub.dto.SkillSummaryResponse;
 import com.iflytek.skillhub.search.SearchQuery;
 import com.iflytek.skillhub.search.SearchQueryService;
 import com.iflytek.skillhub.search.SearchResult;
 import com.iflytek.skillhub.search.SearchVisibilityScope;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +45,9 @@ public class SkillSearchAppService {
     private final NamespaceService namespaceService;
     private final SkillLifecycleProjectionService skillLifecycleProjectionService;
     private final RbacService rbacService;
+    private final SkillLabelService skillLabelService;
+    private final LabelDefinitionService labelDefinitionService;
+    private final LabelLocalizationService labelLocalizationService;
 
     public SkillSearchAppService(
             SearchQueryService searchQueryService,
@@ -44,13 +55,19 @@ public class SkillSearchAppService {
             NamespaceRepository namespaceRepository,
             NamespaceService namespaceService,
             SkillLifecycleProjectionService skillLifecycleProjectionService,
-            RbacService rbacService) {
+            RbacService rbacService,
+            SkillLabelService skillLabelService,
+            LabelDefinitionService labelDefinitionService,
+            LabelLocalizationService labelLocalizationService) {
         this.searchQueryService = searchQueryService;
         this.skillRepository = skillRepository;
         this.namespaceRepository = namespaceRepository;
         this.namespaceService = namespaceService;
         this.skillLifecycleProjectionService = skillLifecycleProjectionService;
         this.rbacService = rbacService;
+        this.skillLabelService = skillLabelService;
+        this.labelDefinitionService = labelDefinitionService;
+        this.labelLocalizationService = labelLocalizationService;
     }
 
     public record SearchResponse(
@@ -194,18 +211,24 @@ public class SkillSearchAppService {
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getSlug()));
         Map<Long, SkillLifecycleProjectionService.Projection> projectionsBySkillId =
                 skillLifecycleProjectionService.projectPublishedSummaries(matchedSkills);
+        Map<Long, List<SkillLabelDto>> labelsBySkillId = loadSummaryLabels(skillIds);
 
         return skillIds.stream()
                 .map(skillsById::get)
                 .filter(java.util.Objects::nonNull)
-                .map(skill -> toSummaryResponse(skill, namespaceSlugsById, projectionsBySkillId.get(skill.getId())))
+                .map(skill -> toSummaryResponse(
+                        skill,
+                        namespaceSlugsById,
+                        projectionsBySkillId.get(skill.getId()),
+                        labelsBySkillId.getOrDefault(skill.getId(), List.of())))
                 .toList();
     }
 
     private SkillSummaryResponse toSummaryResponse(
             Skill skill,
             Map<Long, String> namespaceSlugsById,
-            SkillLifecycleProjectionService.Projection projection) {
+            SkillLifecycleProjectionService.Projection projection,
+            List<SkillLabelDto> labels) {
         String namespaceSlug = namespaceSlugsById.get(skill.getNamespaceId());
 
         return new SkillSummaryResponse(
@@ -225,7 +248,61 @@ public class SkillSearchAppService {
                 toLifecycleVersion(projection.headlineVersion()),
                 toLifecycleVersion(projection.publishedVersion()),
                 toLifecycleVersion(projection.ownerPreviewVersion()),
-                projection.resolutionMode().name()
+                projection.resolutionMode().name(),
+                labels
+        );
+    }
+
+    private Map<Long, List<SkillLabelDto>> loadSummaryLabels(List<Long> skillIds) {
+        List<SkillLabel> skillLabels = skillLabelService.listSkillLabelsBySkillIds(skillIds);
+        if (skillLabels == null || skillLabels.isEmpty()) {
+            return Map.of();
+        }
+
+        List<Long> labelIds = skillLabels.stream()
+                .map(SkillLabel::getLabelId)
+                .distinct()
+                .toList();
+        Map<Long, LabelDefinition> definitionsById = labelDefinitionService.listByIds(labelIds).stream()
+                .collect(Collectors.toMap(LabelDefinition::getId, Function.identity()));
+        Map<Long, List<LabelTranslation>> translationsByLabelId =
+                labelDefinitionService.listTranslationsByLabelIds(labelIds);
+
+        return skillLabels.stream()
+                .filter(skillLabel -> isSummaryVisible(definitionsById.get(skillLabel.getLabelId())))
+                .collect(Collectors.groupingBy(
+                        SkillLabel::getSkillId,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                labels -> labels.stream()
+                                        .sorted(Comparator
+                                                .comparingInt((SkillLabel skillLabel) -> definitionsById
+                                                        .get(skillLabel.getLabelId())
+                                                        .getSortOrder())
+                                                .thenComparing(skillLabel -> definitionsById
+                                                        .get(skillLabel.getLabelId())
+                                                        .getId()))
+                                        .map(skillLabel -> toLabelDto(
+                                                definitionsById.get(skillLabel.getLabelId()),
+                                                translationsByLabelId))
+                                        .toList()
+                        )
+                ));
+    }
+
+    private boolean isSummaryVisible(LabelDefinition definition) {
+        return definition != null
+                && definition.getType() == LabelType.RECOMMENDED
+                && definition.isVisibleInFilter();
+    }
+
+    private SkillLabelDto toLabelDto(LabelDefinition definition, Map<Long, List<LabelTranslation>> translationsByLabelId) {
+        return new SkillLabelDto(
+                definition.getSlug(),
+                definition.getType().name(),
+                labelLocalizationService.resolveDisplayName(
+                        definition.getSlug(),
+                        translationsByLabelId.getOrDefault(definition.getId(), List.of()))
         );
     }
 

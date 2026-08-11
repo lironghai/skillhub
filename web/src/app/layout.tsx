@@ -28,6 +28,7 @@ export function Layout() {
   const [isHeaderElevated, setIsHeaderElevated] = useState(false)
   const contentLayoutPathname = resolveAppMainContentPathname(pathname, resolvedPathname)
   const mainContentLayout = getAppMainContentLayout(contentLayoutPathname)
+  const showFooter = contentLayoutPathname !== '/dashboard/workbench'
 
   useEffect(() => {
     const updateHeaderElevation = () => {
@@ -50,7 +51,9 @@ export function Layout() {
   }> = [
     { label: t('nav.landing'), to: '/', exact: true },
     { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
+    { label: t('nav.workbench'), to: '/dashboard/workbench', auth: true },
     { label: t('nav.search'), to: '/search' },
+    { label: t('nav.skillBundles'), to: '/skill-bundles' },
     { label: t('nav.mcpManagement'), to: '/dashboard/mcp' },
     { label: t('nav.dashboard'), to: '/dashboard', auth: true },
     { label: t('nav.mySkills'), to: '/dashboard/skills', auth: true },
@@ -133,6 +136,7 @@ export function Layout() {
       </main>
 
       {/* Footer */}
+      {showFooter && (
       <footer
         className="relative z-10 border-t mt-auto"
         style={{ background: "#fff", borderColor: "hsl(var(--border))" }}
@@ -260,6 +264,7 @@ export function Layout() {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

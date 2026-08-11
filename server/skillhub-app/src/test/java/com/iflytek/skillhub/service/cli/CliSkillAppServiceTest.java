@@ -5,6 +5,8 @@ import com.iflytek.skillhub.domain.namespace.Namespace;
 import com.iflytek.skillhub.domain.namespace.NamespaceRepository;
 import com.iflytek.skillhub.domain.namespace.NamespaceService;
 import com.iflytek.skillhub.auth.rbac.RbacService;
+import com.iflytek.skillhub.domain.label.LabelDefinitionService;
+import com.iflytek.skillhub.domain.label.SkillLabelService;
 import com.iflytek.skillhub.domain.skill.Skill;
 import com.iflytek.skillhub.domain.skill.SkillRepository;
 import com.iflytek.skillhub.domain.skill.SkillVersion;
@@ -22,6 +24,7 @@ import com.iflytek.skillhub.dto.cli.CliDeleteResponse;
 import com.iflytek.skillhub.dto.cli.CliPublishResponse;
 import com.iflytek.skillhub.dto.cli.CliResolveResponse;
 import com.iflytek.skillhub.service.AuditRequestContext;
+import com.iflytek.skillhub.service.LabelLocalizationService;
 import com.iflytek.skillhub.service.SkillDeleteAppService;
 import com.iflytek.skillhub.service.SkillSearchAppService;
 import com.iflytek.skillhub.search.SearchQuery;
@@ -56,6 +59,9 @@ class CliSkillAppServiceTest {
     @Mock SkillVersionRepository skillVersionRepository;
     @Mock NamespaceService namespaceService;
     @Mock RbacService rbacService;
+    @Mock SkillLabelService skillLabelService;
+    @Mock LabelDefinitionService labelDefinitionService;
+    @Mock LabelLocalizationService labelLocalizationService;
 
     private CliSkillAppService service;
 
@@ -159,7 +165,10 @@ class CliSkillAppServiceTest {
                 namespaceRepository,
                 namespaceService,
                 new SkillLifecycleProjectionService(skillVersionRepository),
-                rbacService
+                rbacService,
+                skillLabelService,
+                labelDefinitionService,
+                labelLocalizationService
         );
         CliSkillAppService realService = new CliSkillAppService(
                 realSearchAppService,

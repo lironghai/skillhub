@@ -195,6 +195,15 @@ skillhub:
       public-base-url: ${SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL:${SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL:http://localhost:4444}}
       default-size: ${SKILLHUB_MCP_CONTEXT_FORGE_DEFAULT_SIZE:24}
       max-size: ${SKILLHUB_MCP_CONTEXT_FORGE_MAX_SIZE:100}
+  workbench:
+    runtime:
+      workspace-base-path: ${SKILLHUB_WORKBENCH_RUNTIME_WORKSPACE_BASE_PATH:${java.io.tmpdir}/skillhub-workbench-runtime}
+      model-executor-enabled: ${SKILLHUB_WORKBENCH_MODEL_EXECUTOR_ENABLED:false}
+      model-provider: ${SKILLHUB_WORKBENCH_MODEL_PROVIDER:}
+      model-name: ${SKILLHUB_WORKBENCH_MODEL_NAME:}
+      model-base-url: ${SKILLHUB_WORKBENCH_MODEL_BASE_URL:}
+      model-api-key: ${SKILLHUB_WORKBENCH_MODEL_API_KEY:}
+      model-request-timeout-seconds: ${SKILLHUB_WORKBENCH_MODEL_REQUEST_TIMEOUT_SECONDS:180}
   publish:
     max-file-count: 100
     max-single-file-size: 10485760 # 10MB

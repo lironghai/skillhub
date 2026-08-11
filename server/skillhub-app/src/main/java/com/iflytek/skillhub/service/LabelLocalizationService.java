@@ -25,11 +25,24 @@ public class LabelLocalizationService {
                 "en"
         );
         return candidates.stream()
-                .map(values::get)
+                .map(candidate -> resolveCandidate(values, candidate))
                 .filter(Objects::nonNull)
                 .filter(value -> !value.isBlank())
                 .findFirst()
                 .orElse(slug);
+    }
+
+    private String resolveCandidate(Map<String, String> values, String candidate) {
+        String exact = values.get(candidate);
+        if (exact != null) {
+            return exact;
+        }
+        return values.entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(candidate + "-"))
+                .map(Map.Entry::getValue)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     private String normalizeLocale(String value) {

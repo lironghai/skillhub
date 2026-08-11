@@ -22,6 +22,9 @@ export function SkillCard({ skill, onClick, highlightStarred = true }: SkillCard
   const showStarredHighlight = highlightStarred && isAuthenticated && starStatus?.starred
   const headlineVersion = getHeadlineVersion(skill)
   const isInteractive = typeof onClick === 'function'
+  const recommendedLabels = (skill.labels ?? []).filter((label) => label.type === 'RECOMMENDED')
+  const visibleLabels = recommendedLabels.slice(0, 2)
+  const hiddenLabelCount = recommendedLabels.length - visibleLabels.length
 
   return (
     <Card
@@ -58,6 +61,22 @@ export function SkillCard({ skill, onClick, highlightStarred = true }: SkillCard
             {skill.summary}
           </p>
         )}
+
+        <div className="mb-4 flex min-h-6 flex-wrap items-start gap-1.5">
+          {visibleLabels.map((label) => (
+            <span
+              key={label.slug}
+              className="inline-flex max-w-full items-center rounded-full border border-primary/15 bg-primary/5 px-2 py-0.5 text-xs font-medium text-primary"
+            >
+              {label.displayName}
+            </span>
+          ))}
+          {hiddenLabelCount > 0 ? (
+            <span className="inline-flex items-center rounded-full border border-muted-foreground/20 bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+              +{hiddenLabelCount}
+            </span>
+          ) : null}
+        </div>
 
         <div className="mt-auto flex items-center gap-4 text-xs text-muted-foreground">
           {headlineVersion && (

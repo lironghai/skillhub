@@ -86,3 +86,7 @@ CLAUDE.md
 
 # Local config file
 .mcp.json
+.m2-docker/
+
+# Local acceptance artifacts
+.acceptance/

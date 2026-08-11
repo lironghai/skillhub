@@ -197,6 +197,8 @@ class McpCatalogControllerTest {
         var firstTool = firstItem.path("tools").get(0);
 
         assertThat(firstItem.path("iconUrl").asText()).isEqualTo("https://static.example.com/icons/bdc4.png");
+        assertThat(firstItem.has("streamableHttpUrl")).isFalse();
+        assertThat(firstItem.has("sseUrl")).isFalse();
         assertThat(firstTool.path("inputSchema").path("properties").path("reportCode").path("type").asText()).isEqualTo("string");
         assertThat(firstTool.path("outputSchema").path("properties").path("rows").path("type").asText()).isEqualTo("array");
     }

@@ -277,7 +277,25 @@ public class SkillPublishService {
             SkillVisibility visibility,
             java.util.Set<String> platformRoles,
             boolean confirmWarnings) {
-        return publishFromEntriesInternal(namespaceSlug, entries, publisherId, visibility, platformRoles, confirmWarnings, false, false);
+        return publishFromEntriesInternal(namespaceSlug, entries, publisherId, visibility, platformRoles, confirmWarnings, false, false, false);
+    }
+
+    /**
+     * Publishes a workbench package as a new version only.
+     *
+     * <p>The workbench flow lets users review and confirm generated files before
+     * publishing, so it must not reuse the generic publish side effects that
+     * withdraw pending reviews or replace non-published versions. The strict
+     * checks run inside this transaction after the target skill row is locked.
+     */
+    @Transactional
+    public PublishResult publishWorkbenchFromEntries(
+            String namespaceSlug,
+            List<PackageEntry> entries,
+            String publisherId,
+            SkillVisibility visibility,
+            Set<String> platformRoles) {
+        return publishFromEntriesInternal(namespaceSlug, entries, publisherId, visibility, platformRoles, false, false, false, true);
     }
 
     /**
@@ -318,7 +336,8 @@ public class SkillPublishService {
                 Set.of(),
                 confirmWarnings,  // confirmWarnings: honour caller's choice for rerelease
                 false,  // forceAutoPublish=false: respect visibility rules
-                true
+                true,
+                false
         );
     }
 
@@ -330,18 +349,23 @@ public class SkillPublishService {
             Set<String> platformRoles,
             boolean confirmWarnings,
             boolean forceAutoPublish,
-            boolean bypassMembershipCheck) {
+            boolean bypassMembershipCheck,
+            boolean strictNewVersionOnly) {
 
         // 1. Find namespace by slug
         Namespace namespace = namespaceRepository.findBySlug(namespaceSlug)
                 .orElseThrow(() -> new DomainBadRequestException("error.namespace.slug.notFound", namespaceSlug));
         assertNamespaceWritable(namespace);
+        if (strictNewVersionOnly) {
+            namespace = namespaceRepository.findByIdForUpdate(namespace.getId()).orElse(namespace);
+        }
+        Long namespaceId = namespace.getId();
 
         boolean isSuperAdmin = platformRoles.contains("SUPER_ADMIN");
 
         // 2. Check publisher is member unless SUPER_ADMIN short-circuits permission checks
         if (!isSuperAdmin && !bypassMembershipCheck) {
-            namespaceMemberRepository.findByNamespaceIdAndUserId(namespace.getId(), publisherId)
+            namespaceMemberRepository.findByNamespaceIdAndUserId(namespaceId, publisherId)
                     .orElseThrow(() -> new DomainBadRequestException("error.skill.publish.publisher.notMember", namespaceSlug));
         }
 
@@ -369,7 +393,7 @@ public class SkillPublishService {
 
         // 5. Run PrePublishValidator
         PrePublishValidator.SkillPackageContext context = new PrePublishValidator.SkillPackageContext(
-                entries, metadata, publisherId, namespace.getId());
+                entries, metadata, publisherId, namespaceId);
         ValidationResult prePublishValidation = prePublishValidator.validate(context);
         if (!prePublishValidation.passed()) {
             throw new DomainBadRequestException(
@@ -388,7 +412,7 @@ public class SkillPublishService {
         }
 
         // 6. Find or create Skill record (with owner isolation)
-        List<Skill> existingSkills = skillRepository.findByNamespaceIdAndSlug(namespace.getId(), skillSlug);
+        List<Skill> existingSkills = skillRepository.findByNamespaceIdAndSlug(namespaceId, skillSlug);
 
         // Check if any other owner's skill has published versions
         // Only PUBLISHED status blocks same-name publishing (UPLOADED/PENDING_REVIEW allowed)
@@ -409,31 +433,42 @@ public class SkillPublishService {
         }
 
         // Find or create skill for current user
-        Skill skill = skillRepository.findByNamespaceIdAndSlugAndOwnerId(namespace.getId(), skillSlug, publisherId)
+        Skill skill = skillRepository.findByNamespaceIdAndSlugAndOwnerId(namespaceId, skillSlug, publisherId)
+                .map(existing -> skillRepository.findByIdForUpdate(existing.getId()).orElse(existing))
                 .orElseGet(() -> {
-                    Skill newSkill = new Skill(namespace.getId(), skillSlug, publisherId, visibility);
+                    Skill newSkill = new Skill(namespaceId, skillSlug, publisherId, visibility);
                     newSkill.setCreatedBy(publisherId);
-                    return skillRepository.save(newSkill);
+                    Skill saved = skillRepository.save(newSkill);
+                    skillRepository.flush();
+                    return saved;
                 });
 
         if (skill.getStatus() == SkillStatus.ARCHIVED) {
             throw new DomainBadRequestException("error.skill.publish.archived", skillSlug);
         }
 
-        // 6c. Auto-withdraw pending review versions
-        // When publishing a new version, existing PENDING_REVIEW versions are withdrawn to UPLOADED status
         List<SkillVersion> pendingVersions = skillVersionRepository
                 .findBySkillIdAndStatus(skill.getId(), SkillVersionStatus.PENDING_REVIEW);
-        for (SkillVersion pending : pendingVersions) {
-            reviewTaskRepository.findBySkillVersionIdAndStatus(pending.getId(), ReviewTaskStatus.PENDING)
-                    .ifPresent(reviewTaskRepository::delete);
-            pending.setStatus(SkillVersionStatus.UPLOADED);
-            skillVersionRepository.save(pending);
+        if (strictNewVersionOnly && !pendingVersions.isEmpty()) {
+            throw new DomainBadRequestException("error.workbench.publish.pendingReviewExists", skill.getSlug());
+        }
+        if (!strictNewVersionOnly) {
+            // 6c. Auto-withdraw pending review versions
+            // When publishing a new version, existing PENDING_REVIEW versions are withdrawn to UPLOADED status
+            for (SkillVersion pending : pendingVersions) {
+                reviewTaskRepository.findBySkillVersionIdAndStatus(pending.getId(), ReviewTaskStatus.PENDING)
+                        .ifPresent(reviewTaskRepository::delete);
+                pending.setStatus(SkillVersionStatus.UPLOADED);
+                skillVersionRepository.save(pending);
+            }
         }
 
         // 7. Check version doesn't already exist
         java.util.Optional<SkillVersion> existingVersion = skillVersionRepository.findBySkillIdAndVersion(skill.getId(), metadata.version());
         if (existingVersion.isPresent()) {
+            if (strictNewVersionOnly) {
+                throw new DomainBadRequestException("error.workbench.publish.versionExists", metadata.version());
+            }
             SkillVersion matchedVersion = existingVersion.get();
             if (matchedVersion.getStatus() == SkillVersionStatus.PUBLISHED) {
                 throw new DomainBadRequestException("error.skill.version.exists", metadata.version());

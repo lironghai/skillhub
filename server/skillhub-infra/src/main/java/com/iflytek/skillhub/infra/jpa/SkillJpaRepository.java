@@ -20,6 +20,10 @@ import java.util.Optional;
  */
 @Repository
 public interface SkillJpaRepository extends JpaRepository<Skill, Long>, SkillRepository {
+    @Override
+    @Query(value = "SELECT * FROM skill WHERE id = :id FOR UPDATE", nativeQuery = true)
+    Optional<Skill> findByIdForUpdate(@Param("id") Long id);
+
     List<Skill> findByIdIn(List<Long> ids);
     List<Skill> findByNamespaceIdAndSlug(Long namespaceId, String slug);
     Optional<Skill> findByNamespaceIdAndSlugAndOwnerId(Long namespaceId, String slug, String ownerId);

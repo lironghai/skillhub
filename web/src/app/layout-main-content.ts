@@ -32,6 +32,13 @@ export function getAppMainContentLayout(pathname: string): AppMainContentLayout 
   }
 
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) {
+    if (pathname === '/dashboard/workbench') {
+      return {
+        mainClassName: 'flex-1 relative z-10 px-0 py-0',
+        contentClassName: 'w-full',
+      }
+    }
+
     return {
       mainClassName: CENTERED_MAIN_CLASS_NAME,
       contentClassName: CENTERED_DASHBOARD_CONTENT_CLASS_NAME,

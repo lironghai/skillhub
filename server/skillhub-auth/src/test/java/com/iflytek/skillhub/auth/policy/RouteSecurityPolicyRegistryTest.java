@@ -23,6 +23,18 @@ class RouteSecurityPolicyRegistryTest {
     }
 
     @Test
+    void authorizeApiToken_requiresPublishScopeForSkillBundleWrites() {
+        var denied = registry.authorizeApiToken("POST", "/api/web/skill-bundles", Set.of("skill:read"));
+        var allowed = registry.authorizeApiToken("POST", "/api/web/skill-bundles", Set.of("skill:publish"));
+        var updateAllowed = registry.authorizeApiToken("PUT", "/api/web/skill-bundles/global/demo-pack", Set.of("skill:publish"));
+
+        assertFalse(denied.allowed());
+        assertEquals("skill:publish", denied.requiredScope());
+        assertTrue(allowed.allowed());
+        assertTrue(updateAllowed.allowed());
+    }
+
+    @Test
     void authorizeApiToken_requiresDeleteScopeForHardDeleteEndpoint() {
         var denied = registry.authorizeApiToken("DELETE", "/api/v1/skills/global/demo-skill", Set.of("skill:publish"));
         var allowed = registry.authorizeApiToken("DELETE", "/api/v1/skills/global/demo-skill", Set.of("skill:delete"));
@@ -56,6 +68,29 @@ class RouteSecurityPolicyRegistryTest {
 
         assertTrue(matchedV1);
         assertTrue(matchedWeb);
+    }
+
+    @Test
+    void authorizationPolicies_shouldKeepSkillBundleReadEndpointsAnonymous() {
+        boolean listMatched = registry.authorizationPolicies().stream()
+                .anyMatch(policy -> policy.method() == HttpMethod.GET
+                        && "/api/web/skill-bundles".equals(policy.pattern())
+                        && policy.accessLevel() == RouteSecurityPolicyRegistry.AccessLevel.PERMIT_ALL);
+        boolean detailMatched = registry.authorizationPolicies().stream()
+                .anyMatch(policy -> policy.method() == HttpMethod.GET
+                        && "/api/web/skill-bundles/*/*".equals(policy.pattern())
+                        && policy.accessLevel() == RouteSecurityPolicyRegistry.AccessLevel.PERMIT_ALL);
+        boolean downloadMatched = registry.authorizationPolicies().stream()
+                .anyMatch(policy -> policy.method() == HttpMethod.GET
+                        && "/api/web/skill-bundles/*/*/download".equals(policy.pattern())
+                        && policy.accessLevel() == RouteSecurityPolicyRegistry.AccessLevel.PERMIT_ALL);
+
+        assertTrue(listMatched);
+        assertTrue(detailMatched);
+        assertTrue(downloadMatched);
+        assertTrue(registry.authorizeApiToken("GET", "/api/web/skill-bundles", Set.of()).allowed());
+        assertTrue(registry.authorizeApiToken("GET", "/api/web/skill-bundles/global/demo-pack", Set.of()).allowed());
+        assertTrue(registry.authorizeApiToken("GET", "/api/web/skill-bundles/global/demo-pack/download", Set.of()).allowed());
     }
 
     @Test

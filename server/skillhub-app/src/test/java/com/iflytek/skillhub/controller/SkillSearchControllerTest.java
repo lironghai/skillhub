@@ -1,6 +1,8 @@
 package com.iflytek.skillhub.controller;
 
 import com.iflytek.skillhub.domain.namespace.NamespaceMemberRepository;
+import com.iflytek.skillhub.dto.SkillLabelDto;
+import com.iflytek.skillhub.dto.SkillSummaryResponse;
 import com.iflytek.skillhub.service.SkillSearchAppService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +103,51 @@ class SkillSearchControllerTest {
                         .param("label", "official"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.items").isArray());
+    }
+
+    @Test
+    void searchShouldReturnSummaryLabels() throws Exception {
+        when(skillSearchAppService.search(
+                eq(null),
+                eq(null),
+                eq("newest"),
+                eq(0),
+                eq(20),
+                eq(null),
+                any(),
+                any()))
+                .thenReturn(new SkillSearchAppService.SearchResponse(
+                        List.of(new SkillSummaryResponse(
+                                10L,
+                                "demo",
+                                "Demo",
+                                "Summary",
+                                "PUBLIC",
+                                "ACTIVE",
+                                0L,
+                                0,
+                                BigDecimal.ZERO,
+                                0,
+                                "global",
+                                Instant.parse("2026-07-28T00:00:00Z"),
+                                false,
+                                null,
+                                null,
+                                null,
+                                "NONE",
+                                List.of(new SkillLabelDto("official", "RECOMMENDED", "Official"))
+                        )),
+                        1,
+                        0,
+                        20
+                ));
+
+        mockMvc.perform(get("/api/web/skills"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].slug").value("demo"))
+                .andExpect(jsonPath("$.data.items[0].labels[0].slug").value("official"))
+                .andExpect(jsonPath("$.data.items[0].labels[0].type").value("RECOMMENDED"))
+                .andExpect(jsonPath("$.data.items[0].labels[0].displayName").value("Official"));
     }
 
     @Test

@@ -169,10 +169,71 @@ export interface SkillSummary {
   namespace: string
   updatedAt: string
   canSubmitPromotion: boolean
+  labels?: LabelItem[]
   headlineVersion?: SkillLifecycleVersion
   publishedVersion?: SkillLifecycleVersion
   ownerPreviewVersion?: SkillLifecycleVersion
   resolutionMode?: string
+}
+
+export type SkillBundleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
+export type SkillBundleVisibility = 'PUBLIC' | 'NAMESPACE_ONLY' | 'PRIVATE' | string
+
+export interface SkillBundleItemRequest {
+  skillId: number
+  note?: string
+}
+
+export interface SkillBundleDraftRequest {
+  namespace: string
+  name: string
+  slug: string
+  summary?: string
+  avatarUrl?: string
+  description?: string
+  roleDescription?: string
+  applicableScenarios?: string
+  methodology?: string
+  recommendedSkillNotes?: string
+  visibility?: SkillBundleVisibility
+  status?: SkillBundleStatus
+  labels?: string[]
+  items?: SkillBundleItemRequest[]
+}
+
+export interface SkillBundleItem {
+  skillId: number
+  namespace: string
+  skillSlug: string
+  displayName: string
+  sortOrder?: number
+  note?: string
+}
+
+export interface SkillBundleSummary {
+  id: number
+  namespace: string
+  slug: string
+  name: string
+  summary?: string
+  avatarUrl?: string
+  roleDescription?: string
+  applicableScenarios?: string
+  visibility: SkillBundleVisibility
+  status: SkillBundleStatus
+  skillCount: number
+  downloadCount: number
+  labels?: LabelItem[]
+  updatedAt: string
+}
+
+export interface SkillBundleDetail extends SkillBundleSummary {
+  description?: string
+  methodology?: string
+  recommendedSkillNotes?: string
+  canManage: boolean
+  items: SkillBundleItem[]
+  createdAt: string
 }
 
 export type LabelItem = Omit<components['schemas']['SkillLabelDto'], 'slug' | 'type' | 'displayName'> & {
@@ -518,4 +579,192 @@ export interface NotificationPreferenceItem {
 
 export interface NotificationUnreadCount {
   count: number
+}
+
+export type WorkbenchMode = 'CREATE_SKILL' | 'UPDATE_SKILL'
+
+export interface WorkbenchSourceSkill {
+  namespace: string
+  slug: string
+  version: string
+}
+
+export interface CreateWorkbenchSessionRequest {
+  namespace: string
+  mode?: WorkbenchMode
+  sourceSkill?: WorkbenchSourceSkill
+  targetSlug?: string
+  targetVersion?: string
+  expiresInHours?: number
+}
+
+export interface WorkbenchSession {
+  id: number
+  status: string
+  mode: WorkbenchMode | string
+  namespaceId: number
+  targetSlug: string
+  targetVersion: string
+  fileCount: number
+  expiresAt: string
+  activeRun?: WorkbenchRuntimeRunResponse | null
+}
+
+export type WorkbenchSessionSummary = WorkbenchSession
+
+export interface ImportWorkbenchSourceResult {
+  importedFiles: string[]
+}
+
+export interface WorkbenchSessionEvent {
+  eventId: number
+  type: string
+  createdAt: string
+  payloadJson: string
+}
+
+export interface WorkbenchFile {
+  path: string
+  sizeBytes: number
+  contentType?: string | null
+}
+
+export interface WorkbenchFileContent extends WorkbenchFile {
+  content: string
+}
+
+export interface WriteWorkbenchFileRequest {
+  content: string
+  contentType?: string
+}
+
+export type WorkbenchFileDiffStatus = 'ADDED' | 'MODIFIED' | 'DELETED' | 'UNCHANGED' | string
+
+export interface WorkbenchFileDiff {
+  path: string
+  status: WorkbenchFileDiffStatus
+}
+
+export interface WorkbenchDiffResult {
+  files: WorkbenchFileDiff[]
+}
+
+export interface WorkbenchRuntimeRunResponse {
+  runId: string
+  status: string
+  message?: string | null
+  eventCount: number
+  startedAt?: string | null
+}
+
+export interface WorkbenchRuntimeStreamEvent {
+  event: 'run_started' | 'thinking_delta' | 'message_delta' | 'runtime_event' | 'completed' | 'error' | string
+  data: Record<string, unknown>
+}
+
+export interface WorkbenchRuntimeConfig {
+  modelExecutorEnabled: boolean
+  modelConfigured: boolean
+  modelProvider?: string | null
+  modelName?: string | null
+  modelBaseUrlConfigured: boolean
+  displayStatus: string
+  message: string
+}
+
+export interface WorkbenchMcpAssociatedItem {
+  id: string
+  name: string
+  description?: string | null
+}
+
+export interface WorkbenchMcpCatalogItem {
+  id: string
+  name: string
+  description?: string | null
+  enabled: boolean
+  tools: WorkbenchMcpAssociatedItem[]
+  resources: WorkbenchMcpAssociatedItem[]
+  prompts: WorkbenchMcpAssociatedItem[]
+  tags: string[]
+  catalogSource: string
+  runtimeCandidate: boolean
+}
+
+export interface WorkbenchMcpCatalogResponse {
+  items: WorkbenchMcpCatalogItem[]
+  total: number
+  page: number
+  size: number
+}
+
+export interface WorkbenchMcpBinding {
+  id: number
+  serverId: string
+  catalogSource: string
+  enabledToolsJson: unknown[]
+  disabledToolsJson: unknown[]
+  toolPolicyJson: Record<string, unknown>
+  policyVersion: string
+  status: string
+}
+
+export interface SaveWorkbenchMcpBindingsRequest {
+  serverIds: string[]
+}
+
+export interface WorkbenchToolApproval {
+  id: number
+  sessionId: number
+  eventId: number
+  toolName: string
+  mcpServerId?: string | null
+  riskLevel: string
+  argumentsRedactedJson: Record<string, unknown>
+  status: string
+  decisionBy?: string | null
+  decisionAt?: string | null
+  createdAt: string
+}
+
+export interface WorkbenchPackageFile {
+  path: string
+  sizeBytes: number
+  sha256?: string
+}
+
+export interface WorkbenchExcludedFile {
+  path: string
+  reason: string
+}
+
+export interface WorkbenchPackageValidation {
+  status: string
+  messages: string[]
+}
+
+export interface WorkbenchPackagePreview {
+  packageFingerprint: string
+  readyToPublish: boolean
+  includedFiles: WorkbenchPackageFile[]
+  excludedFiles: WorkbenchExcludedFile[]
+  validation: WorkbenchPackageValidation
+}
+
+export interface WorkbenchPackagePreviewRequest {
+  visibility?: 'PUBLIC' | 'NAMESPACE_ONLY' | 'PRIVATE' | string
+}
+
+export interface PublishWorkbenchPackageRequest {
+  confirmPackageFingerprint: string
+  visibility: 'PUBLIC' | 'NAMESPACE_ONLY' | 'PRIVATE' | string
+}
+
+export interface WorkbenchPublishResult {
+  skillId: number
+  skillVersionId: number
+  namespace: string
+  slug: string
+  version: string
+  status: string
 }

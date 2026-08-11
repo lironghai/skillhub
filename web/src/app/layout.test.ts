@@ -63,6 +63,12 @@ describe('Layout', () => {
     expect(html).toContain('nav.mcpManagement')
   })
 
+  it('shows the skill bundles entry before SkillHub login', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).toContain('nav.skillBundles')
+  })
+
   it('renders the footer resources column', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 

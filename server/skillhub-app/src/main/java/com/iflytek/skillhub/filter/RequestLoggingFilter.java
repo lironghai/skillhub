@@ -18,6 +18,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Logs inbound HTTP requests with only core parameters to keep log files compact.
@@ -35,6 +36,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     private static final Set<String> SKIP_SUFFIXES = Set.of(
             "/sse"
     );
+    private static final Pattern WORKBENCH_MESSAGE_STREAM_PATH = Pattern.compile(
+            "^/api/web/workbench/sessions/\\d+/messages/stream$");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -44,6 +47,18 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         if (isNotificationSse(uri)) {
             prepareSseResponse(response);
             filterChain.doFilter(request, response);
+            return;
+        }
+        if (isWorkbenchMessageStream(uri)) {
+            prepareSseResponse(response);
+            ContentCachingRequestWrapper cachedRequest = new ContentCachingRequestWrapper(request);
+            long startTime = System.currentTimeMillis();
+            try {
+                filterChain.doFilter(cachedRequest, response);
+            } finally {
+                long duration = System.currentTimeMillis() - startTime;
+                logRequest(cachedRequest, response, duration);
+            }
             return;
         }
         if (shouldSkip(uri)) {
@@ -65,7 +80,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private void logRequest(ContentCachingRequestWrapper request, ContentCachingResponseWrapper response, long duration) {
+    private void logRequest(ContentCachingRequestWrapper request, HttpServletResponse response, long duration) {
         String requestUri = request.getRequestURI();
         String queryString = request.getQueryString();
         String fullUrl = queryString != null ? requestUri + "?" + queryString : requestUri;
@@ -109,6 +124,10 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private boolean isNotificationSse(String uri) {
         return uri != null && uri.endsWith("/notifications/sse");
+    }
+
+    private boolean isWorkbenchMessageStream(String uri) {
+        return uri != null && WORKBENCH_MESSAGE_STREAM_PATH.matcher(uri).matches();
     }
 
     private void prepareSseResponse(HttpServletResponse response) {

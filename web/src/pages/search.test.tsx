@@ -8,6 +8,7 @@ const buttonRecords: Array<{ label: string; variant?: string | null; onClick?: (
 const paginationProps: Array<{ onPageChange: (page: number) => void }> = []
 const searchBarProps: Array<{ value?: string; onSearch?: (query: string) => void }> = []
 const searchSkillParams: Array<Record<string, unknown>> = []
+const useMyStarsMock = vi.fn()
 
 vi.mock('@tanstack/react-router', () => ({
   useNavigate: () => navigateMock,
@@ -43,7 +44,7 @@ vi.mock('@/features/search/search-bar', () => ({
 }))
 
 vi.mock('@/features/skill/skill-card', () => ({
-  SkillCard: () => <div>skill-card</div>,
+  SkillCard: ({ skill }: { skill: { displayName: string } }) => <div>skill-card:{skill.displayName}</div>,
 }))
 
 vi.mock('@/shared/components/skeleton-loader', () => ({
@@ -101,16 +102,13 @@ vi.mock('@/shared/hooks/use-label-queries', () => ({
     data: [
       { slug: 'code-generation', type: 'RECOMMENDED', displayName: 'Code Generation' },
       { slug: 'official', type: 'RECOMMENDED', displayName: 'Official' },
+      { slug: 'private-review', type: 'PRIVILEGED', displayName: 'Private Review' },
     ],
   }),
 }))
 
 vi.mock('@/shared/hooks/use-user-queries', () => ({
-  useMyStars: () => ({
-    data: [],
-    isLoading: false,
-    isFetching: false,
-  }),
+  useMyStars: () => useMyStarsMock(),
 }))
 
 import { SearchPage } from './search'
@@ -130,6 +128,7 @@ describe('SearchPage', () => {
     paginationProps.length = 0
     searchBarProps.length = 0
     searchSkillParams.length = 0
+    useMyStarsMock.mockReset()
     useSearchMock.mockReturnValue({
       q: 'agent',
       namespace: 'team-ai',
@@ -140,11 +139,28 @@ describe('SearchPage', () => {
     })
     useSearchSkillsMock.mockReturnValue({
       data: {
-        items: [{ id: 1, displayName: 'Demo Skill', summary: 'summary', namespace: 'global', slug: 'demo', downloadCount: 1, starCount: 1, ratingCount: 0, updatedAt: '2026-03-20T00:00:00Z', canSubmitPromotion: false }],
+        items: [{
+          id: 1,
+          displayName: 'Demo Skill',
+          summary: 'summary',
+          namespace: 'global',
+          slug: 'demo',
+          downloadCount: 1,
+          starCount: 1,
+          ratingCount: 0,
+          updatedAt: '2026-03-20T00:00:00Z',
+          canSubmitPromotion: false,
+          labels: [{ slug: 'result-only', type: 'RECOMMENDED', displayName: 'Result Only' }],
+        }],
         total: 24,
         page: 1,
         size: 12,
       },
+      isLoading: false,
+      isFetching: false,
+    })
+    useMyStarsMock.mockReturnValue({
+      data: [],
       isLoading: false,
       isFetching: false,
     })
@@ -156,6 +172,39 @@ describe('SearchPage', () => {
     expect(html).toContain('Code Generation')
     expect(findButton('Code Generation').variant).toBe('default')
     expect(findButton('Official').variant).toBe('outline')
+  })
+
+  it('renders skill type filters from label metadata instead of current page skill labels', () => {
+    const html = renderToStaticMarkup(<SearchPage />)
+
+    expect(html).toContain('Code Generation')
+    expect(html).toContain('Official')
+    expect(html).not.toContain('Result Only')
+  })
+
+  it('does not render privileged labels as skill type filters', () => {
+    const html = renderToStaticMarkup(<SearchPage />)
+
+    expect(html).not.toContain('Private Review')
+    expect(buttonRecords.some((button) => button.label === 'Private Review')).toBe(false)
+  })
+
+  it('selects a new label and resets paging', () => {
+    renderToStaticMarkup(<SearchPage />)
+
+    findButton('Official').onClick?.()
+
+    expect(navigateMock).toHaveBeenCalledWith({
+      to: '/search',
+      search: {
+        q: 'agent',
+        namespace: 'team-ai',
+        label: 'official',
+        sort: 'downloads',
+        page: 0,
+        starredOnly: false,
+      },
+    })
   })
 
   it('toggles the selected label off and resets paging', () => {
@@ -222,6 +271,55 @@ describe('SearchPage', () => {
         starredOnly: true,
       },
     })
+  })
+
+  it('filters the starred-only list by the active recommended label', () => {
+    useSearchMock.mockReturnValue({
+      q: '',
+      namespace: '',
+      label: 'code-generation',
+      sort: 'newest',
+      page: 0,
+      starredOnly: true,
+    })
+    useMyStarsMock.mockReturnValue({
+      data: [
+        {
+          id: 1,
+          displayName: 'Matching Star',
+          summary: 'summary',
+          namespace: 'global',
+          slug: 'matching-star',
+          downloadCount: 1,
+          starCount: 1,
+          ratingCount: 0,
+          updatedAt: '2026-03-20T00:00:00Z',
+          canSubmitPromotion: false,
+          labels: [{ slug: 'code-generation', type: 'RECOMMENDED', displayName: 'Code Generation' }],
+        },
+        {
+          id: 2,
+          displayName: 'Wrong Star',
+          summary: 'summary',
+          namespace: 'global',
+          slug: 'wrong-star',
+          downloadCount: 1,
+          starCount: 1,
+          ratingCount: 0,
+          updatedAt: '2026-03-20T00:00:00Z',
+          canSubmitPromotion: false,
+          labels: [{ slug: 'private-review', type: 'PRIVILEGED', displayName: 'Private Review' }],
+        },
+      ],
+      isLoading: false,
+      isFetching: false,
+    })
+
+    const html = renderToStaticMarkup(<SearchPage />)
+
+    expect(html).toContain('search.results:1')
+    expect(html).toContain('skill-card:Matching Star')
+    expect(html).not.toContain('Wrong Star')
   })
 
   it('passes the namespace URL state into skill search', () => {

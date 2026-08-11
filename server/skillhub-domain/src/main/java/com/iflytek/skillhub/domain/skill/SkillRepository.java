@@ -11,6 +11,9 @@ import java.util.Optional;
  */
 public interface SkillRepository {
     Optional<Skill> findById(Long id);
+    default Optional<Skill> findByIdForUpdate(Long id) {
+        return findById(id);
+    }
     List<Skill> findByIdIn(List<Long> ids);
     List<Skill> findAll();
     List<Skill> findByNamespaceIdAndSlug(Long namespaceId, String slug);

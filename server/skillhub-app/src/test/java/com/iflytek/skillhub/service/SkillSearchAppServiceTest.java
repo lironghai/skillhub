@@ -1,6 +1,11 @@
 package com.iflytek.skillhub.service;
 
 import com.iflytek.skillhub.auth.rbac.RbacService;
+import com.iflytek.skillhub.domain.label.LabelDefinition;
+import com.iflytek.skillhub.domain.label.LabelDefinitionService;
+import com.iflytek.skillhub.domain.label.LabelType;
+import com.iflytek.skillhub.domain.label.SkillLabel;
+import com.iflytek.skillhub.domain.label.SkillLabelService;
 import com.iflytek.skillhub.domain.namespace.Namespace;
 import com.iflytek.skillhub.domain.namespace.NamespaceRole;
 import com.iflytek.skillhub.domain.namespace.NamespaceRepository;
@@ -59,6 +64,15 @@ class SkillSearchAppServiceTest {
     @Mock
     private RbacService rbacService;
 
+    @Mock
+    private SkillLabelService skillLabelService;
+
+    @Mock
+    private LabelDefinitionService labelDefinitionService;
+
+    @Mock
+    private LabelLocalizationService labelLocalizationService;
+
     private SkillSearchAppService service;
 
     @BeforeEach
@@ -69,7 +83,10 @@ class SkillSearchAppServiceTest {
                 namespaceRepository,
                 namespaceService,
                 new SkillLifecycleProjectionService(skillVersionRepository),
-                rbacService
+                rbacService,
+                skillLabelService,
+                labelDefinitionService,
+                labelLocalizationService
         );
     }
 
@@ -295,6 +312,74 @@ class SkillSearchAppServiceTest {
     }
 
     @Test
+    void search_shouldReturnSummaryLabelsWithoutChangingResultOrder() {
+        Skill first = new Skill(1L, "skill-a", "owner-1", SkillVisibility.PUBLIC);
+        setField(first, "id", 10L);
+        Skill second = new Skill(1L, "skill-b", "owner-1", SkillVisibility.PUBLIC);
+        setField(second, "id", 11L);
+
+        Namespace namespace = new Namespace("global", "Global", "owner-1");
+        setField(namespace, "id", 1L);
+        namespace.setStatus(NamespaceStatus.ACTIVE);
+
+        LabelDefinition official = labelDefinition(100L, "official", LabelType.RECOMMENDED, true, 0);
+        LabelDefinition codeGeneration = labelDefinition(101L, "code-generation", LabelType.RECOMMENDED, true, 1);
+
+        when(searchQueryService.search(any()))
+                .thenReturn(new SearchResult(List.of(10L, 11L), 2, 0, 20));
+        when(skillRepository.findByIdIn(List.of(10L, 11L))).thenReturn(List.of(second, first));
+        when(namespaceRepository.findByIdIn(List.of(1L))).thenReturn(List.of(namespace));
+        when(skillLabelService.listSkillLabelsBySkillIds(List.of(10L, 11L))).thenReturn(List.of(
+                new SkillLabel(11L, 101L, "admin"),
+                new SkillLabel(10L, 100L, "admin")
+        ));
+        when(labelDefinitionService.listByIds(List.of(101L, 100L))).thenReturn(List.of(codeGeneration, official));
+        when(labelDefinitionService.listTranslationsByLabelIds(List.of(101L, 100L))).thenReturn(Map.of());
+        when(labelLocalizationService.resolveDisplayName("official", List.of())).thenReturn("Official");
+        when(labelLocalizationService.resolveDisplayName("code-generation", List.of())).thenReturn("Code Generation");
+
+        SkillSearchAppService.SearchResponse response = service.search(null, null, "newest", 0, 20, null, null);
+
+        assertEquals(List.of("skill-a", "skill-b"), response.items().stream().map(item -> item.slug()).toList());
+        assertEquals("official", response.items().get(0).labels().getFirst().slug());
+        assertEquals("Official", response.items().get(0).labels().getFirst().displayName());
+        assertEquals("code-generation", response.items().get(1).labels().getFirst().slug());
+        verify(skillLabelService, times(1)).listSkillLabelsBySkillIds(List.of(10L, 11L));
+    }
+
+    @Test
+    void search_shouldOnlyReturnRecommendedVisibleLabelsInSummaries() {
+        Skill skill = new Skill(1L, "skill-a", "owner-1", SkillVisibility.PUBLIC);
+        setField(skill, "id", 10L);
+
+        Namespace namespace = new Namespace("global", "Global", "owner-1");
+        setField(namespace, "id", 1L);
+        namespace.setStatus(NamespaceStatus.ACTIVE);
+
+        LabelDefinition recommendedVisible = labelDefinition(100L, "official", LabelType.RECOMMENDED, true, 0);
+        LabelDefinition privilegedVisible = labelDefinition(101L, "verified", LabelType.PRIVILEGED, true, 1);
+        LabelDefinition recommendedHidden = labelDefinition(102L, "internal", LabelType.RECOMMENDED, false, 2);
+
+        when(searchQueryService.search(any()))
+                .thenReturn(new SearchResult(List.of(10L), 1, 0, 20));
+        when(skillRepository.findByIdIn(List.of(10L))).thenReturn(List.of(skill));
+        when(namespaceRepository.findByIdIn(List.of(1L))).thenReturn(List.of(namespace));
+        when(skillLabelService.listSkillLabelsBySkillIds(List.of(10L))).thenReturn(List.of(
+                new SkillLabel(10L, 100L, "admin"),
+                new SkillLabel(10L, 101L, "admin"),
+                new SkillLabel(10L, 102L, "admin")
+        ));
+        when(labelDefinitionService.listByIds(List.of(100L, 101L, 102L)))
+                .thenReturn(List.of(recommendedVisible, privilegedVisible, recommendedHidden));
+        when(labelDefinitionService.listTranslationsByLabelIds(List.of(100L, 101L, 102L))).thenReturn(Map.of());
+        when(labelLocalizationService.resolveDisplayName("official", List.of())).thenReturn("Official");
+
+        SkillSearchAppService.SearchResponse response = service.search(null, null, "newest", 0, 20, null, null);
+
+        assertEquals(List.of("official"), response.items().getFirst().labels().stream().map(label -> label.slug()).toList());
+    }
+
+    @Test
     void search_shouldIncludeMemberNamespacesInVisibilityScope() {
         when(searchQueryService.search(any()))
                 .thenReturn(new SearchResult(List.of(), 0, 0, 20));
@@ -344,5 +429,15 @@ class SkillSearchAppServiceTest {
         version.setStatus(SkillVersionStatus.PUBLISHED);
         version.setDownloadReady(true);
         return version;
+    }
+
+    private LabelDefinition labelDefinition(Long id,
+                                            String slug,
+                                            LabelType type,
+                                            boolean visibleInFilter,
+                                            int sortOrder) {
+        LabelDefinition definition = new LabelDefinition(slug, type, visibleInFilter, sortOrder, "admin");
+        setField(definition, "id", id);
+        return definition;
     }
 }

@@ -33,6 +33,11 @@ public class JpaSkillRepositoryAdapter implements SkillRepository {
     }
 
     @Override
+    public Optional<Skill> findByIdForUpdate(Long id) {
+        return delegate.findByIdForUpdate(id);
+    }
+
+    @Override
     public List<Skill> findByIdIn(List<Long> ids) {
         return delegate.findByIdIn(ids);
     }

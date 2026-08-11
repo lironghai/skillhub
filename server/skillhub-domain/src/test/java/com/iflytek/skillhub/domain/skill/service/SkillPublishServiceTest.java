@@ -1491,6 +1491,35 @@ class SkillPublishServiceTest {
         verify(reviewTaskRepository, never()).save(any(ReviewTask.class));
     }
 
+    @Test
+    void publishWorkbenchFromEntries_LocksNamespaceBeforeFindingOrCreatingSkill() throws Exception {
+        String namespaceSlug = "test-ns";
+        String publisherId = "workbench-user";
+        PublishFixture fixture = stubValidPublishInputs(
+                namespaceSlug,
+                publisherId,
+                "workbench-skill",
+                "workbench-skill",
+                "1.0.0",
+                true);
+        Namespace lockedNamespace = new Namespace(namespaceSlug, "Test NS", "user-1");
+        setId(lockedNamespace, 1L);
+        when(namespaceRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(lockedNamespace));
+
+        SkillPublishService.PublishResult result = service.publishWorkbenchFromEntries(
+                namespaceSlug,
+                fixture.entries(),
+                publisherId,
+                SkillVisibility.PRIVATE,
+                Set.of());
+
+        assertNotNull(result);
+        InOrder inOrder = inOrder(namespaceRepository, skillRepository);
+        inOrder.verify(namespaceRepository).findBySlug(namespaceSlug);
+        inOrder.verify(namespaceRepository).findByIdForUpdate(1L);
+        inOrder.verify(skillRepository).findByNamespaceIdAndSlug(1L, "workbench-skill");
+    }
+
     private record PublishFixture(List<PackageEntry> entries) {
     }
 

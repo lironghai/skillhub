@@ -5,6 +5,7 @@ import com.iflytek.skillhub.domain.review.ReviewTaskRepository;
 import com.iflytek.skillhub.domain.shared.exception.DomainBadRequestException;
 import com.iflytek.skillhub.domain.shared.exception.DomainForbiddenException;
 import com.iflytek.skillhub.domain.skill.SkillRepository;
+import com.iflytek.skillhub.domain.skillbundle.SkillBundleRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ public class NamespaceService {
     private final NamespaceMemberRepository namespaceMemberRepository;
     private final NamespaceAccessPolicy namespaceAccessPolicy;
     private final SkillRepository skillRepository;
+    private final SkillBundleRepository skillBundleRepository;
     private final ReviewTaskRepository reviewTaskRepository;
     private final PromotionRequestRepository promotionRequestRepository;
 
@@ -27,12 +29,14 @@ public class NamespaceService {
                            NamespaceMemberRepository namespaceMemberRepository,
                            NamespaceAccessPolicy namespaceAccessPolicy,
                            SkillRepository skillRepository,
+                           SkillBundleRepository skillBundleRepository,
                            ReviewTaskRepository reviewTaskRepository,
                            PromotionRequestRepository promotionRequestRepository) {
         this.namespaceRepository = namespaceRepository;
         this.namespaceMemberRepository = namespaceMemberRepository;
         this.namespaceAccessPolicy = namespaceAccessPolicy;
         this.skillRepository = skillRepository;
+        this.skillBundleRepository = skillBundleRepository;
         this.reviewTaskRepository = reviewTaskRepository;
         this.promotionRequestRepository = promotionRequestRepository;
     }
@@ -180,6 +184,7 @@ public class NamespaceService {
 
     private boolean hasDependentData(Long namespaceId) {
         return skillRepository.existsByNamespaceId(namespaceId)
+                || skillBundleRepository.existsByNamespaceId(namespaceId)
                 || reviewTaskRepository.existsByNamespaceId(namespaceId)
                 || promotionRequestRepository.existsByTargetNamespaceId(namespaceId);
     }

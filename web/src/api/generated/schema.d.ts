@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/web/workbench/sessions/{sessionId}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["readFile"];
+        put: operations["writeFile"];
+        post?: never;
+        delete: operations["deleteFile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/skills/{skillId}/subscription": {
         parameters: {
             query?: never;
@@ -159,6 +175,38 @@ export interface paths {
         put: operations["attachLabel_1"];
         post?: never;
         delete: operations["detachLabel_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/skill-bundles/{namespace}/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["detail"];
+        put: operations["update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skill-bundles/{namespace}/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["detail_1"];
+        put: operations["update_1"];
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -404,6 +452,182 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/web/workbench/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listSessions"];
+        put?: never;
+        post: operations["createSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/runs/{runId}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["cancelRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/ready-for-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["readyForReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/package-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["packagePreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/messages/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendMessageStream"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/mcp-bindings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["mcpBindings"];
+        put?: never;
+        post: operations["updateMcpBindings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/import-source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["importSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/approvals/{approvalId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/approvals/{approvalId}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/skills/{namespace}/{slug}/versions/{version}/withdraw-review": {
         parameters: {
             query?: never;
@@ -637,7 +861,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publish"];
+        post: operations["publish_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -653,7 +877,39 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publish_1"];
+        post: operations["publish_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/skill-bundles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search"];
+        put?: never;
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skill-bundles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_1"];
+        put?: never;
+        post: operations["create_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1179,9 +1435,9 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list"];
         put?: never;
-        post: operations["create"];
+        post: operations["create_2"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1245,7 +1501,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publish_2"];
+        post: operations["publish_3"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1581,7 +1837,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["reject"];
+        post: operations["reject_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1597,7 +1853,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["approve"];
+        post: operations["approve_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1611,7 +1867,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels_2"];
+        get: operations["listLabels"];
         put?: never;
         post: operations["createLabel"];
         delete?: never;
@@ -1677,7 +1933,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["publish_3"];
+        post: operations["publish_4"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1716,14 +1972,14 @@ export interface paths {
         patch: operations["updateProfile"];
         trace?: never;
     };
-    "/api/web/skills": {
+    "/api/web/workbench/sessions/{sessionId}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["search"];
+        get: operations["getSession"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1732,7 +1988,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/web/skills/{namespace}/{slug}/versions/{version}/files": {
+    "/api/web/workbench/sessions/{sessionId}/mcp-catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["mcpCatalog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -1748,7 +2020,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/skills/{namespace}/{slug}/versions/{version}/files": {
+    "/api/web/workbench/sessions/{sessionId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["diff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/sessions/{sessionId}/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["approvals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/workbench/runtime-config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["runtimeConfig"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/skills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["search_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/skills/{namespace}/{slug}/versions/{version}/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -1756,6 +2108,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listFiles_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skills/{namespace}/{slug}/versions/{version}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listFiles_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2091,7 +2459,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels"];
+        get: operations["listLabels_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2107,7 +2475,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels_1"];
+        get: operations["listLabels_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2158,7 +2526,7 @@ export interface paths {
         get: operations["getSkillDetail"];
         put?: never;
         post?: never;
-        delete: operations["deleteSkill_1"];
+        delete: operations["deleteSkill"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2174,7 +2542,39 @@ export interface paths {
         get: operations["getSkillDetail_1"];
         put?: never;
         post?: never;
-        delete: operations["deleteSkill"];
+        delete: operations["deleteSkill_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/skill-bundles/{namespace}/{slug}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["downloadLatest_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/skill-bundles/{namespace}/{slug}/download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["downloadLatest_3"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2507,7 +2907,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2523,7 +2923,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2684,6 +3084,70 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listMyNamespaces_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mcp/servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["servers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/mcp/servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["servers_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mcp/internal-servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["internalServers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/mcp/internal-servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["internalServers_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2907,7 +3371,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["search_1"];
+        get: operations["search_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3147,7 +3611,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["downloadLatest_2"];
+        get: operations["downloadLatest_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3163,7 +3627,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["search_2"];
+        get: operations["search_4"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3336,11 +3800,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        WriteFileRequest: {
+            content: string;
+            contentType?: string;
+        };
+        ApiResponseWorkbenchFileResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchFileResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchFileResponse: {
+            path?: string;
+            content?: string;
+            contentType?: string;
+            /** Format: int64 */
+            sizeBytes?: number;
+        };
         ApiResponseVoid: {
             /** Format: int32 */
             code?: number;
             msg?: string;
-            data?: Record<string, never>;
+            data?: unknown;
             /** Format: date-time */
             timestamp?: string;
             requestId?: string;
@@ -3384,6 +3868,71 @@ export interface components {
             slug?: string;
             type?: string;
             displayName?: string;
+        };
+        SkillBundleDraftRequest: {
+            namespace: string;
+            name: string;
+            slug: string;
+            summary?: string;
+            avatarUrl?: string;
+            description?: string;
+            roleDescription?: string;
+            applicableScenarios?: string;
+            methodology?: string;
+            recommendedSkillNotes?: string;
+            visibility?: string;
+            status?: string;
+            labels?: string[];
+            items?: components["schemas"]["SkillBundleItemRequest"][];
+        };
+        SkillBundleItemRequest: {
+            /** Format: int64 */
+            skillId: number;
+            note?: string;
+        };
+        ApiResponseSkillBundleDetailResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["SkillBundleDetailResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        SkillBundleDetailResponse: {
+            /** Format: int64 */
+            id?: number;
+            namespace?: string;
+            slug?: string;
+            name?: string;
+            summary?: string;
+            avatarUrl?: string;
+            description?: string;
+            roleDescription?: string;
+            applicableScenarios?: string;
+            methodology?: string;
+            recommendedSkillNotes?: string;
+            visibility?: string;
+            status?: string;
+            canManage?: boolean;
+            /** Format: int64 */
+            downloadCount?: number;
+            labels?: components["schemas"]["SkillLabelDto"][];
+            items?: components["schemas"]["SkillBundleItemResponse"][];
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        SkillBundleItemResponse: {
+            /** Format: int64 */
+            skillId?: number;
+            namespace?: string;
+            skillSlug?: string;
+            displayName?: string;
+            /** Format: int32 */
+            sortOrder?: number;
+            note?: string;
         };
         ApiResponseMapStringInteger: {
             /** Format: int32 */
@@ -3569,6 +4118,195 @@ export interface components {
             /** Format: date-time */
             timestamp?: string;
             requestId?: string;
+        };
+        CreateSessionRequest: {
+            namespace: string;
+            /** @enum {string} */
+            mode?: "CREATE_SKILL" | "UPDATE_SKILL";
+            sourceSkill?: components["schemas"]["SourceSkillRequest"];
+            targetSlug?: string;
+            targetVersion?: string;
+            /** Format: int32 */
+            expiresInHours?: number;
+        };
+        SourceSkillRequest: {
+            namespace: string;
+            slug: string;
+            version: string;
+        };
+        ApiResponseWorkbenchSessionResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchSessionResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        RuntimeRunResponse: {
+            runId?: string;
+            status?: string;
+            message?: string;
+            /** Format: int32 */
+            eventCount?: number;
+            /** Format: date-time */
+            startedAt?: string;
+        };
+        WorkbenchSessionResponse: {
+            /** Format: int64 */
+            id?: number;
+            status?: string;
+            mode?: string;
+            /** Format: int64 */
+            namespaceId?: number;
+            targetSlug?: string;
+            targetVersion?: string;
+            /** Format: int32 */
+            fileCount?: number;
+            /** Format: date-time */
+            expiresAt?: string;
+            activeRun?: components["schemas"]["RuntimeRunResponse"];
+        };
+        ApiResponseRuntimeRunResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["RuntimeRunResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        PublishPackageRequest: {
+            confirmPackageFingerprint: string;
+            visibility: string;
+        };
+        ApiResponseWorkbenchPackagePublishResult: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchPackagePublishResult"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchPackagePublishResult: {
+            /** Format: int64 */
+            skillId?: number;
+            /** Format: int64 */
+            skillVersionId?: number;
+            namespace?: string;
+            slug?: string;
+            version?: string;
+            status?: string;
+        };
+        PackagePreviewRequest: {
+            visibility?: string;
+        };
+        ApiResponseWorkbenchPackagePreviewResult: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchPackagePreviewResult"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchPackageExcludedFile: {
+            path?: string;
+            reason?: string;
+        };
+        WorkbenchPackageFile: {
+            path?: string;
+            /** Format: int64 */
+            sizeBytes?: number;
+            sha256?: string;
+        };
+        WorkbenchPackagePreviewResult: {
+            packageFingerprint?: string;
+            readyToPublish?: boolean;
+            includedFiles?: components["schemas"]["WorkbenchPackageFile"][];
+            excludedFiles?: components["schemas"]["WorkbenchPackageExcludedFile"][];
+            validation?: components["schemas"]["WorkbenchPackageValidationReport"];
+        };
+        WorkbenchPackageValidationReport: {
+            status?: string;
+            messages?: string[];
+            errors?: string[];
+            warnings?: string[];
+            resolvedSlug?: string;
+            resolvedVersion?: string;
+        };
+        SendMessageRequest: {
+            message: string;
+        };
+        UpdateMcpBindingsRequest: {
+            serverIds?: string[];
+            bindings?: components["schemas"]["WorkbenchMcpBindingSelection"][];
+        };
+        WorkbenchMcpBindingSelection: {
+            serverId?: string;
+            enabledTools?: string[];
+            disabledTools?: string[];
+        };
+        ApiResponseListWorkbenchMcpBindingResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchMcpBindingResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        JsonNode: unknown;
+        WorkbenchMcpBindingResponse: {
+            /** Format: int64 */
+            id?: number;
+            serverId?: string;
+            catalogSource?: string;
+            enabledToolsJson?: components["schemas"]["JsonNode"];
+            disabledToolsJson?: components["schemas"]["JsonNode"];
+            toolPolicyJson?: components["schemas"]["JsonNode"];
+            policyVersion?: string;
+            status?: string;
+        };
+        ApiResponseImportWorkbenchSourceResult: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["ImportWorkbenchSourceResult"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        ImportWorkbenchSourceResult: {
+            importedFiles?: string[];
+        };
+        ApiResponseWorkbenchToolApprovalResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchToolApprovalResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchToolApprovalResponse: {
+            /** Format: int64 */
+            id?: number;
+            /** Format: int64 */
+            sessionId?: number;
+            /** Format: int64 */
+            eventId?: number;
+            toolName?: string;
+            mcpServerId?: string;
+            riskLevel?: string;
+            argumentsRedactedJson?: components["schemas"]["JsonNode"];
+            status?: string;
+            decisionBy?: string;
+            /** Format: date-time */
+            decisionAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
         };
         ApiResponseSkillLifecycleMutationResponse: {
             /** Format: int32 */
@@ -3862,12 +4600,15 @@ export interface components {
         LocalRegisterRequest: {
             username: string;
             password: string;
+            /** Format: email */
             email: string;
         };
         PasswordResetRequestDto: {
+            /** Format: email */
             email: string;
         };
         PasswordResetConfirmRequest: {
+            /** Format: email */
             email: string;
             code: string;
             newPassword: string;
@@ -4049,6 +4790,129 @@ export interface components {
                 [key: string]: string;
             };
         };
+        ApiResponseListWorkbenchSessionResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchSessionResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        ApiResponseWorkbenchMcpCatalogResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchMcpCatalogResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        McpAssociatedItemResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            inputSchema?: components["schemas"]["JsonNode"];
+            outputSchema?: components["schemas"]["JsonNode"];
+        };
+        WorkbenchMcpCatalogItemResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            enabled?: boolean;
+            tools?: components["schemas"]["McpAssociatedItemResponse"][];
+            resources?: components["schemas"]["McpAssociatedItemResponse"][];
+            prompts?: components["schemas"]["McpAssociatedItemResponse"][];
+            tags?: string[];
+            catalogSource?: string;
+            runtimeCandidate?: boolean;
+        };
+        WorkbenchMcpCatalogResponse: {
+            items?: components["schemas"]["WorkbenchMcpCatalogItemResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        ApiResponseListWorkbenchWorkspaceFile: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchWorkspaceFile"][];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchWorkspaceFile: {
+            path?: string;
+            /** Format: int64 */
+            sizeBytes?: number;
+            contentType?: string;
+        };
+        ApiResponseListWorkbenchSessionEventResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchSessionEventResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchSessionEventResponse: {
+            /** Format: int64 */
+            eventId?: number;
+            type?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            payloadJson?: string;
+        };
+        ApiResponseWorkbenchDiffResult: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchDiffResult"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchDiffResult: {
+            files?: components["schemas"]["WorkbenchFileDiff"][];
+        };
+        WorkbenchFileDiff: {
+            path?: string;
+            /** @enum {string} */
+            status?: "ADDED" | "DELETED" | "MODIFIED" | "UNCHANGED";
+        };
+        ApiResponseListWorkbenchToolApprovalResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchToolApprovalResponse"][];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        ApiResponseWorkbenchRuntimeConfigResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["WorkbenchRuntimeConfigResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        WorkbenchRuntimeConfigResponse: {
+            modelExecutorEnabled?: boolean;
+            modelConfigured?: boolean;
+            modelProvider?: string;
+            modelName?: string;
+            modelBaseUrlConfigured?: boolean;
+            modelApiKeyConfigured?: boolean;
+            displayStatus?: string;
+            message?: string;
+        };
         ApiResponseSearchResponse: {
             /** Format: int32 */
             code?: number;
@@ -4096,6 +4960,7 @@ export interface components {
             publishedVersion?: components["schemas"]["SkillLifecycleVersionResponse"];
             ownerPreviewVersion?: components["schemas"]["SkillLifecycleVersionResponse"];
             resolutionMode?: string;
+            labels?: components["schemas"]["SkillLabelDto"][];
         };
         ApiResponseBoolean: {
             /** Format: int32 */
@@ -4333,6 +5198,44 @@ export interface components {
             ownerPreviewReviewComment?: string;
             resolutionMode?: string;
         };
+        ApiResponsePageResponseSkillBundleSummaryResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["PageResponseSkillBundleSummaryResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        PageResponseSkillBundleSummaryResponse: {
+            items?: components["schemas"]["SkillBundleSummaryResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+        };
+        SkillBundleSummaryResponse: {
+            /** Format: int64 */
+            id?: number;
+            namespace?: string;
+            slug?: string;
+            name?: string;
+            summary?: string;
+            avatarUrl?: string;
+            roleDescription?: string;
+            applicableScenarios?: string;
+            visibility?: string;
+            status?: string;
+            /** Format: int32 */
+            skillCount?: number;
+            /** Format: int64 */
+            downloadCount?: number;
+            labels?: components["schemas"]["SkillLabelDto"][];
+            /** Format: date-time */
+            updatedAt?: string;
+        };
         ApiResponseReviewSkillDetailResponse: {
             /** Format: int32 */
             code?: number;
@@ -4400,7 +5303,7 @@ export interface components {
         };
         SseEmitter: {
             /** Format: int64 */
-            timeout?: number;
+            timeout?: number | null;
         };
         ApiResponsePageResponseNotificationResponse: {
             /** Format: int32 */
@@ -4547,6 +5450,84 @@ export interface components {
             canArchive?: boolean;
             canRestore?: boolean;
             canDelete?: boolean;
+        };
+        ApiResponseMcpCatalogResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["McpCatalogResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        McpCatalogItemResponse: {
+            id?: string;
+            name?: string;
+            category?: string;
+            provider?: string;
+            description?: string;
+            url?: string;
+            authType?: string;
+            requiresApiKey?: boolean;
+            secure?: boolean;
+            tags?: string[];
+            transport?: string;
+            logoUrl?: string;
+            documentationUrl?: string;
+            registered?: boolean;
+            available?: boolean;
+            requiresOauthConfig?: boolean;
+        };
+        McpCatalogResponse: {
+            items?: components["schemas"]["McpCatalogItemResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            categories?: string[];
+            authTypes?: string[];
+            providers?: string[];
+            tags?: string[];
+        };
+        ApiResponseMcpInternalServerResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["McpInternalServerResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        McpInternalServerItemResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            iconUrl?: string;
+            enabled?: boolean;
+            visibility?: string;
+            ownerEmail?: string;
+            team?: string;
+            /** Format: int32 */
+            toolCount?: number;
+            /** Format: int32 */
+            resourceCount?: number;
+            /** Format: int32 */
+            promptCount?: number;
+            tools?: components["schemas"]["McpAssociatedItemResponse"][];
+            resources?: components["schemas"]["McpAssociatedItemResponse"][];
+            prompts?: components["schemas"]["McpAssociatedItemResponse"][];
+            tags?: string[];
+        };
+        McpInternalServerResponse: {
+            items?: components["schemas"]["McpInternalServerItemResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
         };
         ApiResponseGovernanceSummaryResponse: {
             /** Format: int32 */
@@ -4714,8 +5695,8 @@ export interface components {
             slug?: string;
             displayName?: string;
             summary?: string;
-            tags?: Record<string, never>;
-            stats?: Record<string, never>;
+            tags?: unknown;
+            stats?: unknown;
             /** Format: int64 */
             createdAt?: number;
             /** Format: int64 */
@@ -4763,7 +5744,7 @@ export interface components {
             remediation?: string;
             analyzer?: string;
             metadata?: {
-                [key: string]: Record<string, never>;
+                [key: string]: unknown;
             };
         };
         ClawHubSkillResponse: {
@@ -4791,8 +5772,8 @@ export interface components {
             slug?: string;
             displayName?: string;
             summary?: string;
-            tags?: Record<string, never>;
-            stats?: Record<string, never>;
+            tags?: unknown;
+            stats?: unknown;
             /** Format: int64 */
             createdAt?: number;
             /** Format: int64 */
@@ -5083,6 +6064,82 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    readFile: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchFileResponse"];
+                };
+            };
+        };
+    };
+    writeFile: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WriteFileRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchFileResponse"];
+                };
+            };
+        };
+    };
+    deleteFile: {
+        parameters: {
+            query: {
+                path: string;
+            };
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseVoid"];
+                };
+            };
+        };
+    };
     checkSubscribed: {
         parameters: {
             query?: never;
@@ -5643,6 +6700,106 @@ export interface operations {
             };
         };
     };
+    detail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillBundleDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
+                };
+            };
+        };
+    };
+    detail_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillBundleDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
+                };
+            };
+        };
+    };
     markRead: {
         parameters: {
             query?: never;
@@ -6159,6 +7316,315 @@ export interface operations {
             };
         };
     };
+    listSessions: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchSessionResponse"];
+                };
+            };
+        };
+    };
+    createSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchSessionResponse"];
+                };
+            };
+        };
+    };
+    cancelRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseRuntimeRunResponse"];
+                };
+            };
+        };
+    };
+    readyForReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchSessionResponse"];
+                };
+            };
+        };
+    };
+    publish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishPackageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchPackagePublishResult"];
+                };
+            };
+        };
+    };
+    packagePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PackagePreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchPackagePreviewResult"];
+                };
+            };
+        };
+    };
+    sendMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseRuntimeRunResponse"];
+                };
+            };
+        };
+    };
+    sendMessageStream: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    mcpBindings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchMcpBindingResponse"];
+                };
+            };
+        };
+    };
+    updateMcpBindings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMcpBindingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchMcpBindingResponse"];
+                };
+            };
+        };
+    };
+    importSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseImportWorkbenchSourceResult"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+                approvalId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchToolApprovalResponse"];
+                };
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+                approvalId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchToolApprovalResponse"];
+                };
+            };
+        };
+    };
     withdrawReview: {
         parameters: {
             query?: never;
@@ -6525,7 +7991,7 @@ export interface operations {
             };
         };
     };
-    publish: {
+    publish_1: {
         parameters: {
             query: {
                 visibility: string;
@@ -6557,7 +8023,7 @@ export interface operations {
             };
         };
     };
-    publish_1: {
+    publish_2: {
         parameters: {
             query: {
                 visibility: string;
@@ -6585,6 +8051,108 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponsePublishResponse"];
+                };
+            };
+        };
+    };
+    search: {
+        parameters: {
+            query?: {
+                q?: string;
+                namespace?: string;
+                label?: string[];
+                sort?: string;
+                page?: string;
+                size?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePageResponseSkillBundleSummaryResponse"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillBundleDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
+                };
+            };
+        };
+    };
+    search_1: {
+        parameters: {
+            query?: {
+                q?: string;
+                namespace?: string;
+                label?: string[];
+                sort?: string;
+                page?: string;
+                size?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponsePageResponseSkillBundleSummaryResponse"];
+                };
+            };
+        };
+    };
+    create_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SkillBundleDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseSkillBundleDetailResponse"];
                 };
             };
         };
@@ -7573,7 +9141,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list: {
         parameters: {
             query?: {
                 page?: number;
@@ -7596,7 +9164,7 @@ export interface operations {
             };
         };
     };
-    create: {
+    create_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -7734,7 +9302,7 @@ export interface operations {
             };
         };
     };
-    publish_2: {
+    publish_3: {
         parameters: {
             query: {
                 namespace: string;
@@ -8234,7 +9802,7 @@ export interface operations {
             };
         };
     };
-    reject: {
+    reject_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -8260,7 +9828,7 @@ export interface operations {
             };
         };
     };
-    approve: {
+    approve_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -8282,7 +9850,7 @@ export interface operations {
             };
         };
     };
-    listLabels_2: {
+    listLabels: {
         parameters: {
             query?: never;
             header?: never;
@@ -8398,7 +9966,7 @@ export interface operations {
             };
         };
     };
-    publish_3: {
+    publish_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -8502,7 +10070,166 @@ export interface operations {
             };
         };
     };
-    search: {
+    getSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchSessionResponse"];
+                };
+            };
+        };
+    };
+    mcpCatalog: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: string;
+                size?: string;
+            };
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchMcpCatalogResponse"];
+                };
+            };
+        };
+    };
+    listFiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchWorkspaceFile"];
+                };
+            };
+        };
+    };
+    listEvents: {
+        parameters: {
+            query?: {
+                afterEventId?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchSessionEventResponse"];
+                };
+            };
+        };
+    };
+    diff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchDiffResult"];
+                };
+            };
+        };
+    };
+    approvals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseListWorkbenchToolApprovalResponse"];
+                };
+            };
+        };
+    };
+    runtimeConfig: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseWorkbenchRuntimeConfigResponse"];
+                };
+            };
+        };
+    };
+    search_2: {
         parameters: {
             query?: {
                 q?: string;
@@ -8529,7 +10256,7 @@ export interface operations {
             };
         };
     };
-    listFiles: {
+    listFiles_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -8553,7 +10280,7 @@ export interface operations {
             };
         };
     };
-    listFiles_1: {
+    listFiles_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -9125,7 +10852,7 @@ export interface operations {
             };
         };
     };
-    listLabels: {
+    listLabels_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -9148,7 +10875,7 @@ export interface operations {
             };
         };
     };
-    listLabels_1: {
+    listLabels_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -9240,7 +10967,7 @@ export interface operations {
             };
         };
     };
-    deleteSkill_1: {
+    deleteSkill: {
         parameters: {
             query?: {
                 ownerId?: string;
@@ -9288,7 +11015,7 @@ export interface operations {
             };
         };
     };
-    deleteSkill: {
+    deleteSkill_1: {
         parameters: {
             query?: {
                 ownerId?: string;
@@ -9309,6 +11036,52 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseSkillDeleteResponse"];
+                };
+            };
+        };
+    };
+    downloadLatest_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
+    downloadLatest_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                namespace: string;
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
                 };
             };
         };
@@ -9757,7 +11530,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: {
                 category?: string;
@@ -9781,7 +11554,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: {
                 category?: string;
@@ -10035,6 +11808,110 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseListMyNamespaceResponse"];
+                };
+            };
+        };
+    };
+    servers: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                auth_type?: string;
+                provider?: string;
+                tags?: string[];
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpCatalogResponse"];
+                };
+            };
+        };
+    };
+    servers_1: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                auth_type?: string;
+                provider?: string;
+                tags?: string[];
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpCatalogResponse"];
+                };
+            };
+        };
+    };
+    internalServers: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpInternalServerResponse"];
+                };
+            };
+        };
+    };
+    internalServers_1: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpInternalServerResponse"];
                 };
             };
         };
@@ -10348,7 +12225,7 @@ export interface operations {
             };
         };
     };
-    search_1: {
+    search_3: {
         parameters: {
             query: {
                 q: string;
@@ -10701,7 +12578,7 @@ export interface operations {
             };
         };
     };
-    downloadLatest_2: {
+    downloadLatest_4: {
         parameters: {
             query?: never;
             header?: never;
@@ -10724,7 +12601,7 @@ export interface operations {
             };
         };
     };
-    search_2: {
+    search_4: {
         parameters: {
             query?: {
                 q?: string;

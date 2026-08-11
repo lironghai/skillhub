@@ -8,8 +8,10 @@
     "dashboard": "控制台",
     "mySkills": "我的技能",
     "publish": "发布",
+    "workbench": "工作台",
     "mcpManagement": "MCP 广场",
-    "login": "登录"
+    "login": "登录",
+    "skillBundles": "专家包"
   },
   "landing": {
     "hero": {
@@ -926,7 +928,6 @@
     "submitReviewSuccessTitle": "已提交审核",
     "submitReviewSuccessDescription": "版本 {{version}} 已提交审核。",
     "submitReviewErrorTitle": "提交审核失败",
-    "withdrawReviewErrorTitle": "撤销审核失败",
     "deleteVersion": "删除版本",
     "deleteVersionConfirmTitle": "确认删除版本",
     "deleteVersionConfirmDescription": "版本 {{version}} 删除后无法恢复，确定继续吗？",
@@ -1620,5 +1621,102 @@
     "associatedItems": "关联项目",
     "connectionUrls": "连接地址",
     "metadata": "归属信息"
+  },
+  "skillBundles": {
+    "title": "专家包",
+    "subtitle": "把相关技能与角色说明、适用场景和推荐方法组织成专家包。",
+    "searchPlaceholder": "搜索专家包名称、角色、场景或方法",
+    "namespacePlaceholder": "命名空间",
+    "results": "找到 {{count}} 个专家包",
+    "updating": "更新中...",
+    "skillCount": "{{count}} 个技能",
+    "createAction": "创建专家包",
+    "emptyTitle": "暂无专家包",
+    "emptyDescription": "创建专家包，把特定角色或场景需要的技能组织起来。",
+    "emptyForQuery": "没有找到与 \"{{q}}\" 匹配的专家包",
+    "filters": {
+      "label": "技能类型"
+    },
+    "sort": {
+      "label": "排序:",
+      "newest": "最新",
+      "name": "名称"
+    },
+    "status": {
+      "DRAFT": "草稿",
+      "PUBLISHED": "已发布",
+      "ARCHIVED": "已归档"
+    },
+    "visibility": {
+      "PUBLIC": "公开",
+      "NAMESPACE_ONLY": "命名空间可见",
+      "PRIVATE": "私有"
+    }
+  },
+  "skillBundleDetail": {
+    "back": "返回专家包",
+    "edit": "编辑",
+    "download": "下载专家包",
+    "avatarLabel": "专家包头像",
+    "namespace": "命名空间",
+    "skillTotal": "技能数",
+    "skillTotalValue": "{{skillCount}} 个技能",
+    "updatedAt": "更新时间",
+    "capabilityIntro": "能力介绍",
+    "capabilityCanDo": "能帮你做什么",
+    "workingStyle": "工作方式",
+    "expertise": "擅长领域",
+    "noExpertise": "暂未配置擅长领域标签。",
+    "description": "简介",
+    "roleDescription": "角色说明",
+    "applicableScenarios": "适用场景",
+    "methodology": "方法论",
+    "recommendedSkillNotes": "场景推荐技能说明",
+    "fileBrowser": "文件浏览",
+    "packageInfo": "专家包信息",
+    "downloads": "下载量",
+    "rating": "评分",
+    "ratingNone": "暂无",
+    "tags": "标签",
+    "skills": "包含技能",
+    "noSkills": "这个专家包还没有添加技能。",
+    "notFoundTitle": "专家包不可用",
+    "notFoundDescription": "专家包不存在，或当前账号没有访问权限。"
+  },
+  "skillBundleEditor": {
+    "createTitle": "创建专家包",
+    "editTitle": "编辑专家包",
+    "subtitle": "定义专家包资料，并选择需要组合的技能。",
+    "save": "保存",
+    "saving": "保存中...",
+    "namespace": "命名空间",
+    "selectNamespace": "选择命名空间",
+    "visibility": "可见性",
+    "name": "名称",
+    "slug": "Slug",
+    "summary": "摘要",
+    "avatarUrl": "头像 URL",
+    "avatarUrlPlaceholder": "https://.../avatar.png",
+    "avatarPreviewAlt": "专家包头像预览",
+    "avatarEmpty": "无头像",
+    "description": "简介",
+    "roleDescription": "角色说明",
+    "applicableScenarios": "适用场景",
+    "methodology": "方法论",
+    "recommendedSkillNotes": "场景推荐技能说明",
+    "status": "状态",
+    "labels": "技能类型标签",
+    "skillSearch": "添加技能",
+    "skillSearchPlaceholder": "搜索当前命名空间下的技能",
+    "selectedSkills": "已选技能",
+    "selectedSkillsHint": "排序按下方列表顺序生效，可补充推荐理由。",
+    "skillNotePlaceholder": "说明为什么在这个专家包中推荐该技能",
+    "noSelectedSkills": "还没有选择技能。",
+    "validationTitle": "请检查表单",
+    "requiredFields": "命名空间、名称和 Slug 必填。",
+    "publishedNeedsSkill": "发布状态的专家包至少需要包含一个技能。",
+    "createSuccessTitle": "专家包已创建",
+    "updateSuccessTitle": "专家包已更新",
+    "saveErrorTitle": "专家包保存失败"
   }
 }

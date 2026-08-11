@@ -8,6 +8,10 @@ export function getSkillDetailQueryKey(namespace: string, slug: string) {
   return ['skills', namespace, slug, getI18nCacheKey()] as const
 }
 
+export function getSkillBundleDetailQueryKey(namespace: string, slug: string) {
+  return ['skillBundles', namespace, slug, getI18nCacheKey()] as const
+}
+
 export function getVisibleLabelsQueryKey() {
   return ['labels', 'visible', getI18nCacheKey()] as const
 }

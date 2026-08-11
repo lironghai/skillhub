@@ -33,3 +33,52 @@ describe('MarkdownRenderer links', () => {
     expect(screen.getByRole('link', { name: 'Usage' }).getAttribute('href')).toBe('docs/usage.md')
   })
 })
+
+describe('MarkdownRenderer model response coverage', () => {
+  it('renders the supported GFM response elements and highlighted code', () => {
+    const content = [
+      '# Model result',
+      '',
+      '**bold** and `inline`',
+      '',
+      '- item',
+      '- [x] verified',
+      '',
+      '> quoted result',
+      '',
+      '| Tool | Status |',
+      '| --- | --- |',
+      '| MCP | ready |',
+      '',
+      '```json',
+      '{"ok": true}',
+      '```',
+      '',
+      '[details](https://example.com/details)',
+    ].join('\n')
+
+    const { container } = render(<MarkdownRenderer content={content} />)
+
+    expect(screen.getByRole('heading', { name: 'Model result' })).toBeTruthy()
+    expect(screen.getByText('bold').tagName).toBe('STRONG')
+    expect(screen.getByText('inline').tagName).toBe('CODE')
+    const taskCheckbox = screen.getByRole('checkbox') as HTMLInputElement
+    expect(taskCheckbox.checked).toBe(true)
+    expect(taskCheckbox.disabled).toBe(true)
+    expect(screen.getByRole('table')).toBeTruthy()
+    expect(container.querySelector('blockquote')?.textContent).toContain('quoted result')
+    expect(container.querySelector('code.language-json')).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'details' }).getAttribute('href')).toBe('https://example.com/details')
+  })
+
+  it('does not create executable markup from an untrusted model response', () => {
+    const { container } = render(
+      <MarkdownRenderer content={'<script>alert("xss")</script>\n\n[unsafe](javascript:alert("xss"))'} />,
+    )
+
+    expect(container.querySelector('script')).toBeNull()
+    const unsafeAnchor = container.querySelector('a')
+    expect(unsafeAnchor?.textContent).toBe('unsafe')
+    expect(unsafeAnchor?.hasAttribute('href')).toBe(false)
+  })
+})

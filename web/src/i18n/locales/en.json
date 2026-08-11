@@ -8,8 +8,10 @@
     "dashboard": "Dashboard",
     "mySkills": "My Skills",
     "publish": "Publish",
+    "workbench": "Workbench",
     "mcpManagement": "MCP Marketplace",
-    "login": "Login"
+    "login": "Login",
+    "skillBundles": "Expert Packages"
   },
   "landing": {
     "hero": {
@@ -1619,5 +1621,102 @@
       "report": "Report Notifications",
       "reportDesc": "Notify on report submission or resolution"
     }
+  },
+  "skillBundles": {
+    "title": "Expert Packages",
+    "subtitle": "Package related skills with role guidance, scenarios, and recommended methods.",
+    "searchPlaceholder": "Search expert packages by name, role, scenario, or method",
+    "namespacePlaceholder": "Namespace",
+    "results": "{{count}} expert packages found",
+    "updating": "Updating...",
+    "skillCount": "{{count}} skills",
+    "createAction": "Create Expert Package",
+    "emptyTitle": "No expert packages found",
+    "emptyDescription": "Create an expert package to group related skills for a specific role or scenario.",
+    "emptyForQuery": "No expert packages match \"{{q}}\"",
+    "filters": {
+      "label": "Skill types"
+    },
+    "sort": {
+      "label": "Sort:",
+      "newest": "Newest",
+      "name": "Name"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "visibility": {
+      "PUBLIC": "Public",
+      "NAMESPACE_ONLY": "Namespace only",
+      "PRIVATE": "Private"
+    }
+  },
+  "skillBundleDetail": {
+    "back": "Back to expert packages",
+    "edit": "Edit",
+    "download": "Download expert package",
+    "avatarLabel": "Expert package avatar",
+    "namespace": "Namespace",
+    "skillTotal": "Skills",
+    "skillTotalValue": "{{skillCount}} skills",
+    "updatedAt": "Updated",
+    "capabilityIntro": "Capability introduction",
+    "capabilityCanDo": "What it can help with",
+    "workingStyle": "Working style",
+    "expertise": "Expertise",
+    "noExpertise": "No expertise labels have been configured.",
+    "description": "Introduction",
+    "roleDescription": "Role",
+    "applicableScenarios": "Scenarios",
+    "methodology": "Methodology",
+    "recommendedSkillNotes": "Recommended skill notes",
+    "fileBrowser": "File browser",
+    "packageInfo": "Expert package info",
+    "downloads": "Downloads",
+    "rating": "Rating",
+    "ratingNone": "None",
+    "tags": "Tags",
+    "skills": "Included skills",
+    "noSkills": "No skills have been added to this expert package.",
+    "notFoundTitle": "Expert package unavailable",
+    "notFoundDescription": "The expert package may not exist or you may not have access."
+  },
+  "skillBundleEditor": {
+    "createTitle": "Create Expert Package",
+    "editTitle": "Edit Expert Package",
+    "subtitle": "Define the expert package profile and choose the skills that belong to it.",
+    "save": "Save",
+    "saving": "Saving...",
+    "namespace": "Namespace",
+    "selectNamespace": "Select namespace",
+    "visibility": "Visibility",
+    "name": "Name",
+    "slug": "Slug",
+    "summary": "Summary",
+    "avatarUrl": "Avatar URL",
+    "avatarUrlPlaceholder": "https://.../avatar.png",
+    "avatarPreviewAlt": "Expert package avatar preview",
+    "avatarEmpty": "No avatar",
+    "description": "Introduction",
+    "roleDescription": "Role description",
+    "applicableScenarios": "Applicable scenarios",
+    "methodology": "Methodology",
+    "recommendedSkillNotes": "Recommended skill notes",
+    "status": "Status",
+    "labels": "Skill type labels",
+    "skillSearch": "Add skills",
+    "skillSearchPlaceholder": "Search skills in this namespace",
+    "selectedSkills": "Selected skills",
+    "selectedSkillsHint": "Order follows the list below. Add a short usage note where needed.",
+    "skillNotePlaceholder": "Why this skill is recommended in the expert package",
+    "noSelectedSkills": "No skills selected yet.",
+    "validationTitle": "Please check the form",
+    "requiredFields": "Namespace, name, and slug are required.",
+    "publishedNeedsSkill": "A published expert package must include at least one skill.",
+    "createSuccessTitle": "Expert package created",
+    "updateSuccessTitle": "Expert package updated",
+    "saveErrorTitle": "Expert package save failed"
   }
 }
