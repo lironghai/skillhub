@@ -14,6 +14,15 @@
 [![Java](https://img.shields.io/badge/java-21-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
 
+[![GitHub Stars](https://img.shields.io/github/stars/iflytek/skillhub?style=social)](https://github.com/iflytek/skillhub/stargazers)
+[![GitHub Watchers](https://img.shields.io/github/watchers/iflytek/skillhub?style=social)](https://github.com/iflytek/skillhub/watchers)
+
+</div>
+
+<div align="center">
+
+<a href="https://trendshift.io/repositories/24384?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-24384" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/24384" alt="iflytek%2Fskillhub | Trendshift" width="250" height="55"/></a>&nbsp;&nbsp;<a href="https://aaif.io/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.sanity.io/images/4o10fa7h/production/16dd7d8270b673d376cadca831ab3d5ea003bb89-838x203.svg" alt="AAIF Associate Member" height="55"/></a>
+
 </div>
 
 ---
@@ -23,6 +32,19 @@
 </div>
 
 SkillHub 是一个自托管平台，为团队提供私有的、受治理的智能体技能共享空间。发布技能包，推送到命名空间，让其他人通过搜索发现或通过 CLI 安装。专为防火墙后的本地部署而构建，提供与公共注册中心相同的精致体验。
+
+> ⭐ 如果 SkillHub 适合你的团队，欢迎 **Star** 本仓库帮助更多团队发现它；点 **Watch → Custom → Releases** 可在新版本发布时收到通知。
+
+## 分享优秀 Skill
+
+优秀的 Skill 在分享中产生更大价值。如果你有一个在真实工作或生活场景中反复打磨、确实好用的
+Skill，欢迎分享给 SkillHub 社区，与大家一起丰富开放、实用的 Skill 生态。无论是日常生活、
+办公协作、学习研究、旅行活动、内容创作、数据分析还是软件开发，都可以成为有价值的分享。
+
+经过验证的社区贡献还有机会进入精选 Skill 集合，让每个新部署的 SkillHub 开箱即用。不必完成
+全部适配后才能参与：你可以先[创建 issue](https://github.com/iflytek/skillhub/issues/new/choose)，
+说明 Skill 的来源和它解决的问题；也可以按照[Skill 分享指南](./builtin-skills/README.md)
+直接提交 PR。
 
 ## 文档
 
@@ -171,6 +193,16 @@ make generate-api           # 重新生成 OpenAPI 类型
 ./scripts/smoke-test.sh http://localhost:8080  # 运行冒烟测试
 ```
 
+管理员标签管理冒烟测试只会在显式提供当前管理员凭证时运行：
+
+```bash
+SMOKE_ADMIN_USERNAME=admin SMOKE_ADMIN_PASSWORD='current-password' \
+  ./scripts/smoke-test.sh http://localhost:8080
+```
+
+持久化环境只跑非管理员冒烟检查时，可设置 `SMOKE_ADMIN_CHECKS=false`。
+脚本不再回退使用 bootstrap 管理员默认密码。
+
 说明：不要在 `server/` 下直接执行 `./mvnw -pl skillhub-app clean test`。`skillhub-app` 依赖同仓库的 sibling modules，单独 clean 构建时会回退到本地 Maven 仓库里的旧产物并出现大量 `cannot find symbol` / 签名不匹配错误。需要使用 `-am`，或者直接使用上面的 `make test-backend-app` / `make build-backend-app`。
 
 ### 项目结构
@@ -203,6 +235,7 @@ curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- u
 
 # 阿里云镜像（国内推荐）
 curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- up --aliyun --public-url https://skillhub.your-company.com --version latest
+
 ```
 
 ### 配置参数说明
@@ -217,14 +250,20 @@ curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- u
 
 > **重要**：生产环境请务必配置 `--public-url`，确保 CLI 安装命令和 Agent 设置指引显示正确的地址。
 
+如果通过 `/skillhub/` 这类子路径对外发布，需要让公网地址和前端基础路径保持一致。
+请在 `.env.release` 中设置 `SKILLHUB_PUBLIC_BASE_URL=https://skill.example.com/skillhub`、
+`SKILLHUB_WEB_BASE_PATH=/skillhub/` 和 `SKILLHUB_WEB_API_BASE_URL=/skillhub`。
+
 ### 使用 Kubernetes
 
 ```bash
 # 应用 Kubernetes 清单
 kubectl apply -f deploy/k8s/
 
-# 或使用 Helm（即将推出）
-helm install skillhub ./deploy/helm
+# 或使用 Helm Chart
+helm dependency build ./charts/skillhub
+helm upgrade --install skillhub ./charts/skillhub -n skillhub --create-namespace \
+  -f values-production.yaml
 ```
 
 ### 环境变量
@@ -314,7 +353,7 @@ SkillHub 采用清晰的分层架构：
 ### 基础设施
 - **容器化**：Docker & Docker Compose
 - **监控**：Prometheus + Grafana
-- **部署**：Kubernetes 清单
+- **部署**：Kubernetes 清单与 Helm Chart
 - **CI/CD**：GitHub Actions
 
 ## 路线图
@@ -327,7 +366,7 @@ SkillHub 采用清晰的分层架构：
 - [x] API 令牌管理
 - [x] 账户合并
 - [x] 国际化支持
-- [ ] Helm Chart 部署
+- [x] Helm Chart 部署
 - [ ] 高级搜索过滤器
 - [ ] 技能依赖管理
 - [ ] Webhook 集成
@@ -335,6 +374,41 @@ SkillHub 采用清晰的分层架构：
 - [ ] LDAP/SAML 集成
 
 完整路线图请参阅 [`docs/10-delivery-roadmap.md`](./docs/10-delivery-roadmap.md)。
+
+## SkillHub 与 Agent Skills 生态
+
+SkillHub 是一个**注册与治理平台**，而不是一个技能集合。它与
+[`anthropics/skills`](https://github.com/anthropics/skills) 这类开放技能仓库是
+**互补关系**：那个仓库推广了 **Agent Skill 格式**（带 `name` / `description`
+frontmatter 的 `SKILL.md` 加上配套文件），并提供了一批精选的示例技能；而 SkillHub
+则是你的组织**私有地托管、版本化、治理和分发**这些技能的地方。
+
+|  | [`anthropics/skills`](https://github.com/anthropics/skills) | **SkillHub** |
+|---|---|---|
+| 定位 | 精选的示例 Agent Skills 集合 + 格式规范 | 自托管的技能注册与治理平台 |
+| 层次 | 内容层 —— 技能本身 | 基础设施层 —— 托管、版本、发现、访问控制 |
+| 托管 | 公开的 GitHub 仓库 | 你自己的基础设施，部署在防火墙之内 |
+| 版本 | Git 提交历史 | 语义化版本、标签（`beta` / `stable`）、`latest` 追踪 |
+| 访问控制 | 公开 | 命名空间、RBAC、审核与审计日志 |
+| 分发 | 克隆 / 拷贝文件 | 全文搜索 + CLI 安装 |
+
+由于 SkillHub 使用同一套 `SKILL.md` 格式，`anthropics/skills` 中的技能——或任何
+Agent Skill 目录——都可以直接发布到你的注册中心：
+
+```bash
+# 从开放集合中获取一个技能……
+git clone https://github.com/anthropics/skills
+
+# ……并将其发布到你的私有 SkillHub 注册中心
+export CLAWHUB_REGISTRY=https://skillhub.your-company.com
+npx clawhub publish ./skills/<分类>/<技能名>
+```
+
+> ⚖️ **许可提示**：转发布时请遵守每个技能各自的许可证。`anthropics/skills` 中大多数技能
+> 采用 Apache 2.0，但文档类技能（DOCX/PDF/PPTX/XLSX）是 source-available 而非开源，
+> 再分发前请先查看该技能的 `LICENSE`。
+
+**一句话总结：用 `anthropics/skills` 这类集合提供内容，用 SkillHub 在组织内进行受治理的分发。**
 
 ## 与智能体平台集成
 
@@ -370,6 +444,19 @@ namespace `my-space` 和 skill slug `my-skill`。
 
 📖 **[完整 OpenClaw 集成指南 →](./docs/openclaw-integration.md)**
 
+### [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+
+[Hermes Agent](https://github.com/NousResearch/hermes-agent) 使用标准 `SKILL.md` 格式，并会递归发现 `$HERMES_HOME/skills/` 中的技能。通过 SkillHub CLI 的 `--dir` 参数即可把完整技能包安装到 Hermes，无需新增 registry 适配器；安装后可使用 `hermes skills list` 验证。
+
+📖 **[完整 Hermes Agent 集成指南 →](./docs/hermes-integration.md)**
+
+### [HarnessClaw Engine](https://github.com/harnessclaw/harnessclaw-engine)
+
+[HarnessClaw Engine](https://github.com/harnessclaw/harnessclaw-engine) 是基于 Go 的 LLM 编程助手引擎，通过 WebSocket 协议对外提供能力。它从 `SKILL.md` 文件加载技能，支持 YAML frontmatter 与参数替换，并按配置顺序扫描各目录下的 `skill-name/SKILL.md`（默认 `~/.harnessclaw/workspace/skills/`，靠前的目录在重名时优先）。通过 SkillHub CLI 的 `--dir` 参数即可把技能包直接安装到该目录，无需新增 registry 适配器：
+
+```bash
+npx clawhub --dir ~/.harnessclaw/workspace/skills install my-skill
+```
 ### [AstronClaw](https://agent.xfyun.cn/astron-claw)
 
 [AstronClaw](https://agent.xfyun.cn/astron-claw) 是基于 OpenClaw 核心能力打造的云端 AI 助手，提供全天候在线服务，随时随地通过企业微信、钉钉、飞书等渠道提供服务。它内置了丰富的技能系统，您可以将其连接到自托管的 SkillHub 注册中心，支持技能市场一键安装、仓库搜索、对话自动安装，甚至管理和分发组织内部的自定义私有技能。
@@ -381,6 +468,13 @@ namespace `my-space` 和 skill slug `my-skill`。
 ### [astron-agent](https://github.com/iflytek/astron-agent)
 
 [astron-agent](https://github.com/iflytek/astron-agent) 是科大讯飞星火智能体框架。存储在 SkillHub 中的技能可以被 astron-agent 引用和加载，实现从开发到生产的受治理、版本化的技能生命周期。
+
+## 相关项目
+
+SkillHub 是 **[讯飞 Astron](https://github.com/iflytek)** 开源生态的一部分。如果 SkillHub 对你有帮助，这些同生态的姊妹项目你可能也会用到：
+
+- **[astron-agent](https://github.com/iflytek/astron-agent)** — 企业级、商业友好的智能体工作流平台，用于构建新一代 SuperAgent；发布到 SkillHub 的技能可被 astron-agent 加载和运行。
+- **[astron-rpa](https://github.com/iflytek/astron-rpa)** — 开箱即用、面向 Agent 的 RPA 套件，为个人与企业提供自动化工具。
 
 ---
 

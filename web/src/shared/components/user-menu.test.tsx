@@ -77,6 +77,16 @@ describe('user-menu module exports', () => {
 })
 
 describe('UserMenu security settings visibility', () => {
+  it('uses a compact icon trigger while retaining the user name for wider screens', () => {
+    const html = renderToStaticMarkup(
+      <UserMenu user={{ displayName: 'Long User Name', platformRoles: ['USER'] }} />,
+    )
+
+    expect(html).toContain('Long User Name')
+    expect(html).toContain('2xl:inline')
+    expect(html).toContain('lucide-user-round')
+  })
+
   it('shows security settings when password changes are allowed, independent of OAuth provider', () => {
     const html = renderToStaticMarkup(
       <UserMenu

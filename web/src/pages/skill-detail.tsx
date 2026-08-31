@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react'
+import { startTransition, useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, useNavigate, useRouterState, useSearch } from '@tanstack/react-router'
+import { Link, useParams, useNavigate, useRouterState, useSearch } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowUpCircle, ChevronDown, ChevronUp, Clock, Folder, Globe, Lock, RefreshCw, ShieldCheck, Terminal, Users } from 'lucide-react'
 import { MarkdownRenderer } from '@/features/skill/markdown-renderer'
@@ -12,10 +12,12 @@ import type { SkillFile } from '@/api/types'
 import { InstallCommand } from '@/features/skill/install-command'
 import { ShareButton } from '@/features/skill/share-button'
 import { SkillLabelPanel } from '@/features/skill/skill-label-panel'
+import { ComplianceSnapshotPanel } from '@/features/skill/compliance-snapshot-panel'
 import {
   getOverviewCollapseMaxHeight,
   OVERVIEW_COLLAPSE_DESKTOP_MAX_HEIGHT,
   shouldCollapseOverview,
+  shouldReleaseOverviewLayoutQuiet,
 } from '@/features/skill/overview-collapse'
 import { resolveSkillActionErrorTitle } from '@/features/skill/skill-action-error'
 import { isPrecheckConfirmationMessage, extractPrecheckWarnings } from '@/features/publish/publish-error-utils'
@@ -30,10 +32,11 @@ import { useSubmitSkillReport } from '@/features/report/use-skill-reports'
 import { SecurityAuditSummary } from '@/features/security-audit/security-audit-summary'
 import { formatLocalDateTime } from '@/shared/lib/date-time'
 import { incrementSkillDownloadCount } from '@/shared/lib/skill-download-cache'
-import { getSkillSquareSearch, normalizeSkillDetailReturnTo } from '@/shared/lib/skill-navigation'
+import { getSkillLabelSearch, getSkillSquareSearch, normalizeSkillDetailReturnTo } from '@/shared/lib/skill-navigation'
 import { formatCompactCount } from '@/shared/lib/number-format'
 import { resolveDocumentationFilePath } from '@/shared/lib/skill-documentation'
 import { getHeadlineVersion, getOwnerPreviewVersion, getPublishedVersion } from '@/shared/lib/skill-lifecycle'
+import { navigateAfterOverlays } from '@/shared/lib/navigate-after-overlays'
 import { NamespaceBadge } from '@/shared/components/namespace-badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/shared/ui/tabs'
 import { Button } from '@/shared/ui/button'
@@ -149,6 +152,8 @@ export function SkillDetailPage() {
   const [fileBrowserOpen, setFileBrowserOpen] = useState(true)
   const overviewContentRef = useRef<HTMLDivElement | null>(null)
   const overviewSectionRef = useRef<HTMLDivElement | null>(null)
+  const overviewLayoutQuietRef = useRef(false)
+  const overviewQuietGenerationRef = useRef(0)
   const { namespace, slug } = useParams({ from: '/space/$namespace/$slug' })
   const { user, hasRole } = useAuth()
   const detailQueriesEnabled = isSkillDetailQueriesEnabled(skillDeleted)
@@ -205,7 +210,7 @@ export function SkillDetailPage() {
     }
 
     const updateOverviewState = () => {
-      if (!overviewContentRef.current) {
+      if (!overviewContentRef.current || overviewLayoutQuietRef.current) {
         return
       }
 
@@ -216,11 +221,13 @@ export function SkillDetailPage() {
         window.innerHeight,
       )
 
-      setOverviewMaxHeight(nextMaxHeight)
-      setIsOverviewCollapsible(nextCollapsible)
+      // Bail out when ResizeObserver/layout noise repeats the same values to avoid
+      // re-render storms that race with body portals (Select, DropdownMenu, Dialog).
+      setOverviewMaxHeight((current) => (current === nextMaxHeight ? current : nextMaxHeight))
+      setIsOverviewCollapsible((current) => (current === nextCollapsible ? current : nextCollapsible))
 
       if (!nextCollapsible) {
-        setIsOverviewExpanded(false)
+        setIsOverviewExpanded((current) => (current ? false : current))
       }
     }
 
@@ -238,19 +245,32 @@ export function SkillDetailPage() {
     return () => {
       window.removeEventListener('resize', updateOverviewState)
       resizeObserver?.disconnect()
+      overviewQuietGenerationRef.current += 1
+      overviewLayoutQuietRef.current = false
     }
   }, [readme])
 
   const handleToggleOverview = () => {
-    if (!isOverviewExpanded) {
-      setIsOverviewExpanded(true)
-      return
-    }
-
-    setIsOverviewExpanded(false)
-    requestAnimationFrame(() => {
-      overviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Quiet ResizeObserver for the expand/collapse commit (no max-height transition).
+    const quietGeneration = overviewQuietGenerationRef.current + 1
+    overviewQuietGenerationRef.current = quietGeneration
+    overviewLayoutQuietRef.current = true
+    const expanding = !isOverviewExpanded
+    startTransition(() => {
+      setIsOverviewExpanded(expanding)
     })
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (shouldReleaseOverviewLayoutQuiet(overviewQuietGenerationRef.current, quietGeneration)) {
+          overviewLayoutQuietRef.current = false
+        }
+      })
+    })
+    if (!expanding) {
+      requestAnimationFrame(() => {
+        overviewSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
   }
 
   const refreshSkill = () => {
@@ -300,7 +320,7 @@ export function SkillDetailPage() {
     setPreviewDialogOpen(true)
   }
 
-  const handlePackageMarkdownLinkClick = (
+  const handlePackageMarkdownLinkClick = useCallback((
     href: string,
     event: MouseEvent<HTMLAnchorElement>,
     currentFilePath: string | null | undefined,
@@ -320,15 +340,15 @@ export function SkillDetailPage() {
     }
 
     toast.error(t('skillDetail.packageLinkMissingTitle'), t('skillDetail.packageLinkMissingDescription'))
-  }
+  }, [files, t])
 
-  const handleOverviewLinkClick = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
+  const handleOverviewLinkClick = useCallback((href: string, event: MouseEvent<HTMLAnchorElement>) => {
     handlePackageMarkdownLinkClick(href, event, documentationPath)
-  }
+  }, [documentationPath, handlePackageMarkdownLinkClick])
 
-  const handlePreviewLinkClick = (href: string, event: MouseEvent<HTMLAnchorElement>) => {
+  const handlePreviewLinkClick = useCallback((href: string, event: MouseEvent<HTMLAnchorElement>) => {
     handlePackageMarkdownLinkClick(href, event, previewNode?.path)
-  }
+  }, [handlePackageMarkdownLinkClick, previewNode?.path])
 
   // Download a single file from the skill version
   const handleDownloadFile = () => {
@@ -547,7 +567,9 @@ export function SkillDetailPage() {
         t('skillDetail.deleteSkillSuccessDescription', { skill: skill.displayName }),
       )
       setDeleteSkillInputOpen(false)
-      navigate({ to: resolveDeletedSkillReturnTo(search.returnTo) })
+      navigateAfterOverlays(() => {
+        navigate({ to: resolveDeletedSkillReturnTo(search.returnTo) })
+      })
       queryClient.removeQueries({ queryKey: ['skills', namespace, slug] })
       queryClient.invalidateQueries({ queryKey: ['skills', 'my'] })
     } catch (error) {
@@ -584,7 +606,9 @@ export function SkillDetailPage() {
         t('skillDetail.withdrawReviewSuccessDescription', { version: withdrawVersionTarget }),
       )
       setWithdrawVersionTarget(null)
-      navigate({ to: '/dashboard/skills' })
+      navigateAfterOverlays(() => {
+        navigate({ to: '/dashboard/skills' })
+      })
     } catch (error) {
       toast.error(t('skillDetail.withdrawReviewErrorTitle'), error instanceof Error ? error.message : '')
       throw error
@@ -830,17 +854,19 @@ export function SkillDetailPage() {
           {(skill.labels?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-2">
               {skill.labels!.map((label) => (
-                <span
+                <Link
                   key={label.slug}
+                  to="/search"
+                  search={getSkillLabelSearch(label.slug)}
                   className={cn(
-                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium',
+                    'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2',
                     label.type === 'PRIVILEGED'
-                      ? 'border-amber-500/40 bg-amber-100 text-amber-900'
-                      : 'border-slate-300 bg-slate-100 text-slate-800',
+                      ? 'border-amber-500/40 bg-amber-100 text-amber-900 hover:bg-amber-200/80'
+                      : 'border-slate-300 bg-slate-100 text-slate-800 hover:bg-slate-200/80',
                   )}
                 >
                   {label.displayName}
-                </span>
+                </Link>
               ))}
             </div>
           )}
@@ -884,7 +910,7 @@ export function SkillDetailPage() {
                 <div ref={overviewSectionRef} className="space-y-4">
                   <div
                     className={cn(
-                      'relative overflow-hidden transition-[max-height] duration-300 ease-out',
+                      'relative overflow-hidden',
                       !isOverviewExpanded && isOverviewCollapsible && 'rounded-2xl',
                     )}
                     style={!isOverviewExpanded && isOverviewCollapsible ? { maxHeight: `${overviewMaxHeight}px` } : undefined}
@@ -1036,6 +1062,7 @@ export function SkillDetailPage() {
                       {version.changelog && (
                         <p className="text-sm text-muted-foreground leading-relaxed">{version.changelog}</p>
                       )}
+                      <ComplianceSnapshotPanel snapshot={version.complianceSnapshot} className="mt-3" />
                       <div className="text-xs text-muted-foreground mt-2 flex items-center gap-3">
                         <span>{t('skillDetail.fileCount', { count: version.fileCount })}</span>
                         <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />

@@ -11,6 +11,7 @@ import com.iflytek.skillhub.domain.user.UserAccount;
 import com.iflytek.skillhub.domain.user.UserAccountRepository;
 import com.iflytek.skillhub.domain.user.UserStatus;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpSession;
 import java.time.Clock;
@@ -47,7 +48,8 @@ class AuthContextFilterTest {
         StaticMessageSource messageSource = new StaticMessageSource();
         messageSource.addMessage("error.auth.local.accountDisabled", Locale.ENGLISH, "This account has been disabled");
         Clock clock = Clock.fixed(Instant.parse("2026-03-18T00:00:00Z"), ZoneOffset.UTC);
-        ApiResponseFactory apiResponseFactory = new ApiResponseFactory(messageSource, clock);
+        ApiResponseFactory apiResponseFactory =
+                new ApiResponseFactory(messageSource, clock, new RequestIdAccessor());
         filter = new AuthContextFilter(
                 namespaceMemberRepository,
                 userAccountRepository,
@@ -115,6 +117,34 @@ class AuthContextFilterTest {
 
         assertEquals("user-2", request.getAttribute("userId"));
         assertEquals(NamespaceRole.ADMIN, ((java.util.Map<Long, NamespaceRole>) request.getAttribute("userNsRoles")).get(9L));
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
+    void forwardedPrefixApiRequest_shouldUseServletPathForContextProjection() throws Exception {
+        PlatformPrincipal principal = new PlatformPrincipal("user-3", "Cara", "cara@example.com", null, "local", Set.of("USER"));
+        UserAccount user = new UserAccount("user-3", "Cara", "cara@example.com", null);
+        user.setStatus(UserStatus.ACTIVE);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContextPath("/skillhub");
+        request.setRequestURI("/skillhub/api/web/me/namespaces");
+        request.setServletPath("/api/web/me/namespaces");
+        request.getSession(true).setAttribute("platformPrincipal", principal);
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(principal, null, List.of())
+        );
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain filterChain = mock(FilterChain.class);
+
+        when(userAccountRepository.findById("user-3")).thenReturn(java.util.Optional.of(user));
+        when(namespaceMemberRepository.findByUserId("user-3")).thenReturn(List.of());
+
+        filter.doFilter(request, response, filterChain);
+
+        assertEquals("user-3", request.getAttribute("userId"));
+        assertTrue(((java.util.Map<Long, NamespaceRole>) request.getAttribute("userNsRoles")).isEmpty());
         verify(filterChain).doFilter(request, response);
     }
 

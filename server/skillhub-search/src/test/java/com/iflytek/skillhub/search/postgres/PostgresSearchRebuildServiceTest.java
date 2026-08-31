@@ -159,6 +159,75 @@ class PostgresSearchRebuildServiceTest {
     }
 
     @Test
+    void rebuildBySkill_shouldAppendComplianceSnapshotMappingsIntoSearchDocument() {
+        SkillRepository skillRepository = mock(SkillRepository.class);
+        NamespaceRepository namespaceRepository = mock(NamespaceRepository.class);
+        SkillVersionRepository skillVersionRepository = mock(SkillVersionRepository.class);
+        SearchIndexService searchIndexService = mock(SearchIndexService.class);
+
+        Skill skill = new Skill(7L, "terminal-agent", "owner-1", SkillVisibility.PUBLIC);
+        skill.setDisplayName("Terminal Agent");
+        skill.setSummary("Runs shell workflows safely");
+        skill.setLatestVersionId(104L);
+
+        Namespace namespace = new Namespace("team-ai", "Team AI", "owner-1");
+        SkillVersion version = new SkillVersion(1L, "1.7.0", "owner-1");
+        version.setParsedMetadataJson("""
+                {
+                  "frontmatter": {
+                    "keywords": ["shell"]
+                  },
+                  "complianceSnapshot": {
+                    "schemaVersion": "1",
+                    "digest": "sha256:abc123",
+                    "items": [
+                      {
+                        "standard": "mitre-attack",
+                        "version": "15",
+                        "controlId": "T1059",
+                        "title": "Command and Scripting Interpreter",
+                        "evidence": [
+                          {
+                            "type": "packaged-file",
+                            "path": "docs/security.md",
+                            "sha256": "sha256:def456"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+                """);
+
+        when(skillRepository.findById(1L)).thenReturn(Optional.of(skill));
+        when(namespaceRepository.findById(7L)).thenReturn(Optional.of(namespace));
+        when(skillVersionRepository.findById(104L)).thenReturn(Optional.of(version));
+
+        PostgresSearchRebuildService service = newService(
+                skillRepository,
+                namespaceRepository,
+                skillVersionRepository,
+                searchIndexService
+        );
+
+        service.rebuildBySkill(1L);
+
+        ArgumentCaptor<SkillSearchDocument> captor = ArgumentCaptor.forClass(SkillSearchDocument.class);
+        verify(searchIndexService).index(captor.capture());
+
+        SkillSearchDocument document = captor.getValue();
+        assertThat(document.keywords()).contains("shell");
+        assertThat(document.keywords()).contains("mitre-attack");
+        assertThat(document.keywords()).contains("T1059");
+        assertThat(document.keywords()).contains("Command and Scripting Interpreter");
+        assertThat(document.searchText()).contains("mitre-attack");
+        assertThat(document.searchText()).contains("T1059");
+        assertThat(document.searchText()).contains("Command and Scripting Interpreter");
+        assertThat(document.searchText()).doesNotContain("docs/security.md");
+        assertThat(document.searchText()).doesNotContain("sha256:def456");
+    }
+
+    @Test
     void rebuildBySkill_shouldIgnoreNullFrontmatterValues() {
         SkillRepository skillRepository = mock(SkillRepository.class);
         NamespaceRepository namespaceRepository = mock(NamespaceRepository.class);

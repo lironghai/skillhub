@@ -22,6 +22,7 @@ public record SkillSummaryResponse(
         SkillLifecycleVersionResponse publishedVersion,
         SkillLifecycleVersionResponse ownerPreviewVersion,
         String resolutionMode,
+        ComplianceSnapshotResponse complianceSnapshot,
         List<SkillLabelDto> labels
 ) {
     public SkillSummaryResponse(
@@ -60,6 +61,7 @@ public record SkillSummaryResponse(
                 publishedVersion,
                 ownerPreviewVersion,
                 resolutionMode,
+                null,
                 List.of()
         );
     }

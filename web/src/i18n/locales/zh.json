@@ -1,4 +1,14 @@
 {
+  "compliance": {
+    "title": "合规声明",
+    "mappingCount": "{{count}} 项",
+    "unknownStandard": "未知标准",
+    "evidence": "证据"
+  },
+  "common": {
+    "expand": "展开详情",
+    "collapse": "收起详情"
+  },
   "nav": {
     "landing": "首页",
     "home": "技能中心",
@@ -1442,6 +1452,21 @@
     "skillDetailError": "技能详情加载失败，请稍后重试。",
     "activeReviewVersion": "当前审核版本",
     "downloadSkillZip": "下载技能 ZIP",
+    "complianceDiffTitle": "合规声明差异",
+    "complianceDiffDescription": "对比已发布版本 {{baseVersion}} 与待审核版本 {{pendingVersion}} 的合规声明变化。",
+    "complianceDiffBaseVersion": "基线版本",
+    "complianceDiffPendingVersion": "待审版本",
+    "complianceDiffBaseDigest": "基线摘要",
+    "complianceDiffPendingDigest": "待审摘要",
+    "complianceDiffAdded": "新增",
+    "complianceDiffRemoved": "删除",
+    "complianceDiffModified": "修改",
+    "complianceDiffAddedLabel": "新增 {{count}} 项",
+    "complianceDiffRemovedLabel": "删除 {{count}} 项",
+    "complianceDiffModifiedLabel": "修改 {{count}} 项",
+    "complianceDiffViewDetails": "查看详情",
+    "complianceDiffBaseRemoved": "基线版本包含该声明，待审版本已移除。",
+    "complianceDiffPendingAdded": "待审版本新增了这条声明。",
     "noDocumentation": "当前待审核版本未提供可读的说明文档。"
   },
   "token": {
@@ -1532,6 +1557,11 @@
         "notAuthenticated": "未检测到可用的外部登录会话"
       }
     }
+  },
+  "routeError": {
+    "title": "出现错误",
+    "description": "页面遇到意外错误。请重置后继续。若在无扩展的隐私窗口中仍反复出现，请反馈问题。",
+    "reset": "重置"
   },
   "notification": {
     "title": "通知",

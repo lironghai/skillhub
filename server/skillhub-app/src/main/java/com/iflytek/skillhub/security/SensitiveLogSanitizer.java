@@ -1,6 +1,8 @@
 package com.iflytek.skillhub.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
@@ -16,7 +18,8 @@ public class SensitiveLogSanitizer {
 
     private static final Set<String> SENSITIVE_KEYS = Set.of(
             "password", "passwd", "pwd", "token", "authorization", "cookie",
-            "secret", "api_key", "apikey", "access_key", "refresh_token", "code");
+            "secret", "api_key", "apikey", "access_key", "access_token", "refresh_token",
+            "id_token", "client_secret", "client_assertion", "code", "state");
 
     public String sanitizeRequestTarget(HttpServletRequest request) {
         String uri = request.getRequestURI();
@@ -39,10 +42,18 @@ public class SensitiveLogSanitizer {
             return queryPart;
         }
         String key = queryPart.substring(0, idx);
-        String normalizedKey = key.trim().toLowerCase(Locale.ROOT);
+        String normalizedKey = decodeQueryKey(key).trim().toLowerCase(Locale.ROOT);
         if (SENSITIVE_KEYS.contains(normalizedKey)) {
             return key + "=[REDACTED]";
         }
         return queryPart;
+    }
+
+    private String decodeQueryKey(String key) {
+        try {
+            return URLDecoder.decode(key, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException ignored) {
+            return key;
+        }
     }
 }

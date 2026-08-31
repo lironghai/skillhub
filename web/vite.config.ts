@@ -3,12 +3,13 @@ import react from '@vitejs/plugin-react'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import path from 'path'
 import type { IncomingMessage } from 'node:http'
+import { validateBasePath } from './base-path-config'
 
 const JS_BUILD_TARGET = 'es2020'
 const LEGACY_BROWSER_TARGETS = ['chrome83', 'edge83', 'firefox78', 'safari14']
 const CONTEXT_FORGE_DEV_ORIGIN = process.env.VITE_CONTEXT_FORGE_DEV_ORIGIN ?? 'http://localhost:4444'
 const CONTEXT_FORGE_EMBEDDED_PREFIX = '/contextforge'
-const CONTEXT_FORGE_ADMIN_REDIRECT_PATTERN = /^(?<origin>https?:\/\/[^/]+)?\/admin(?<suffix>\/.*|$)/
+const CONTEXT_FORGE_ADMIN_REDIRECT_PATTERN = /^(?:https?:\/\/[^/]+)?\/admin(?<suffix>\/.*|$)/
 
 export function rewriteContextForgeRedirectLocation(location: string): string {
   const match = location.match(CONTEXT_FORGE_ADMIN_REDIRECT_PATTERN)
@@ -17,10 +18,9 @@ export function rewriteContextForgeRedirectLocation(location: string): string {
     return location
   }
 
-  const origin = match.groups.origin ?? ''
   const suffix = match.groups.suffix ?? ''
 
-  return `${origin}${CONTEXT_FORGE_EMBEDDED_PREFIX}/admin${suffix}`
+  return `${CONTEXT_FORGE_EMBEDDED_PREFIX}/admin${suffix}`
 }
 
 function rewriteContextForgeProxyRedirect(proxyRes: IncomingMessage): void {
@@ -37,6 +37,7 @@ function rewriteContextForgeProxyRedirect(proxyRes: IncomingMessage): void {
 }
 
 export default defineConfig({
+  base: validateBasePath(process.env.VITE_BASE_PATH ?? '/'),
   plugins: [react(), createSvgIconsPlugin({
     iconDirs: [path.resolve(__dirname, 'src/assets/svg')],
     symbolId: 'svg-[name]',

@@ -8,7 +8,7 @@ vi.mock('@/features/auth/use-auth', () => ({
 }))
 
 vi.mock('@/features/social/use-star', () => ({
-  useStar: () => ({ data: { starred: false } }),
+  useStarredIdSet: () => ({ starredIds: new Set<number>() }),
 }))
 
 const baseSkill: SkillSummary = {

@@ -1,3 +1,5 @@
+import { toRouterPath } from './base-path'
+
 export function canAccessRoute(userRoles: readonly string[] | undefined, requiredRoles: readonly string[]) {
   if (!userRoles || userRoles.length === 0) {
     return false
@@ -14,11 +16,11 @@ export function shouldRedirectToLogin(isLoading: boolean, user: object | null | 
   return !isLoading && !user
 }
 
-export function buildLoginRedirect(pathname: string, search = '', hash = '') {
+export function buildLoginRedirect(pathname: string, search = '', hash = '', basePath?: string) {
   return {
     to: '/login' as const,
     search: {
-      returnTo: `${pathname}${search}${hash}`,
+      returnTo: toRouterPath(pathname, search, hash, basePath),
     },
   }
 }

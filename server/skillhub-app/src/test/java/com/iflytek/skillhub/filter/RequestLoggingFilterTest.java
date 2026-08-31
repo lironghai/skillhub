@@ -6,6 +6,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.iflytek.skillhub.security.SensitiveLogSanitizer;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletResponse;
@@ -36,16 +37,17 @@ class RequestLoggingFilterTest {
     }
 
     @Test
-    void doFilterInternal_truncatesLongRequestBodyAndOmitsResponseBody()
+    void doFilterInternal_omitsRequestAndResponseBodies()
             throws ServletException, IOException {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
-        String longBody = "x".repeat(5_000);
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
+        String requestBody = "{\"username\":\"alice\",\"password\":\"super-secret\"}";
+        String responseBody = "x".repeat(5_000);
         attachAppender();
 
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/test");
         request.setCharacterEncoding(StandardCharsets.UTF_8.name());
         request.setContentType("application/json");
-        request.setContent(longBody.getBytes(StandardCharsets.UTF_8));
+        request.setContent(requestBody.getBytes(StandardCharsets.UTF_8));
 
         MockHttpServletResponse response = new MockHttpServletResponse();
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
@@ -53,23 +55,23 @@ class RequestLoggingFilterTest {
         FilterChain filterChain = (req, res) -> {
             req.getReader().lines().count();
             res.setContentType("application/json");
-            res.getWriter().write(longBody);
+            res.getWriter().write(responseBody);
         };
 
         filter.doFilter(request, response, filterChain);
 
         List<String> loggedMessages = loggedMessages();
-        assertThat(loggedMessages).anySatisfy(message ->
-                assertThat(message).contains("Body: " + "x".repeat(200) + "...[truncated]"));
-        assertThat(loggedMessages).noneMatch(message -> message.contains("Body: " + longBody));
+        assertThat(loggedMessages).anyMatch(message -> message.contains("POST /api/test"));
+        assertThat(loggedMessages).noneMatch(message -> message.contains("Body:"));
+        assertThat(loggedMessages).noneMatch(message -> message.contains("super-secret"));
         assertThat(loggedMessages).noneMatch(message -> message.contains("Response Body:"));
-        assertThat(response.getContentAsString()).isEqualTo(longBody);
+        assertThat(response.getContentAsString()).isEqualTo(responseBody);
     }
 
     @Test
     void doFilterInternal_skipsActuatorEndpoints()
             throws ServletException, IOException {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         attachAppender();
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/actuator/health");
@@ -85,7 +87,7 @@ class RequestLoggingFilterTest {
     @Test
     void doFilterInternal_skipsOtherSseEndpointsWithoutWrappingResponse()
             throws ServletException, IOException {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         attachAppender();
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/scan/sse");
@@ -110,7 +112,7 @@ class RequestLoggingFilterTest {
     @Test
     void doFilterInternal_logsCoreSummaryFields()
             throws ServletException, IOException {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         attachAppender();
 
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/skills");
@@ -131,8 +133,33 @@ class RequestLoggingFilterTest {
     }
 
     @Test
+    void doFilterInternal_redactsOauthSecretsFromRequestTarget()
+            throws ServletException, IOException {
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
+        attachAppender();
+
+        MockHttpServletRequest request = new MockHttpServletRequest(
+                "GET",
+                "/login/oauth2/code/github");
+        request.setQueryString("code=authorization-code&state=csrf-state&token=api-token&returnTo=%2Fdashboard");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilter(request, response, (req, res) -> {});
+
+        assertThat(loggedMessages()).anySatisfy(message -> {
+            assertThat(message).contains("code=[REDACTED]");
+            assertThat(message).contains("state=[REDACTED]");
+            assertThat(message).contains("token=[REDACTED]");
+            assertThat(message).contains("returnTo=%2Fdashboard");
+            assertThat(message).doesNotContain("authorization-code");
+            assertThat(message).doesNotContain("csrf-state");
+            assertThat(message).doesNotContain("api-token");
+        });
+    }
+
+    @Test
     void doFilterInternal_shouldBypassCachingWrapperForNotificationSse() throws Exception {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/notifications/sse");
         MockHttpServletResponse response = new MockHttpServletResponse();
         AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();
@@ -153,7 +180,7 @@ class RequestLoggingFilterTest {
 
     @Test
     void doFilterInternal_shouldBypassResponseCachingForWorkbenchMessageStream() throws Exception {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         attachAppender();
         MockHttpServletRequest request = new MockHttpServletRequest(
                 "POST",
@@ -179,13 +206,14 @@ class RequestLoggingFilterTest {
         assertThat(response.getContentAsString()).isEqualTo("event: stream_open\n\n");
         assertThat(loggedMessages()).anySatisfy(message -> {
             assertThat(message).contains("POST /api/web/workbench/sessions/123/messages/stream");
-            assertThat(message).contains("Body: {\"message\":\"hello\"}");
+            assertThat(message).doesNotContain("Body:");
+            assertThat(message).doesNotContain("hello");
         });
     }
 
     @Test
     void doFilterInternal_shouldNotTreatInvalidWorkbenchMessageStreamAsSse() throws Exception {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         MockHttpServletRequest request = new MockHttpServletRequest(
                 "POST",
                 "/api/web/workbench/sessions/undefined/messages/stream");
@@ -207,7 +235,7 @@ class RequestLoggingFilterTest {
 
     @Test
     void doFilterInternal_shouldKeepCachingWrapperForRegularApiResponses() throws Exception {
-        RequestLoggingFilter filter = new RequestLoggingFilter();
+        RequestLoggingFilter filter = new RequestLoggingFilter(new SensitiveLogSanitizer());
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/notifications/unread-count");
         MockHttpServletResponse response = new MockHttpServletResponse();
         AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();

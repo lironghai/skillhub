@@ -61,7 +61,8 @@ class ReviewSkillDetailAppServiceTest {
                 reviewService,
                 rbacService,
                 skillQueryService,
-                skillDownloadService
+                skillDownloadService,
+                new ComplianceSnapshotProjectionService(new com.fasterxml.jackson.databind.ObjectMapper())
         );
     }
 
@@ -71,6 +72,9 @@ class ReviewSkillDetailAppServiceTest {
         Namespace namespace = createNamespace(20L, "team-a");
         Skill skill = createSkill(101L, 20L, "skill-a");
         SkillVersion pending = createVersion(101L, 101L, "1.2.0", SkillVersionStatus.PENDING_REVIEW);
+        pending.setParsedMetadataJson("""
+                {"complianceSnapshot":{"schemaVersion":"1.0","items":[{"standard":"mitre-attack","version":"v19.1","controlId":"T1059","evidence":[]}],"digest":"sha256:demo"}}
+                """);
         SkillVersion published = createVersion(100L, 101L, "1.1.0", SkillVersionStatus.PUBLISHED);
         SkillFile readme = createFile(1L, 101L, "README.md");
 
@@ -100,6 +104,7 @@ class ReviewSkillDetailAppServiceTest {
         assertThat(response.skill().namespace()).isEqualTo("team-a");
         assertThat(response.versions()).extracting("version").containsExactly("1.2.0", "1.1.0");
         assertThat(response.versions().get(0).downloadAvailable()).isTrue();
+        assertThat(response.versions().get(0).complianceSnapshot().items().get(0).controlId()).isEqualTo("T1059");
     }
 
     @Test

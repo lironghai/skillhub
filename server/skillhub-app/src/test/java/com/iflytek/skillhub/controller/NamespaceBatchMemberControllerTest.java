@@ -187,9 +187,7 @@ class NamespaceBatchMemberControllerTest {
 
     @Test
     void batchAddMembers_emptyArray_returnsError() throws Exception {
-        // @NotEmpty on BatchMemberRequest.members triggers validation error
-        // Spring Boot 3.2+ raises HandlerMethodValidationException (500) rather than
-        // MethodArgumentNotValidException (400) for record-based @RequestBody validation
+        // Spring Boot 3.5 maps record-based request validation to a client error.
         mockMvc.perform(post("/api/v1/namespaces/team-a/members/batch")
                         .with(csrf())
                         .with(auth("owner-1"))
@@ -198,7 +196,7 @@ class NamespaceBatchMemberControllerTest {
                         .content("""
                                 {"members":[]}
                                 """))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
     }
 
     @Test

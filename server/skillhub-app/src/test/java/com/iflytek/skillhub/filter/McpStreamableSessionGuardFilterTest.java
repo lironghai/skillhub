@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import io.modelcontextprotocol.json.jackson2.JacksonMcpJsonMapper;
 import io.modelcontextprotocol.server.transport.WebMvcStreamableServerTransportProvider;
 import io.modelcontextprotocol.spec.McpStreamableServerSession;
@@ -28,7 +29,10 @@ class McpStreamableSessionGuardFilterTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
     private final ApiResponseFactory apiResponseFactory =
-            new ApiResponseFactory(new StaticMessageSource(), Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+            new ApiResponseFactory(
+                    new StaticMessageSource(),
+                    Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+                    new RequestIdAccessor());
 
     @Test
     void doFilterInternal_sanitizesMissingStreamableSession() throws Exception {

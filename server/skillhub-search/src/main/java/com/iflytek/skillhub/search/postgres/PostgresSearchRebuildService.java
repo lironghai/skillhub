@@ -14,6 +14,7 @@ import com.iflytek.skillhub.domain.skill.SkillRepository;
 import com.iflytek.skillhub.domain.skill.SkillStatus;
 import com.iflytek.skillhub.domain.skill.SkillVersion;
 import com.iflytek.skillhub.domain.skill.SkillVersionRepository;
+import com.iflytek.skillhub.domain.skill.metadata.ComplianceMetadataService;
 import com.iflytek.skillhub.search.SearchIndexService;
 import com.iflytek.skillhub.search.SearchRebuildService;
 import com.iflytek.skillhub.search.SearchTextTokenizer;
@@ -127,9 +128,13 @@ public class PostgresSearchRebuildService implements SearchRebuildService {
         Set<String> keywords = new TreeSet<>();
         resolveLatestVersion(skill)
                 .map(this::extractParsedMetadata)
-                .map(metadata -> metadata.get("frontmatter"))
-                .map(this::asMap)
-                .ifPresent(frontmatter -> appendFrontmatter(frontmatter, keywords, searchParts));
+                .ifPresent(metadata -> {
+                    appendFrontmatter(asMap(metadata.get("frontmatter")), keywords, searchParts);
+                    appendComplianceSnapshot(
+                            asMap(metadata.get(ComplianceMetadataService.SNAPSHOT_FIELD_NAME)),
+                            keywords,
+                            searchParts);
+                });
         appendLabelKeywords(skill.getId(), keywords);
 
         return new SearchIndexPayload(
@@ -195,6 +200,29 @@ public class PostgresSearchRebuildService implements SearchRebuildService {
                 flattenToStrings(value).forEach(text -> addPart(searchParts, text));
             }
         }
+    }
+
+    private void appendComplianceSnapshot(Map<String, Object> snapshot,
+                                          Set<String> keywords,
+                                          List<String> searchParts) {
+        Object rawItems = snapshot.get("items");
+        if (!(rawItems instanceof Collection<?> items)) {
+            return;
+        }
+        for (Object rawItem : items) {
+            Map<String, Object> item = asMap(rawItem);
+            appendComplianceSearchValue(item.get("standard"), keywords, searchParts);
+            appendComplianceSearchValue(item.get("version"), keywords, searchParts);
+            appendComplianceSearchValue(item.get("controlId"), keywords, searchParts);
+            appendComplianceSearchValue(item.get("title"), keywords, searchParts);
+        }
+    }
+
+    private void appendComplianceSearchValue(Object value, Set<String> keywords, List<String> searchParts) {
+        flattenToStrings(value).forEach(text -> {
+            addKeyword(keywords, text);
+            addPart(searchParts, text);
+        });
     }
 
     private List<String> flattenToStrings(Object value) {

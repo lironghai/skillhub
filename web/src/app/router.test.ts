@@ -47,9 +47,15 @@ describe('router', () => {
   })
 
   it('registers the MCP management route', () => {
-    const children = (router.routeTree.children ?? []) as Array<{ fullPath?: string; path?: string }>
+    const children = (router.routeTree.children ?? []) as Array<{
+      fullPath?: string
+      path?: string
+      options?: { beforeLoad?: unknown }
+    }>
     const childPaths = children.map((route) => route.fullPath ?? route.path)
     expect(childPaths).toContain('/dashboard/mcp')
+    const mcpRoute = children.find((route) => (route.fullPath ?? route.path) === '/dashboard/mcp')
+    expect(mcpRoute?.options?.beforeLoad).toEqual(expect.any(Function))
   })
 
   it('registers the workbench route', () => {

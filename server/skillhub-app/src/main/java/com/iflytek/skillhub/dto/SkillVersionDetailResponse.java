@@ -11,5 +11,6 @@ public record SkillVersionDetailResponse(
         long totalSize,
         Instant publishedAt,
         String parsedMetadataJson,
-        String manifestJson
+        String manifestJson,
+        ComplianceSnapshotResponse complianceSnapshot
 ) {}

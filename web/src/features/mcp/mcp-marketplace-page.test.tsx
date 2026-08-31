@@ -1,6 +1,9 @@
+/** @vitest-environment jsdom */
+
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import type { ReactNode } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const mcpCatalogHooks = vi.hoisted(() => {
   const internalRefetch = vi.fn()
@@ -127,6 +130,10 @@ vi.mock('./use-mcp-catalog', () => ({
 import { AssociatedDetailList, McpMarketplacePage } from './mcp-marketplace-page'
 
 describe('McpMarketplacePage', () => {
+  afterEach(() => {
+    cleanup()
+  })
+
   it('renders compact internal server rows with detail actions instead of inline associated items', () => {
     mcpCatalogHooks.useMcpInternalServers.mockClear()
     mcpCatalogHooks.useMcpCatalog.mockClear()
@@ -167,6 +174,18 @@ describe('McpMarketplacePage', () => {
     // Default is list view, so the table should be visible.
     expect(html).toContain('<table')
     expect(html).not.toContain('mcpMarketplace.serverName')
+  })
+
+  it('shows the internal MCP connection URLs when a server row is opened', () => {
+    render(<McpMarketplacePage />)
+
+    fireEvent.click(screen.getByRole('row', { name: /bdc4_group/ }))
+
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.getByText('mcpMarketplace.streamableHttpUrl')).toBeTruthy()
+    expect(screen.getByText('https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp')).toBeTruthy()
+    expect(screen.getByText('mcpMarketplace.sseUrl')).toBeTruthy()
+    expect(screen.getByText('https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse')).toBeTruthy()
   })
 
   it('renders associated item details inside the detail list', () => {

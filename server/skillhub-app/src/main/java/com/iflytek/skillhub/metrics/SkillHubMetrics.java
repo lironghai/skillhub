@@ -60,4 +60,11 @@ public class SkillHubMetrics {
             "operation", operation
         ).increment();
     }
+
+    public void incrementSearchRebuildFailure(String trigger) {
+        meterRegistry.counter(
+            "skillhub.search.rebuild.failure",
+            "trigger", trigger
+        ).increment();
+    }
 }

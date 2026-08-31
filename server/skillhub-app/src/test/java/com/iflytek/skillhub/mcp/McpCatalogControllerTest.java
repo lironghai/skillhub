@@ -2,6 +2,7 @@ package com.iflytek.skillhub.mcp;
 
 import com.iflytek.skillhub.dto.ApiResponse;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.StaticMessageSource;
@@ -197,8 +198,10 @@ class McpCatalogControllerTest {
         var firstTool = firstItem.path("tools").get(0);
 
         assertThat(firstItem.path("iconUrl").asText()).isEqualTo("https://static.example.com/icons/bdc4.png");
-        assertThat(firstItem.has("streamableHttpUrl")).isFalse();
-        assertThat(firstItem.has("sseUrl")).isFalse();
+        assertThat(firstItem.path("streamableHttpUrl").asText())
+                .isEqualTo("http://skillhub.example/contextforge/servers/srv-bdc4/mcp");
+        assertThat(firstItem.path("sseUrl").asText())
+                .isEqualTo("http://skillhub.example/contextforge/servers/srv-bdc4/sse");
         assertThat(firstTool.path("inputSchema").path("properties").path("reportCode").path("type").asText()).isEqualTo("string");
         assertThat(firstTool.path("outputSchema").path("properties").path("rows").path("type").asText()).isEqualTo("array");
     }
@@ -208,7 +211,8 @@ class McpCatalogControllerTest {
         messageSource.addMessage("response.success.read", java.util.Locale.ENGLISH, "Fetched successfully");
         return new ApiResponseFactory(
                 messageSource,
-                Clock.fixed(Instant.parse("2026-06-09T08:00:00Z"), ZoneOffset.UTC)
+                Clock.fixed(Instant.parse("2026-06-09T08:00:00Z"), ZoneOffset.UTC),
+                new RequestIdAccessor()
         );
     }
 }

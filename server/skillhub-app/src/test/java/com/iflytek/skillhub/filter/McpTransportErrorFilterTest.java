@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletResponse;
 import java.time.Clock;
@@ -20,7 +21,10 @@ import org.springframework.mock.web.MockHttpServletResponse;
 class McpTransportErrorFilterTest {
 
     private final McpTransportErrorFilter filter = new McpTransportErrorFilter(
-            new ApiResponseFactory(new StaticMessageSource(), Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)),
+            new ApiResponseFactory(
+                    new StaticMessageSource(),
+                    Clock.fixed(Instant.EPOCH, ZoneOffset.UTC),
+                    new RequestIdAccessor()),
             new ObjectMapper().registerModule(new JavaTimeModule()));
 
     @Test

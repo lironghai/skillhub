@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { createElement } from 'react'
+import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 // Layout is a component-only file with no exported pure functions or constants.
@@ -7,7 +8,8 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('@tanstack/react-router', () => ({
   Outlet: () => null,
-  Link: ({ children }: { children: unknown }) => children,
+  Link: ({ children, to }: { children: ReactNode; to: string }) =>
+    createElement('a', { href: to }, children),
   useRouterState: () => ({ pathname: '/', resolvedPathname: '/' }),
 }))
 
@@ -69,6 +71,20 @@ describe('Layout', () => {
     expect(html).toContain('nav.skillBundles')
   })
 
+  it('keeps full navigation discoverable through a responsive menu', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).toContain('aria-label="Navigation menu"')
+    expect(html).toContain('data-mobile-navigation="true"')
+    expect(html).toContain('xl:hidden')
+    expect(html).toContain('hidden xl:flex')
+    expect(html).toContain('text-[15px] font-medium')
+    expect(html).not.toContain('text-[14px] font-medium')
+    expect(html).toContain('href="/search"')
+    expect(html).toContain('href="/skill-bundles"')
+    expect(html).toContain('href="/dashboard/mcp"')
+  })
+
   it('renders the footer resources column', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 
@@ -76,5 +92,11 @@ describe('Layout', () => {
     expect(html).toContain('footer.docs')
     expect(html).toContain('footer.api')
     expect(html).toContain('footer.community')
+    expect(html).toContain('href="https://iflytek.github.io/skillhub/"')
+    expect(html).toContain('href="https://github.com/iflytek/skillhub/blob/main/docs/06-api-design.md"')
+    expect(html).toContain('href="https://github.com/iflytek/skillhub/discussions"')
+    expect(html).not.toContain('href="/docs"')
+    expect(html).not.toContain('href="/api"')
+    expect(html).not.toContain('href="/community"')
   })
 })

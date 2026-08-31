@@ -15,6 +15,15 @@
 [![Java](https://img.shields.io/badge/java-21-ED8B00?logo=openjdk&logoColor=white)](https://openjdk.org/projects/jdk/21/)
 [![React](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](https://react.dev)
 
+[![GitHub Stars](https://img.shields.io/github/stars/iflytek/skillhub?style=social)](https://github.com/iflytek/skillhub/stargazers)
+[![GitHub Watchers](https://img.shields.io/github/watchers/iflytek/skillhub?style=social)](https://github.com/iflytek/skillhub/watchers)
+
+</div>
+
+<div align="center">
+
+<a href="https://trendshift.io/repositories/24384?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-24384" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/24384" alt="iflytek%2Fskillhub | Trendshift" width="250" height="55"/></a>&nbsp;&nbsp;<a href="https://aaif.io/" target="_blank" rel="noopener noreferrer"><img src="https://cdn.sanity.io/images/4o10fa7h/production/16dd7d8270b673d376cadca831ab3d5ea003bb89-838x203.svg" alt="AAIF Associate Member" height="55"/></a>
+
 </div>
 
 <div align="center">
@@ -34,6 +43,22 @@ governed place to share agent skills. Publish a skill package, push
 it to a namespace, and let others find it through search or
 install it via CLI. Built for on-premise deployment behind your
 firewall, with the same polish you'd expect from a public registry.
+
+> ⭐ If SkillHub fits your team, **star** the repo to help other teams find it, and **Watch → Custom → Releases** to get notified when a new version ships.
+
+## Share Great Skills
+
+Great Skills become more valuable when they are shared. If you have a Skill that has
+proved useful in real work or everyday life, share it with the SkillHub community and
+help grow an open, practical Skill ecosystem. We welcome Skills for daily life, office
+work, learning and research, travel and events, content creation, data analysis, and
+software development—not only engineering workflows.
+
+High-quality community contributions may join the curated starter collection, making new
+SkillHub deployments useful from day one. You do not need to finish the full adaptation
+before joining in: [open an issue](https://github.com/iflytek/skillhub/issues/new/choose)
+with the Skill's source and the problem it solves, or submit a PR by following the
+[Skill sharing guide](./builtin-skills/README.md).
 
 ## Documentation
 
@@ -221,6 +246,7 @@ curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- u
 
 # Aliyun mirror (recommended for users in China)
 curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- up --aliyun --public-url https://skillhub.your-company.com --version latest
+
 ```
 
 **Deployment parameters:**
@@ -234,6 +260,10 @@ curl -fsSL https://imageless.oss-cn-beijing.aliyuncs.com/runtime.sh | sh -s -- u
 | `--no-scanner` | Disable security scanner | `--no-scanner` |
 
 > **Important**: Configure `--public-url` for production deployments to ensure CLI install commands and Agent setup instructions display the correct URLs.
+
+For sub-path deployments, keep the public URL and runtime base path aligned in
+`.env.release`: set `SKILLHUB_PUBLIC_BASE_URL=https://skill.example.com/skillhub`,
+`SKILLHUB_WEB_BASE_PATH=/skillhub/`, and `SKILLHUB_WEB_API_BASE_URL=/skillhub`.
 
 **Manual deployment:**
 
@@ -283,6 +313,9 @@ enables the bootstrap admin by default, so zero-config quickstart via
 Recommended production baseline:
 
 - set `SKILLHUB_PUBLIC_BASE_URL` to the final HTTPS entrypoint
+- if the service is published under a sub-path such as `/skillhub/`, set
+  `SKILLHUB_WEB_BASE_PATH=/skillhub/` and `SKILLHUB_WEB_API_BASE_URL=/skillhub`
+  as well
 - keep PostgreSQL / Redis bound to `127.0.0.1`
 - use external S3 / OSS via `SKILLHUB_STORAGE_S3_*`
 - change `BOOTSTRAP_ADMIN_PASSWORD` to a strong password (`validate-release-config.sh` rejects the default `ChangeMe!2026`)
@@ -340,6 +373,20 @@ Basic Kubernetes manifests are available under [`deploy/k8s/`](./deploy/k8s):
 - `services.yaml`
 - `ingress.yaml`
 
+For a configurable deployment with bundled PostgreSQL and Redis dependencies,
+use the Helm chart under [`charts/skillhub/`](./charts/skillhub):
+
+```bash
+helm dependency build ./charts/skillhub
+helm upgrade --install skillhub ./charts/skillhub \
+  --namespace skillhub \
+  --create-namespace \
+  -f values-production.yaml
+```
+
+See the [Helm chart guide](./charts/skillhub/README.md) for required secrets,
+Ingress/TLS, external data services, storage migration, and upgrade constraints.
+
 Apply them after creating your own secret:
 
 ```bash
@@ -360,6 +407,18 @@ Run it against a local backend:
 ```bash
 ./scripts/smoke-test.sh http://localhost:8080
 ```
+
+Admin label-management smoke checks run only when current admin credentials are
+supplied explicitly:
+
+```bash
+SMOKE_ADMIN_USERNAME=admin SMOKE_ADMIN_PASSWORD='current-password' \
+  ./scripts/smoke-test.sh http://localhost:8080
+```
+
+Use `SMOKE_ADMIN_CHECKS=false` for persistent environments where only non-admin
+smoke checks should run. The script no longer falls back to bootstrap admin
+password defaults.
 
 ## Architecture
 
@@ -402,6 +461,44 @@ Run it against a local backend:
 - OpenAPI TypeScript for type-safe API client
 - i18next for internationalization
 
+## SkillHub and the Agent Skills Ecosystem
+
+SkillHub is a **registry and governance platform** — not a skill collection.
+It is complementary to open skill catalogs such as
+[`anthropics/skills`](https://github.com/anthropics/skills): that repository
+popularized the **Agent Skill format** (a `SKILL.md` with `name` / `description`
+frontmatter plus supporting files) and ships a curated set of example skills.
+SkillHub is where your organization **hosts, versions, governs, and distributes**
+those skills privately.
+
+|  | [`anthropics/skills`](https://github.com/anthropics/skills) | **SkillHub** |
+|---|---|---|
+| What it is | A curated collection of example Agent Skills + the format spec | A self-hosted registry & governance platform for skills |
+| Layer | Content — the skills themselves | Infrastructure — hosting, versioning, discovery, access control |
+| Hosting | Public GitHub repository | Your own infrastructure, behind your firewall |
+| Versioning | Git history | Semantic versions, tags (`beta` / `stable`), `latest` tracking |
+| Access control | Public | Namespaces, RBAC, review & audit logging |
+| Distribution | Clone / copy files | Full-text search + CLI install |
+
+Because SkillHub speaks the same `SKILL.md` format, skills from `anthropics/skills`
+— or any Agent Skill folder — publish straight into your registry:
+
+```bash
+# Grab a skill from an open collection...
+git clone https://github.com/anthropics/skills
+
+# ...and publish it into your private SkillHub registry
+export CLAWHUB_REGISTRY=https://skillhub.your-company.com
+npx clawhub publish ./skills/<category>/<skill-name>
+```
+
+> ⚖️ **Licensing**: honor each skill's own license when republishing. Most skills in
+> `anthropics/skills` are Apache 2.0, but the document skills (DOCX/PDF/PPTX/XLSX) are
+> source-available rather than open source — check the skill's `LICENSE` before redistributing.
+
+**In short: use collections like `anthropics/skills` for content, and SkillHub to
+distribute it across your organization under governance.**
+
 ## Usage with Agent Platforms
 
 SkillHub works as a skill registry backend for several agent platforms. Point any of the clients below at your SkillHub instance to publish, discover, and install skills.
@@ -436,6 +533,19 @@ namespace `my-space` plus skill slug `my-skill`.
 
 📖 **[Complete OpenClaw Integration Guide →](./docs/openclaw-integration.md)**
 
+### [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+
+[Hermes Agent](https://github.com/NousResearch/hermes-agent) uses the standard `SKILL.md` format and recursively discovers skills under `$HERMES_HOME/skills/`. Use SkillHub CLI's explicit `--dir` option to install a complete SkillHub package into Hermes without a registry adapter, then verify it with `hermes skills list`.
+
+📖 **[Complete Hermes Agent Integration Guide →](./docs/hermes-integration-en.md)**
+
+### [HarnessClaw Engine](https://github.com/harnessclaw/harnessclaw-engine)
+
+[HarnessClaw Engine](https://github.com/harnessclaw/harnessclaw-engine) is a Go LLM programming assistant engine that exposes its capabilities over WebSocket. It loads skills from `SKILL.md` files with YAML frontmatter and parameter substitution, scanning each configured directory for `skill-name/SKILL.md` (default `~/.harnessclaw/workspace/skills/`, with earlier directories taking priority on name conflicts). Install a SkillHub package straight into that directory with the CLI's `--dir` option, no registry adapter required:
+
+```bash
+npx clawhub --dir ~/.harnessclaw/workspace/skills install my-skill
+```
 ### [AstronClaw](https://agent.xfyun.cn/astron-claw)
 
 [AstronClaw](https://agent.xfyun.cn/astron-claw) is a cloud AI assistant built on OpenClaw's core capabilities, providing 24/7 online service through enterprise platforms like WeChat Work, DingTalk, and Feishu. It features a built-in skill system with over 130 official skills. You can connect it to a self-hosted SkillHub registry to enable one-click skill installation, search repository, dialogue-based automatic installation, and even custom skills management within your organization.
@@ -447,6 +557,13 @@ namespace `my-space` plus skill slug `my-skill`.
 ### [astron-agent](https://github.com/iflytek/astron-agent)
 
 [astron-agent](https://github.com/iflytek/astron-agent) is the iFlytek Astron agent framework. Skills stored in SkillHub can be referenced and loaded by astron-agent, enabling a governed, versioned skill lifecycle from development to production.
+
+## Related Projects
+
+SkillHub is part of the **[iFlytek Astron](https://github.com/iflytek)** open-source ecosystem. If SkillHub is useful to you, these sibling projects may be too:
+
+- **[astron-agent](https://github.com/iflytek/astron-agent)** — Enterprise-grade, commercial-friendly agentic workflow platform for building next-generation SuperAgents. Skills published to SkillHub can be loaded and run by astron-agent.
+- **[astron-rpa](https://github.com/iflytek/astron-rpa)** — Agent-ready RPA suite with out-of-the-box automation tools, built for individuals and enterprises.
 
 ---
 

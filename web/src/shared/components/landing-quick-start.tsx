@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Check, Copy } from 'lucide-react'
 import { useCopyToClipboard } from '@/shared/lib/clipboard'
 import { SvgIcon } from './svg-icon'
+import { resolvePublicRegistryUrl } from '@/shared/lib/registry-url'
 
 type LandingQuickStartTabId = 'agent' | 'human' | 'cli'
 
@@ -24,13 +25,10 @@ function getAppBaseUrl(): string {
     return ''
   }
   const runtimeConfig = window.__SKILLHUB_RUNTIME_CONFIG__
-  const configuredUrl = runtimeConfig?.appBaseUrl
-  // Use configured URL only if it's set and not localhost
-  if (configuredUrl && !configuredUrl.includes('localhost')) {
-    return configuredUrl
-  }
-  // Fallback to current page origin
-  return `${window.location.protocol}//${window.location.host}`
+  return resolvePublicRegistryUrl(
+    runtimeConfig?.appBaseUrl,
+    `${window.location.protocol}//${window.location.host}`,
+  )
 }
 
 function CompactCopyButton({ text }: { text: string }) {

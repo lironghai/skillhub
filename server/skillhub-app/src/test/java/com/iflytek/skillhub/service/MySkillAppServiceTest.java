@@ -57,6 +57,12 @@ class MySkillAppServiceTest {
     @Mock
     private PromotionRequestRepository promotionRequestRepository;
 
+    @Mock
+    private ComplianceSnapshotProjectionService complianceSnapshotProjectionService;
+
+    @Mock
+    private SkillSummaryLabelProjectionService skillSummaryLabelProjectionService;
+
     private MySkillAppService service;
     private SkillLifecycleProjectionService skillLifecycleProjectionService;
     private JpaMySkillQueryRepository mySkillQueryRepository;
@@ -67,7 +73,9 @@ class MySkillAppServiceTest {
         mySkillQueryRepository = new JpaMySkillQueryRepository(
                 namespaceRepository,
                 promotionRequestRepository,
-                skillLifecycleProjectionService
+                skillLifecycleProjectionService,
+                complianceSnapshotProjectionService,
+                skillSummaryLabelProjectionService
         );
         service = new MySkillAppService(
                 skillRepository,

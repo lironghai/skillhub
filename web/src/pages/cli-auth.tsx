@@ -3,9 +3,11 @@ import { useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
-import { getCurrentUser, tokenApi } from '@/api/client'
+import { getAppBaseUrl, getCurrentUser, tokenApi } from '@/api/client'
 import type { User } from '@/api/types'
 import { ORIGINAL_URL_SEARCH } from '@/app/router'
+import { BASE_PATH } from '@/shared/lib/base-path'
+import { resolvePublicRegistryUrl } from '@/shared/lib/registry-url'
 
 // Parse the original URL params captured before TanStack Router rewrites
 const ORIGINAL_PARAMS = new URLSearchParams(ORIGINAL_URL_SEARCH)
@@ -32,6 +34,10 @@ function decodeLabel(labelB64?: string, labelPlain?: string): string {
     }
   }
   return labelPlain || 'CLI token'
+}
+
+export function resolveCliRegistryUrl(appBaseUrl: string | undefined, origin: string, basePath = BASE_PATH): string {
+  return resolvePublicRegistryUrl(appBaseUrl, origin, basePath)
 }
 
 export function CliAuthPage() {
@@ -113,7 +119,7 @@ export function CliAuthPage() {
         setStatus('redirecting')
 
         // Construct redirect URL with token in hash fragment
-        const registryUrl = window.location.origin
+        const registryUrl = resolveCliRegistryUrl(getAppBaseUrl(), window.location.origin)
         const hashParams = new URLSearchParams()
         hashParams.set('token', response.token)
         hashParams.set('registry', registryUrl)

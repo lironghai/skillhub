@@ -34,19 +34,22 @@ public class ReviewSkillDetailAppService {
     private final RbacService rbacService;
     private final SkillQueryService skillQueryService;
     private final SkillDownloadService skillDownloadService;
+    private final ComplianceSnapshotProjectionService complianceSnapshotProjectionService;
 
     public ReviewSkillDetailAppService(ReviewTaskRepository reviewTaskRepository,
                                        NamespaceRepository namespaceRepository,
                                        ReviewService reviewService,
                                        RbacService rbacService,
                                        SkillQueryService skillQueryService,
-                                       SkillDownloadService skillDownloadService) {
+                                       SkillDownloadService skillDownloadService,
+                                       ComplianceSnapshotProjectionService complianceSnapshotProjectionService) {
         this.reviewTaskRepository = reviewTaskRepository;
         this.namespaceRepository = namespaceRepository;
         this.reviewService = reviewService;
         this.rbacService = rbacService;
         this.skillQueryService = skillQueryService;
         this.skillDownloadService = skillDownloadService;
+        this.complianceSnapshotProjectionService = complianceSnapshotProjectionService;
     }
 
     public ReviewSkillDetailResponse getReviewSkillDetail(Long reviewId,
@@ -94,7 +97,8 @@ public class ReviewSkillDetailAppService {
                         version.getTotalSize(),
                         version.getPublishedAt(),
                         version.getId().equals(snapshot.activeVersion().getId())
-                                || skillQueryService.isDownloadAvailable(version)
+                                || skillQueryService.isDownloadAvailable(version),
+                        complianceSnapshotProjectionService.fromParsedMetadataJson(version.getParsedMetadataJson())
                 ))
                 .toList();
 

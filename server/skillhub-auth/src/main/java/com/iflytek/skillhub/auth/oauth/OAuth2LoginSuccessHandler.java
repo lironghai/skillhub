@@ -46,6 +46,10 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         }
         String returnTo = oauthLoginFlowService.consumeReturnTo(request.getSession(false));
         if (returnTo != null) {
+            // returnTo is a root-relative path (web client strips the base path). The redirect
+            // strategy (DefaultRedirectStrategy) already prepends the request context path, which
+            // reflects X-Forwarded-Prefix under forward-headers-strategy=framework — so the browser
+            // lands under the sub-path without any manual prefixing here (which would double it).
             getRedirectStrategy().sendRedirect(request, response, returnTo);
             // The default branch below clears these via super; clear here too so both paths behave consistently.
             clearAuthenticationAttributes(request);

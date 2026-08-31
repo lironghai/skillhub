@@ -49,4 +49,13 @@ describe('buildLoginRedirect', () => {
       },
     })
   })
+
+  it('converts a sub-path browser location to a Router path', () => {
+    expect(buildLoginRedirect('/skillhub/dashboard/reviews/13', '?tab=pending', '#panel', '/skillhub/')).toEqual({
+      to: '/login',
+      search: {
+        returnTo: '/dashboard/reviews/13?tab=pending#panel',
+      },
+    })
+  })
 })

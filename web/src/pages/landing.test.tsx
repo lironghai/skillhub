@@ -69,6 +69,9 @@ describe('LandingPage', () => {
 
     expect(html).toContain('bg-brand-gradient')
     expect(html).toContain('landing.hero.title')
+    expect(html).toContain('w-full max-w-[500px] min-w-0')
+    expect(html).toContain('h-auto max-h-[44px] w-full')
+    expect(html).not.toContain('class="w-[500px]')
   })
 
   it('renders the product metrics stats on the landing page', () => {

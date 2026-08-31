@@ -10,7 +10,10 @@ import com.iflytek.skillhub.domain.skill.Skill;
 import com.iflytek.skillhub.domain.skill.SkillStatus;
 import com.iflytek.skillhub.domain.skill.service.SkillLifecycleProjectionService;
 import com.iflytek.skillhub.dto.SkillLifecycleVersionResponse;
+import com.iflytek.skillhub.dto.SkillLabelDto;
 import com.iflytek.skillhub.dto.SkillSummaryResponse;
+import com.iflytek.skillhub.service.ComplianceSnapshotProjectionService;
+import com.iflytek.skillhub.service.SkillSummaryLabelProjectionService;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -23,13 +26,19 @@ public class JpaMySkillQueryRepository implements MySkillQueryRepository {
     private final NamespaceRepository namespaceRepository;
     private final PromotionRequestRepository promotionRequestRepository;
     private final SkillLifecycleProjectionService skillLifecycleProjectionService;
+    private final ComplianceSnapshotProjectionService complianceSnapshotProjectionService;
+    private final SkillSummaryLabelProjectionService skillSummaryLabelProjectionService;
 
     public JpaMySkillQueryRepository(NamespaceRepository namespaceRepository,
                                      PromotionRequestRepository promotionRequestRepository,
-                                     SkillLifecycleProjectionService skillLifecycleProjectionService) {
+                                     SkillLifecycleProjectionService skillLifecycleProjectionService,
+                                     ComplianceSnapshotProjectionService complianceSnapshotProjectionService,
+                                     SkillSummaryLabelProjectionService skillSummaryLabelProjectionService) {
         this.namespaceRepository = namespaceRepository;
         this.promotionRequestRepository = promotionRequestRepository;
         this.skillLifecycleProjectionService = skillLifecycleProjectionService;
+        this.complianceSnapshotProjectionService = complianceSnapshotProjectionService;
+        this.skillSummaryLabelProjectionService = skillSummaryLabelProjectionService;
     }
 
     @Override
@@ -41,14 +50,21 @@ public class JpaMySkillQueryRepository implements MySkillQueryRepository {
                         skills.stream().map(Skill::getNamespaceId).distinct().toList())
                 .stream()
                 .collect(Collectors.toMap(Namespace::getId, Function.identity()));
+        Map<Long, List<SkillLabelDto>> labelsBySkillId = skillSummaryLabelProjectionService.projectBySkillIds(
+                skills.stream().map(Skill::getId).toList());
         return skills.stream()
-                .map(skill -> toSummaryResponse(skill, currentUserId, namespacesById))
+                .map(skill -> toSummaryResponse(
+                        skill,
+                        currentUserId,
+                        namespacesById,
+                        labelsBySkillId.getOrDefault(skill.getId(), List.of())))
                 .toList();
     }
 
     private SkillSummaryResponse toSummaryResponse(Skill skill,
                                                    String currentUserId,
-                                                   Map<Long, Namespace> namespacesById) {
+                                                   Map<Long, Namespace> namespacesById,
+                                                   List<SkillLabelDto> labels) {
         Namespace namespace = namespacesById.get(skill.getNamespaceId());
         SkillLifecycleProjectionService.Projection projection = skillLifecycleProjectionService.projectForViewer(
                 skill,
@@ -79,7 +95,12 @@ public class JpaMySkillQueryRepository implements MySkillQueryRepository {
                 toLifecycleVersion(headlineVersion),
                 toLifecycleVersion(publishedVersion),
                 toLifecycleVersion(ownerPreviewVersion),
-                projection.resolutionMode().name()
+                projection.resolutionMode().name(),
+                headlineVersion != null
+                        ? complianceSnapshotProjectionService.fromParsedMetadataJson(
+                                headlineVersion.parsedMetadataJson())
+                        : null,
+                labels
         );
     }
 

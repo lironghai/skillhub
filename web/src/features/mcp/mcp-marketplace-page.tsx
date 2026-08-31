@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ExternalLink, KeyRound, Loader2, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
+import { Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
 import { DashboardPageHeader } from '@/shared/components/dashboard-page-header'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from '@/shared/ui/input'
 import { Table, TableBody, TableCell, TableRow } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
+import { useCopyToClipboard } from '@/shared/lib/clipboard'
 import { MAX_SEARCH_QUERY_LENGTH } from '@/shared/lib/search-query'
 import { MCP_CATALOG_PAGE_SIZE } from './mcp-catalog-query'
 import type { McpAssociatedItem, McpCatalogItem, McpInternalServerItem } from './mcp-catalog-types'
@@ -444,12 +445,16 @@ function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
             </DialogDescription>
           </DialogHeader>
           <div className='p-7 pt-0'>
-          <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
-            <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
-            <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
-            <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
-          </dl>
-        </div>
+            <div className="mt-0 space-y-3">
+              <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
+              <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} />
+            </div>
+            <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
+              <MetaRow label={t('mcpMarketplace.owner')} value={server.ownerEmail} />
+              <MetaRow label={t('mcpMarketplace.team')} value={server.team} />
+              <MetaRow label={t('mcpMarketplace.visibility')} value={server.visibility} />
+            </dl>
+          </div>
         </DialogContent>
       </Dialog>
       {/* 点击按钮展示 */}
@@ -558,6 +563,17 @@ function InternalServerCard({ server }: { server: McpInternalServerItem }) {
         </div>
 
         {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
+
+        <div className="mt-5 space-y-3">
+          <ConnectionUrl
+            label={t("mcpMarketplace.streamableHttpUrl")}
+            value={server.streamableHttpUrl}
+          />
+          <ConnectionUrl
+            label={t("mcpMarketplace.sseUrl")}
+            value={server.sseUrl}
+          />
+        </div>
 
         <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
           <MetaRow
@@ -977,6 +993,30 @@ function OpenSourceTableRow({ server }: { server: McpCatalogItem }) {
       </Dialog>
     </>
   );
+}
+
+function ConnectionUrl({ label, value }: { label: string; value?: string | null }) {
+  const { t } = useTranslation()
+  const [copied, copy] = useCopyToClipboard()
+  if (!value) {
+    return null
+  }
+  return (
+    <div className="rounded-lg border bg-secondary/30 p-3">
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        <button
+          type="button"
+          onClick={() => copy(value)}
+          className="inline-flex h-7 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+        >
+          {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+          {copied ? t('copyButton.copied') : t('copyButton.copy')}
+        </button>
+      </div>
+      <p className="break-all font-mono text-xs leading-5 text-foreground">{value}</p>
+    </div>
+  )
 }
 
 function MetaRow({ label, value, breakAll = false }: { label: string; value?: string | null; breakAll?: boolean }) {

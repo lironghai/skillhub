@@ -343,6 +343,64 @@ class SkillPackageValidatorTest {
         assertTrue(result.passed());
     }
 
+    @Test
+    void acceptsSkillWithAstronComplianceEvidence() {
+        String skillMdContent = """
+            ---
+            name: test-skill
+            description: A test skill
+            version: 1.0.0
+            x-astron-compliance:
+              - standard: mitre-attack
+                version: v19.1
+                controlId: T1059
+                evidence:
+                  - type: packaged-file
+                    path: references/standards.md
+            ---
+            Body
+            """;
+        byte[] skillMdBytes = skillMdContent.getBytes();
+        byte[] standardsBytes = "standards".getBytes();
+        List<PackageEntry> entries = List.of(
+                new PackageEntry("SKILL.md", skillMdBytes, skillMdBytes.length, "text/markdown"),
+                new PackageEntry("references/standards.md", standardsBytes, standardsBytes.length, "text/markdown")
+        );
+
+        ValidationResult result = validator.validate(entries);
+
+        assertTrue(result.passed());
+        assertTrue(result.errors().isEmpty());
+    }
+
+    @Test
+    void rejectsSkillWithMissingAstronComplianceEvidenceFile() {
+        String skillMdContent = """
+            ---
+            name: test-skill
+            description: A test skill
+            version: 1.0.0
+            x-astron-compliance:
+              - standard: mitre-attack
+                version: v19.1
+                controlId: T1059
+                evidence:
+                  - type: packaged-file
+                    path: references/missing.md
+            ---
+            Body
+            """;
+        byte[] skillMdBytes = skillMdContent.getBytes();
+        List<PackageEntry> entries = List.of(
+                new PackageEntry("SKILL.md", skillMdBytes, skillMdBytes.length, "text/markdown")
+        );
+
+        ValidationResult result = validator.validate(entries);
+
+        assertFalse(result.passed());
+        assertTrue(result.errors().stream().anyMatch(error -> error.contains("does not exist in package")));
+    }
+
     private PackageEntry skillMdEntry() {
         String skillMdContent = """
             ---

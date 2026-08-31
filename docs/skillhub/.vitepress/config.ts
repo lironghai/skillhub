@@ -24,6 +24,7 @@ export default defineConfig({
           { text: '首页', link: '/' },
           { text: '快速开始', link: '/quickstart' },
           { text: '功能指南', link: '/guide/skill-publish' },
+          { text: '开源周报', link: 'https://iflytek.github.io/skillhub/weekly/' },
           { text: 'FAQ', link: '/faq' },
         ],
         sidebar: [
@@ -43,6 +44,7 @@ export default defineConfig({
               { text: '审核与治理', link: '/guide/review' },
               { text: '安全扫描', link: '/guide/scanner' },
               { text: '用户交互与社交', link: '/guide/social' },
+              { text: 'Runtime 集成契约', link: '/guide/runtime-integration' },
             ],
           },
           {
@@ -69,6 +71,7 @@ export default defineConfig({
           { text: 'Home', link: '/en/' },
           { text: 'Quick Start', link: '/en/quickstart' },
           { text: 'Guide', link: '/en/guide/skill-publish' },
+          { text: 'Weekly Reports', link: 'https://iflytek.github.io/skillhub/weekly/' },
           { text: 'FAQ', link: '/en/faq' },
         ],
         sidebar: [
@@ -88,6 +91,7 @@ export default defineConfig({
               { text: 'Review & Governance', link: '/en/guide/review' },
               { text: 'Security Scanning', link: '/en/guide/scanner' },
               { text: 'Social & Interaction', link: '/en/guide/social' },
+              { text: 'Runtime Integration Contract', link: '/en/guide/runtime-integration' },
             ],
           },
           {

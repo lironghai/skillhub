@@ -1,5 +1,6 @@
 package com.iflytek.skillhub.filter;
 
+import com.iflytek.skillhub.security.SensitiveLogSanitizer;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +17,6 @@ import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -28,8 +28,6 @@ import java.util.regex.Pattern;
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(RequestLoggingFilter.class);
-    private static final int MAX_LOG_BODY_LENGTH = 200;
-
     private static final Set<String> SKIP_PREFIXES = Set.of(
             "/actuator", "/favicon.ico", "/assets/"
     );
@@ -38,6 +36,11 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     );
     private static final Pattern WORKBENCH_MESSAGE_STREAM_PATH = Pattern.compile(
             "^/api/web/workbench/sessions/\\d+/messages/stream$");
+    private final SensitiveLogSanitizer sensitiveLogSanitizer;
+
+    public RequestLoggingFilter(SensitiveLogSanitizer sensitiveLogSanitizer) {
+        this.sensitiveLogSanitizer = sensitiveLogSanitizer;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -81,15 +84,13 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     }
 
     private void logRequest(ContentCachingRequestWrapper request, HttpServletResponse response, long duration) {
-        String requestUri = request.getRequestURI();
-        String queryString = request.getQueryString();
-        String fullUrl = queryString != null ? requestUri + "?" + queryString : requestUri;
+        String requestTarget = sensitiveLogSanitizer.sanitizeRequestTarget(request);
 
         String contentType = request.getContentType();
         String userAgent = request.getHeader("User-Agent");
 
         StringBuilder sb = new StringBuilder();
-        sb.append(request.getMethod()).append(" ").append(fullUrl);
+        sb.append(request.getMethod()).append(" ").append(requestTarget);
         sb.append(" | ").append(response.getStatus());
         sb.append(" | ").append(duration).append("ms");
         sb.append(" | ").append(request.getRemoteAddr());
@@ -98,11 +99,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
         if (userAgent != null) {
             sb.append(" | UA: ").append(truncate(userAgent, 80));
-        }
-
-        String requestBody = getRequestBody(request);
-        if (requestBody != null && !requestBody.isBlank()) {
-            sb.append(" | Body: ").append(requestBody);
         }
 
         log.info(sb.toString());
@@ -134,18 +130,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-transform");
         response.setHeader("X-Accel-Buffering", "no");
-    }
-
-    private String getRequestBody(ContentCachingRequestWrapper request) {
-        byte[] buf = request.getContentAsByteArray();
-        if (buf.length > 0) {
-            try {
-                return truncate(new String(buf, request.getCharacterEncoding()), MAX_LOG_BODY_LENGTH);
-            } catch (UnsupportedEncodingException e) {
-                return "[unknown encoding]";
-            }
-        }
-        return null;
     }
 
     private String truncate(String value, int maxLength) {

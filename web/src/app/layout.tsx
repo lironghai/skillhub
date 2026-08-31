@@ -1,13 +1,16 @@
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 import { Outlet, Link, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/features/auth/use-auth'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import { UserMenu } from '@/shared/components/user-menu'
 import { NotificationBell } from '@/features/notification/notification-bell'
+import { dismissOpenOverlays } from '@/shared/lib/dismiss-open-overlays'
+import { syncDocumentLanguage } from '@/shared/lib/document-language'
 import { getAppHeaderClassName } from './layout-header-style'
 import { getAppMainContentLayout, resolveAppMainContentPathname } from './layout-main-content'
 import { SvgIcon } from '@/shared/components/svg-icon'
+import { Menu, X } from 'lucide-react'
 import footerLogo from '@/assets/footer_logo.png'
 
 /**
@@ -17,7 +20,7 @@ import footerLogo from '@/assets/footer_logo.png'
  * fallback used while lazy route modules are loading.
  */
 export function Layout() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { pathname, resolvedPathname } = useRouterState({
     select: (s) => ({
       pathname: s.location.pathname,
@@ -26,9 +29,16 @@ export function Layout() {
   })
   const { user, isLoading } = useAuth()
   const [isHeaderElevated, setIsHeaderElevated] = useState(false)
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const mobileNavRef = useRef<HTMLDivElement | null>(null)
+  const previousPathnameRef = useRef(pathname)
   const contentLayoutPathname = resolveAppMainContentPathname(pathname, resolvedPathname)
   const mainContentLayout = getAppMainContentLayout(contentLayoutPathname)
   const showFooter = contentLayoutPathname !== '/dashboard/workbench'
+
+  useEffect(() => {
+    syncDocumentLanguage(i18n.resolvedLanguage ?? i18n.language)
+  }, [i18n.language, i18n.resolvedLanguage])
 
   useEffect(() => {
     const updateHeaderElevation = () => {
@@ -42,6 +52,36 @@ export function Layout() {
       window.removeEventListener('scroll', updateHeaderElevation)
     }
   }, [])
+
+  // Pathname-only: search debounce on /search must not dismiss overlays mid-typing.
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) {
+      return
+    }
+    previousPathnameRef.current = pathname
+    setIsMobileNavOpen(false)
+    dismissOpenOverlays()
+  }, [pathname])
+
+  useEffect(() => {
+    if (!isMobileNavOpen) return
+
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!mobileNavRef.current?.contains(event.target as Node)) {
+        setIsMobileNavOpen(false)
+      }
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMobileNavOpen(false)
+    }
+
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('mousedown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [isMobileNavOpen])
 
   const navItems: Array<{
     label: string
@@ -66,10 +106,7 @@ export function Layout() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col relative overflow-x-clip"
-      style={{ background: "var(--bg-page, hsl(var(--background)))" }}
-    >
+    <div className="min-h-screen flex flex-col relative" style={{ background: 'var(--bg-page, hsl(var(--background)))' }}>
       {/* Header */}
       <header
         className={getAppHeaderClassName(isHeaderElevated)}
@@ -79,7 +116,7 @@ export function Layout() {
           <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-auto" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-10 text-[15px] font-medium h-full">
+        <nav className="hidden xl:flex items-center gap-4 2xl:gap-7 text-[15px] font-medium h-full">
           {navItems.map((item) => {
             if (item.auth && !user) return null;
             const active = isActive(item.to, item.exact);
@@ -100,12 +137,53 @@ export function Layout() {
           })}
         </nav>
 
-        <div className="flex items-center gap-4 text-[15px] font-normal">
+        <div ref={mobileNavRef} className="relative xl:hidden">
+          <button
+            type="button"
+            aria-label="Navigation menu"
+            aria-expanded={isMobileNavOpen}
+            aria-controls="mobile-navigation"
+            title="Navigation menu"
+            className="flex h-9 w-9 items-center justify-center rounded-md text-[#555] transition-colors hover:bg-[#f5f5f5] hover:text-[#bf3732] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#bf3732]"
+            onClick={() => setIsMobileNavOpen((current) => !current)}
+          >
+            {isMobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+          <nav
+            id="mobile-navigation"
+            data-mobile-navigation
+            aria-hidden={!isMobileNavOpen}
+            className={`${isMobileNavOpen ? 'flex' : 'hidden'} fixed left-3 right-3 top-[60px] z-50 max-h-[calc(100vh-72px)] flex-col overflow-y-auto rounded-md border bg-white p-2 shadow-lg sm:absolute sm:left-auto sm:right-0 sm:top-full sm:w-64`}
+          >
+            {navItems.map((item) => {
+              if (item.auth && !user) return null
+              const active = isActive(item.to, item.exact)
+
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={
+                    active
+                      ? 'rounded-sm bg-[#bf3732]/10 px-3 py-2.5 text-sm font-semibold text-[#bf3732]'
+                      : 'rounded-sm px-3 py-2.5 text-sm font-medium text-[#555] transition-colors hover:bg-[#f5f5f5] hover:text-[#bf3732]'
+                  }
+                  onClick={() => setIsMobileNavOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-2 text-[15px] font-normal sm:gap-4">
           <LanguageSwitcher />
-          <span className="text-[#ccc] select-none">|</span>
+          <span className="hidden text-[#ccc] select-none sm:inline">|</span>
           {user && <NotificationBell />}
           {isLoading ? null : user ? (
-            <UserMenu user={user} />
+            <UserMenu user={user} triggerClassName="max-w-[9rem]" />
           ) : (
             <Link
               to="/login"
@@ -212,7 +290,9 @@ export function Layout() {
                 <ul className="space-y-2 text-sm">
                   <li>
                     <a
-                      href="/docs"
+                      href="https://iflytek.github.io/skillhub/"
+                      target="_blank"
+                      rel="noreferrer"
                       className="hover:opacity-80 transition-opacity"
                       style={{ color: "hsl(var(--text-secondary))" }}
                     >
@@ -221,7 +301,9 @@ export function Layout() {
                   </li>
                   <li>
                     <a
-                      href="/api"
+                      href="https://github.com/iflytek/skillhub/blob/main/docs/06-api-design.md"
+                      target="_blank"
+                      rel="noreferrer"
                       className="hover:opacity-80 transition-opacity"
                       style={{ color: "hsl(var(--text-secondary))" }}
                     >
@@ -230,7 +312,9 @@ export function Layout() {
                   </li>
                   <li>
                     <a
-                      href="/community"
+                      href="https://github.com/iflytek/skillhub/discussions"
+                      target="_blank"
+                      rel="noreferrer"
                       className="hover:opacity-80 transition-opacity"
                       style={{ color: "hsl(var(--text-secondary))" }}
                     >

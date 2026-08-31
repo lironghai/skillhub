@@ -23,6 +23,7 @@ import com.iflytek.skillhub.dto.SkillVersionResponse;
 import com.iflytek.skillhub.metrics.SkillHubMetrics;
 import com.iflytek.skillhub.ratelimit.RateLimit;
 import com.iflytek.skillhub.service.SkillLabelAppService;
+import com.iflytek.skillhub.service.ComplianceSnapshotProjectionService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -50,18 +51,21 @@ public class SkillController extends BaseApiController {
     private final SkillQueryService skillQueryService;
     private final SkillDownloadService skillDownloadService;
     private final SkillLabelAppService skillLabelAppService;
+    private final ComplianceSnapshotProjectionService complianceSnapshotProjectionService;
     private final SkillHubMetrics metrics;
 
     public SkillController(
             SkillQueryService skillQueryService,
             SkillDownloadService skillDownloadService,
             SkillLabelAppService skillLabelAppService,
+            ComplianceSnapshotProjectionService complianceSnapshotProjectionService,
             SkillHubMetrics metrics,
             ApiResponseFactory responseFactory) {
         super(responseFactory);
         this.skillQueryService = skillQueryService;
         this.skillDownloadService = skillDownloadService;
         this.skillLabelAppService = skillLabelAppService;
+        this.complianceSnapshotProjectionService = complianceSnapshotProjectionService;
         this.metrics = metrics;
     }
 
@@ -138,7 +142,8 @@ public class SkillController extends BaseApiController {
                 v.getFileCount(),
                 v.getTotalSize(),
                 v.getPublishedAt(),
-                skillQueryService.isDownloadAvailable(v)
+                skillQueryService.isDownloadAvailable(v),
+                complianceSnapshotProjectionService.fromParsedMetadataJson(v.getParsedMetadataJson())
         )));
 
         return ok("response.success.read", response);
@@ -173,7 +178,8 @@ public class SkillController extends BaseApiController {
                 detail.totalSize(),
                 detail.publishedAt(),
                 detail.parsedMetadataJson(),
-                detail.manifestJson()
+                detail.manifestJson(),
+                complianceSnapshotProjectionService.fromParsedMetadataJson(detail.parsedMetadataJson())
         );
         return ok("response.success.read", response);
     }

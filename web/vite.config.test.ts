@@ -13,7 +13,8 @@ describe('vite dev proxy', () => {
   it('keeps ContextForge admin redirects under the embedded ContextForge path', () => {
     expect(rewriteContextForgeRedirectLocation('/admin/')).toBe('/contextforge/admin/')
     expect(rewriteContextForgeRedirectLocation('/admin/tools')).toBe('/contextforge/admin/tools')
-    expect(rewriteContextForgeRedirectLocation('http://localhost:3000/admin/')).toBe('http://localhost:3000/contextforge/admin/')
+    expect(rewriteContextForgeRedirectLocation('http://localhost:3000/admin/')).toBe('/contextforge/admin/')
+    expect(rewriteContextForgeRedirectLocation('https://contextforge.example.com/admin/tools')).toBe('/contextforge/admin/tools')
     expect(rewriteContextForgeRedirectLocation('/contextforge/admin/')).toBe('/contextforge/admin/')
     expect(rewriteContextForgeRedirectLocation('/api/admin/')).toBe('/api/admin/')
   })

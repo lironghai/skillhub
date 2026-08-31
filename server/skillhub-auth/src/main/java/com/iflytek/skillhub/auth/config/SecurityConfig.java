@@ -157,7 +157,12 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/api/v1/auth/logout")
-                .logoutSuccessUrl("/")
+                // Redirect to the deployment root honoring any sub-path prefix (X-Forwarded-Prefix
+                // is reflected into the context path), so logout does not escape a sub-path deployment.
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    String contextPath = request.getContextPath();
+                    response.sendRedirect(((contextPath == null) ? "" : contextPath) + "/");
+                })
                 .invalidateHttpSession(true)
                 .deleteCookies("SESSION")
             )

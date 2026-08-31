@@ -6,6 +6,7 @@ import com.iflytek.skillhub.domain.skill.SkillVisibility;
 import com.iflytek.skillhub.domain.skill.SkillRepository;
 import com.iflytek.skillhub.domain.skill.SkillVersionRepository;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import com.iflytek.skillhub.mcp.McpAssociatedItemResponse;
 import com.iflytek.skillhub.mcp.McpCatalogService;
 import com.iflytek.skillhub.mcp.McpInternalServerItemResponse;
@@ -459,7 +460,8 @@ class WorkbenchControllerTest {
         messages.addMessage("response.success.published", Locale.CHINA, "ok");
         return new ApiResponseFactory(
                 messages,
-                Clock.fixed(Instant.parse("2026-07-31T00:00:00Z"), ZoneOffset.UTC));
+                Clock.fixed(Instant.parse("2026-07-31T00:00:00Z"), ZoneOffset.UTC),
+                new RequestIdAccessor());
     }
 
     private static void setField(Object target, String fieldName, Object value) {

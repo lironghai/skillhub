@@ -27,6 +27,7 @@ vi.mock('@/shared/ui/button', () => ({
 }))
 
 vi.mock('@/api/client', () => ({
+  getAppBaseUrl: vi.fn().mockReturnValue(''),
   getCurrentUser: vi.fn().mockResolvedValue(null),
   tokenApi: { createToken: vi.fn() },
 }))
@@ -35,7 +36,19 @@ vi.mock('@/app/router', () => ({
   ORIGINAL_URL_SEARCH: '',
 }))
 
-import { CliAuthPage } from './cli-auth'
+import { CliAuthPage, resolveCliRegistryUrl } from './cli-auth'
+
+describe('resolveCliRegistryUrl', () => {
+  it('uses the configured public base URL for the CLI registry', () => {
+    expect(resolveCliRegistryUrl('https://example.com/skillhub', 'https://example.com', '/skillhub/'))
+      .toBe('https://example.com/skillhub')
+  })
+
+  it('falls back to the browser origin plus the Vite base path', () => {
+    expect(resolveCliRegistryUrl('', 'https://example.com', '/skillhub/'))
+      .toBe('https://example.com/skillhub')
+  })
+})
 
 describe('CliAuthPage', () => {
   it('exports a named component function', () => {

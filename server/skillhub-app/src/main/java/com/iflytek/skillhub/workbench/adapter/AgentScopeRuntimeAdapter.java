@@ -301,13 +301,15 @@ public class AgentScopeRuntimeAdapter implements AgentRuntimePort {
         try (Stream<Path> paths = Files.walk(workspaceRoot)) {
             for (Path path : paths
                     .filter(candidate -> Files.isRegularFile(candidate, LinkOption.NOFOLLOW_LINKS))
-                    .sorted()
+                    .sorted(Comparator.comparing(candidate -> normalizedRelativePath(
+                            workspaceRoot,
+                            candidate)))
                     .toList()) {
                 Path realPath = path.toRealPath(LinkOption.NOFOLLOW_LINKS);
                 if (!realPath.startsWith(workspaceRoot.toRealPath(LinkOption.NOFOLLOW_LINKS))) {
                     throw new IllegalStateException("Runtime workspace file escaped workspace root");
                 }
-                String relativePath = workspaceRoot.relativize(path).toString().replace('\\', '/');
+                String relativePath = normalizedRelativePath(workspaceRoot, path);
                 if (relativePath.equals(".agentscope") || relativePath.startsWith(".agentscope/")) {
                     continue;
                 }
@@ -328,6 +330,10 @@ public class AgentScopeRuntimeAdapter implements AgentRuntimePort {
             throw new UncheckedIOException("Failed to read runtime workspace", ex);
         }
         return files;
+    }
+
+    private static String normalizedRelativePath(Path workspaceRoot, Path path) {
+        return workspaceRoot.relativize(path).toString().replace('\\', '/');
     }
 
     private static String contentType(String path, AgentRuntimeWorkspaceFile baseline) {

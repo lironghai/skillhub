@@ -16,6 +16,8 @@ import com.iflytek.skillhub.domain.security.SecurityScanService;
 import com.iflytek.skillhub.domain.shared.exception.DomainBadRequestException;
 import com.iflytek.skillhub.domain.shared.exception.DomainForbiddenException;
 import com.iflytek.skillhub.domain.skill.*;
+import com.iflytek.skillhub.domain.skill.metadata.ComplianceMetadataService;
+import com.iflytek.skillhub.domain.skill.metadata.ComplianceSnapshot;
 import com.iflytek.skillhub.domain.skill.metadata.SkillMetadata;
 import com.iflytek.skillhub.domain.skill.metadata.SkillMetadataParser;
 import com.iflytek.skillhub.domain.skill.validation.PackageEntry;
@@ -62,6 +64,12 @@ public class SkillPublishService {
 
     private static final DateTimeFormatter AUTO_VERSION_FORMATTER =
             DateTimeFormatter.ofPattern("yyyyMMdd.HHmmss").withZone(ZoneId.systemDefault());
+    private static final Set<SkillVersionStatus> REPLACEABLE_VERSION_STATUSES = Set.of(
+            SkillVersionStatus.DRAFT,
+            SkillVersionStatus.SCAN_FAILED,
+            SkillVersionStatus.UPLOADED,
+            SkillVersionStatus.REJECTED
+    );
     private static final Logger log = LoggerFactory.getLogger(SkillPublishService.class);
 
     public record PublishResult(
@@ -78,6 +86,7 @@ public class SkillPublishService {
     private final ObjectStorageService objectStorageService;
     private final SkillPackageValidator skillPackageValidator;
     private final SkillMetadataParser skillMetadataParser;
+    private final ComplianceMetadataService complianceMetadataService = new ComplianceMetadataService();
     private final PrePublishValidator prePublishValidator;
     private final ObjectMapper objectMapper;
     private final ReviewTaskRepository reviewTaskRepository;
@@ -491,9 +500,11 @@ public class SkillPublishService {
             version.setStatus(SkillVersionStatus.PENDING_REVIEW);
         }
 
+        ComplianceSnapshot complianceSnapshot = complianceMetadataService.buildSnapshot(metadata.frontmatter(), entries);
+
         // Store metadata as JSON
         try {
-            String metadataJson = objectMapper.writeValueAsString(metadata);
+            String metadataJson = objectMapper.writeValueAsString(buildParsedMetadata(metadata, complianceSnapshot));
             version.setParsedMetadataJson(metadataJson);
             version.setManifestJson(objectMapper.writeValueAsString(buildManifest(entries)));
         } catch (Exception e) {
@@ -601,7 +612,7 @@ public class SkillPublishService {
     }
 
     private void deleteReplaceableVersionArtifacts(Skill skill, SkillVersion version, String namespaceSlug) {
-        if (version.getStatus() == SkillVersionStatus.PUBLISHED) {
+        if (!REPLACEABLE_VERSION_STATUSES.contains(version.getStatus())) {
             throw new DomainBadRequestException("error.skill.version.exists", version.getVersion());
         }
 
@@ -612,8 +623,10 @@ public class SkillPublishService {
             skillRepository.flush();
         }
 
-        reviewTaskRepository.findBySkillVersionIdAndStatus(version.getId(), ReviewTaskStatus.PENDING)
-                .ifPresent(reviewTaskRepository::delete);
+        // Every review task referencing this version has to go, not just a PENDING one:
+        // a rejected version still owns a REJECTED task whose foreign key blocks the
+        // skill_version delete below, which surfaces to the caller as an HTTP 500.
+        reviewTaskRepository.deleteBySkillVersionIdIn(List.of(version.getId()));
 
         List<SkillFile> files = skillFileRepository.findByVersionId(version.getId());
         List<String> storageKeys = new ArrayList<>();
@@ -753,6 +766,17 @@ public class SkillPublishService {
                         "size", entry.size(),
                         "contentType", entry.contentType()))
                 .toList();
+    }
+
+    private Map<String, Object> buildParsedMetadata(SkillMetadata metadata, ComplianceSnapshot complianceSnapshot) {
+        Map<String, Object> parsedMetadata = new LinkedHashMap<>();
+        parsedMetadata.put("name", metadata.name());
+        parsedMetadata.put("description", metadata.description());
+        parsedMetadata.put("version", metadata.version());
+        parsedMetadata.put("body", metadata.body());
+        parsedMetadata.put("frontmatter", metadata.frontmatter());
+        parsedMetadata.put(ComplianceMetadataService.SNAPSHOT_FIELD_NAME, complianceSnapshot);
+        return parsedMetadata;
     }
 
     private byte[] buildBundle(List<PackageEntry> entries) {

@@ -55,7 +55,9 @@ class ClawHubRegistryFacadeTest {
                                 new SkillLifecycleVersionResponse(11L, "1.0.0", "PUBLISHED"),
                                 new SkillLifecycleVersionResponse(11L, "1.0.0", "PUBLISHED"),
                                 null,
-                                "PUBLISHED"
+                                "PUBLISHED",
+                                null,
+                                List.of()
                         )),
                         1,
                         0,

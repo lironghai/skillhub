@@ -117,6 +117,8 @@ public class RouteSecurityPolicyRegistry {
             ApiTokenPolicy.allow(HttpMethod.GET, "/api/v1/namespaces/*"),
             ApiTokenPolicy.allow(HttpMethod.GET, "/api/web/namespaces"),
             ApiTokenPolicy.allow(HttpMethod.GET, "/api/web/namespaces/*"),
+            ApiTokenPolicy.require(HttpMethod.GET, "/api/v1/mcp/servers", "mcp:read"),
+            ApiTokenPolicy.require(HttpMethod.GET, "/api/v1/mcp/internal-servers", "mcp:read"),
             ApiTokenPolicy.require(HttpMethod.GET, "/api/web/mcp/servers", "mcp:read"),
             ApiTokenPolicy.require(HttpMethod.GET, "/api/web/mcp/internal-servers", "mcp:read"),
             ApiTokenPolicy.allow(HttpMethod.GET, "/api/v1/resolve/**"),

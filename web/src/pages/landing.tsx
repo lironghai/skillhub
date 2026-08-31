@@ -102,11 +102,11 @@ export function LandingPage() {
         </div> */}
 
         {/* Brand logo mark */}
-        <div className="w-[500px] h-[44px] rounded-[12px] flex items-center justify-center mb-[32px]">
+        <div className="w-full max-w-[500px] min-w-0 h-[44px] rounded-[12px] flex items-center justify-center mb-[32px]">
           {/* <span className="text-white text-[22px] font-bold leading-none" style={{ fontFamily: 'Arial Rounded MT Bold, Syne, sans-serif' }}>R</span> */}
           <SvgIcon
             name="svg-text-HeroSkillhub"
-            className="h-[44px] w-[500px]"
+            className="h-auto max-h-[44px] w-full"
           />
         </div>
         <h1

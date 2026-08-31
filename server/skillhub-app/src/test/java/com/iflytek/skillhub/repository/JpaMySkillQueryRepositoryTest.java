@@ -13,6 +13,10 @@ import com.iflytek.skillhub.domain.skill.SkillVersionRepository;
 import com.iflytek.skillhub.domain.skill.SkillVersionStatus;
 import com.iflytek.skillhub.domain.skill.SkillVisibility;
 import com.iflytek.skillhub.domain.skill.service.SkillLifecycleProjectionService;
+import com.iflytek.skillhub.dto.ComplianceSnapshotResponse;
+import com.iflytek.skillhub.dto.SkillLabelDto;
+import com.iflytek.skillhub.service.ComplianceSnapshotProjectionService;
+import com.iflytek.skillhub.service.SkillSummaryLabelProjectionService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +39,12 @@ class JpaMySkillQueryRepositoryTest {
     @Mock
     private SkillVersionRepository skillVersionRepository;
 
+    @Mock
+    private ComplianceSnapshotProjectionService complianceSnapshotProjectionService;
+
+    @Mock
+    private SkillSummaryLabelProjectionService skillSummaryLabelProjectionService;
+
     private JpaMySkillQueryRepository repository;
 
     @BeforeEach
@@ -42,7 +52,9 @@ class JpaMySkillQueryRepositoryTest {
         repository = new JpaMySkillQueryRepository(
                 namespaceRepository,
                 promotionRequestRepository,
-                new SkillLifecycleProjectionService(skillVersionRepository)
+                new SkillLifecycleProjectionService(skillVersionRepository),
+                complianceSnapshotProjectionService,
+                skillSummaryLabelProjectionService
         );
     }
 
@@ -56,6 +68,7 @@ class JpaMySkillQueryRepositoryTest {
 
         SkillVersion publishedVersion = new SkillVersion(2L, "1.2.0", "user-1");
         publishedVersion.setStatus(SkillVersionStatus.PUBLISHED);
+        publishedVersion.setParsedMetadataJson("{\"compliance\":{}}");
         ReflectionTestUtils.setField(publishedVersion, "id", 22L);
         ReflectionTestUtils.setField(publishedVersion, "createdAt", Instant.parse("2026-03-15T10:30:00Z"));
 
@@ -72,6 +85,12 @@ class JpaMySkillQueryRepositoryTest {
         given(skillVersionRepository.findBySkillId(2L)).willReturn(List.of(publishedVersion, rejectedVersion));
         given(promotionRequestRepository.findBySourceSkillIdAndStatus(2L, ReviewTaskStatus.PENDING)).willReturn(Optional.empty());
         given(promotionRequestRepository.findBySourceSkillIdAndStatus(2L, ReviewTaskStatus.APPROVED)).willReturn(Optional.empty());
+        SkillLabelDto recommendedLabel = new SkillLabelDto("official", "RECOMMENDED", "Official");
+        ComplianceSnapshotResponse complianceSnapshot = new ComplianceSnapshotResponse("1.0", List.of(), "digest");
+        given(skillSummaryLabelProjectionService.projectBySkillIds(List.of(2L)))
+                .willReturn(java.util.Map.of(2L, List.of(recommendedLabel)));
+        given(complianceSnapshotProjectionService.fromParsedMetadataJson("{\"compliance\":{}}"))
+                .willReturn(complianceSnapshot);
 
         var responses = repository.getSkillSummaries(List.of(skill), "user-1");
 
@@ -81,6 +100,8 @@ class JpaMySkillQueryRepositoryTest {
         assertThat(responses.get(0).ownerPreviewVersion()).isNotNull();
         assertThat(responses.get(0).ownerPreviewVersion().status()).isEqualTo("REJECTED");
         assertThat(responses.get(0).canSubmitPromotion()).isTrue();
+        assertThat(responses.get(0).labels()).containsExactly(recommendedLabel);
+        assertThat(responses.get(0).complianceSnapshot()).isEqualTo(complianceSnapshot);
     }
 
     @Test

@@ -1,28 +1,35 @@
 package com.iflytek.skillhub.exception;
 
 import com.iflytek.skillhub.auth.exception.AuthFlowException;
-import com.iflytek.skillhub.auth.rbac.PlatformPrincipal;
 import com.iflytek.skillhub.dto.ApiResponse;
 import com.iflytek.skillhub.dto.ApiResponseFactory;
 import com.iflytek.skillhub.domain.shared.exception.LocalizedDomainException;
 import com.iflytek.skillhub.domain.shared.exception.LocalizedMessage;
 import com.iflytek.skillhub.metrics.SkillHubMetrics;
 import com.iflytek.skillhub.mcp.McpCatalogUnavailableException;
+import com.iflytek.skillhub.observability.RequestIdAccessor;
 import com.iflytek.skillhub.security.SensitiveLogSanitizer;
 import com.iflytek.skillhub.storage.StorageAccessException;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Translates application, domain, auth, and infrastructure exceptions into the platform's JSON API
@@ -35,13 +42,16 @@ public class GlobalExceptionHandler {
     private final ApiResponseFactory apiResponseFactory;
     private final SensitiveLogSanitizer sensitiveLogSanitizer;
     private final SkillHubMetrics metrics;
+    private final RequestIdAccessor requestIdAccessor;
 
     public GlobalExceptionHandler(ApiResponseFactory apiResponseFactory,
                                   SensitiveLogSanitizer sensitiveLogSanitizer,
-                                  SkillHubMetrics metrics) {
+                                  SkillHubMetrics metrics,
+                                  RequestIdAccessor requestIdAccessor) {
         this.apiResponseFactory = apiResponseFactory;
         this.sensitiveLogSanitizer = sensitiveLogSanitizer;
         this.metrics = metrics;
+        this.requestIdAccessor = requestIdAccessor;
     }
 
     @ExceptionHandler(LocalizedException.class)
@@ -82,6 +92,48 @@ public class GlobalExceptionHandler {
                 apiResponseFactory.error(400, "error.badRequest"));
     }
 
+    @ExceptionHandler({
+            MissingServletRequestParameterException.class,
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleMvcBadRequest(Exception ex, HttpServletRequest request) {
+        logHandledException(HttpStatus.BAD_REQUEST, "error.badRequest", request);
+        return ResponseEntity.badRequest().body(
+                apiResponseFactory.error(400, "error.badRequest"));
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(
+            HttpRequestMethodNotSupportedException ex,
+            HttpServletRequest request) {
+        logHandledException(HttpStatus.METHOD_NOT_ALLOWED, "error.methodNotAllowed", request);
+        ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED);
+        Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
+        if (supportedMethods != null && !supportedMethods.isEmpty()) {
+            response.allow(supportedMethods.toArray(HttpMethod[]::new));
+        }
+        return response.body(apiResponseFactory.error(405, "error.methodNotAllowed"));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnsupportedMediaType(
+            HttpMediaTypeNotSupportedException ex,
+            HttpServletRequest request) {
+        logHandledException(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "error.unsupportedMediaType", request);
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(
+                apiResponseFactory.error(415, "error.unsupportedMediaType"));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotAcceptable(
+            HttpMediaTypeNotAcceptableException ex,
+            HttpServletRequest request) {
+        logHandledException(HttpStatus.NOT_ACCEPTABLE, "error.notAcceptable", request);
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
+                apiResponseFactory.error(406, "error.notAcceptable"));
+    }
+
     @ExceptionHandler(SecurityException.class)
     public ResponseEntity<ApiResponse<Void>> handleForbidden(SecurityException ex, HttpServletRequest request) {
         logHandledException(HttpStatus.FORBIDDEN, "error.forbidden", request);
@@ -111,11 +163,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleStorageAccess(StorageAccessException ex, HttpServletRequest request) {
         metrics.incrementStorageAccessFailure(ex.getOperation());
         logger.warn(
-                "Object storage unavailable [requestId={}, method={}, path={}, userId={}, operation={}, key={}]",
-                MDC.get("requestId"),
+                "Object storage unavailable [requestId={}, method={}, path={}, authentication={}, operation={}, key={}]",
+                requestIdAccessor.current(),
                 request.getMethod(),
                 sensitiveLogSanitizer.sanitizeRequestTarget(request),
-                resolveUserId(request),
+                resolveAuthenticationState(request),
                 ex.getOperation(),
                 ex.getKey(),
                 ex
@@ -128,11 +180,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMcpCatalogUnavailable(McpCatalogUnavailableException ex,
                                                                           HttpServletRequest request) {
         logger.warn(
-                "MCP catalog unavailable [requestId={}, method={}, path={}, userId={}, reason={}]",
-                MDC.get("requestId"),
+                "MCP catalog unavailable [requestId={}, method={}, path={}, authentication={}, reason={}]",
+                requestIdAccessor.current(),
                 request.getMethod(),
                 sensitiveLogSanitizer.sanitizeRequestTarget(request),
-                resolveUserId(request),
+                resolveAuthenticationState(request),
                 ex.getMessage(),
                 ex
         );
@@ -144,7 +196,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleAsyncRequestTimeout(AsyncRequestTimeoutException ex, HttpServletRequest request) {
         String path = request.getRequestURI();
         if (path != null && path.endsWith("/sse")) {
-            logger.debug("SSE timeout [requestId={}, path={}]", MDC.get("requestId"), path);
+            logger.debug("SSE timeout [requestId={}, path={}]", requestIdAccessor.current(), path);
             return ResponseEntity.noContent().build();
         }
 
@@ -156,11 +208,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex, HttpServletRequest request) {
         logger.error(
-                "Unhandled API exception [requestId={}, method={}, path={}, userId={}]",
-                MDC.get("requestId"),
+                "Unhandled API exception [requestId={}, method={}, path={}, authentication={}]",
+                requestIdAccessor.current(),
                 request.getMethod(),
                 sensitiveLogSanitizer.sanitizeRequestTarget(request),
-                resolveUserId(request),
+                resolveAuthenticationState(request),
                 ex
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
@@ -169,12 +221,12 @@ public class GlobalExceptionHandler {
 
     private void logHandledException(HttpStatus status, String messageCode, HttpServletRequest request) {
         logger.info(
-                "API request failed [requestId={}, status={}, method={}, path={}, userId={}, code={}]",
-                MDC.get("requestId"),
+                "API request failed [requestId={}, status={}, method={}, path={}, authentication={}, code={}]",
+                requestIdAccessor.current(),
                 status.value(),
                 request.getMethod(),
                 sensitiveLogSanitizer.sanitizeRequestTarget(request),
-                resolveUserId(request),
+                resolveAuthenticationState(request),
                 messageCode
         );
     }
@@ -187,13 +239,11 @@ public class GlobalExceptionHandler {
                 apiResponseFactory.error(status.value(), error.messageCode(), error.messageArgs()));
     }
 
-    private String resolveUserId(HttpServletRequest request) {
-        if (!(request.getUserPrincipal() instanceof Authentication authentication)) {
-            return "anonymous";
+    private String resolveAuthenticationState(HttpServletRequest request) {
+        if (request.getUserPrincipal() instanceof Authentication authentication
+                && authentication.isAuthenticated()) {
+            return "authenticated";
         }
-        if (authentication.getPrincipal() instanceof PlatformPrincipal principal) {
-            return principal.userId();
-        }
-        return authentication.getName();
+        return "anonymous";
     }
 }

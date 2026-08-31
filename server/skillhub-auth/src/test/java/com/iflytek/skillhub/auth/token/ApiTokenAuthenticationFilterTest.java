@@ -47,7 +47,7 @@ class ApiTokenAuthenticationFilterTest {
     );
 
     @BeforeEach
-    void resetSecurityContext() {
+    void initializeSecurityContext() {
         SecurityContextHolder.clearContext();
     }
 

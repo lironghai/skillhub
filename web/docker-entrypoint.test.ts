@@ -12,8 +12,10 @@ describe('web Docker entrypoint scripts', () => {
   it('exports runtime defaults before envsubst generates runtime-config.js', () => {
     const script = readFileSync('docker-entrypoint.d/30-runtime-config.sh', 'utf8')
 
-    expect(script).toContain(': "${SKILLHUB_CONTEXT_FORGE_ADMIN_URL:=/contextforge/admin/login}"')
+    expect(script).toContain(': "${SKILLHUB_WEB_AUTH_DIRECT_ENABLED:=false}"')
+    expect(script).toContain(': "${SKILLHUB_WEB_AUTH_SESSION_BOOTSTRAP_ENABLED:=false}"')
     expect(script).toContain('export \\\n')
-    expect(script).toContain('  SKILLHUB_CONTEXT_FORGE_ADMIN_URL \\')
+    expect(script).toContain('  SKILLHUB_WEB_AUTH_DIRECT_ENABLED \\')
+    expect(script).toContain('  SKILLHUB_WEB_AUTH_SESSION_BOOTSTRAP_ENABLED \\')
   })
 })

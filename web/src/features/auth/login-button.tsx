@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/shared/ui/button'
+import { withBasePath } from '@/shared/lib/base-path'
 import { useAuthMethods } from './use-auth-methods'
 
 interface LoginButtonProps {
@@ -13,7 +14,7 @@ function OAuthIcon({ provider }: { provider: string }) {
   const normalizedProvider = provider.toLowerCase()
   return (
     <img
-      src={`/${normalizedProvider}-logo.svg`}
+      src={withBasePath(`/${normalizedProvider}-logo.svg`)}
       alt={provider}
       className="w-5 h-5 mr-3"
     />
@@ -48,7 +49,7 @@ export function LoginButton({ returnTo }: LoginButtonProps) {
           className="w-full h-12 text-base"
           variant="outline"
           onClick={() => {
-            window.location.href = provider.actionUrl
+            window.location.href = withBasePath(provider.actionUrl)
           }}
         >
           <OAuthIcon provider={provider.provider} />

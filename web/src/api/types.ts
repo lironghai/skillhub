@@ -174,6 +174,7 @@ export interface SkillSummary {
   publishedVersion?: SkillLifecycleVersion
   ownerPreviewVersion?: SkillLifecycleVersion
   resolutionMode?: string
+  complianceSnapshot?: ComplianceSnapshot
 }
 
 export type SkillBundleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | string
@@ -272,6 +273,27 @@ export interface SkillLifecycleVersion {
   status: string
 }
 
+export interface ComplianceEvidence {
+  type?: string
+  path?: string
+  url?: string
+  sha256?: string
+}
+
+export interface ComplianceMapping {
+  standard?: string
+  version?: string
+  controlId?: string
+  title?: string
+  evidence?: ComplianceEvidence[]
+}
+
+export interface ComplianceSnapshot {
+  schemaVersion?: string
+  items?: ComplianceMapping[]
+  digest?: string
+}
+
 export interface SkillDetail {
   id: number
   slug: string
@@ -314,6 +336,7 @@ export interface SkillVersion {
   totalSize: number
   publishedAt: string
   downloadAvailable: boolean
+  complianceSnapshot?: ComplianceSnapshot
 }
 
 export interface SkillVersionDetail {
@@ -326,6 +349,7 @@ export interface SkillVersionDetail {
   publishedAt: string
   parsedMetadataJson?: string
   manifestJson?: string
+  complianceSnapshot?: ComplianceSnapshot
 }
 
 export interface SkillFile {

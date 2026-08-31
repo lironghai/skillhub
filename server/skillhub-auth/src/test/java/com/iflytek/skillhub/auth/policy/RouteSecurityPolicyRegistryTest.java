@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.springframework.http.HttpMethod;
+import java.util.List;
 import java.util.Set;
+import org.springframework.http.HttpMethod;
 import org.junit.jupiter.api.Test;
 
 class RouteSecurityPolicyRegistryTest {
@@ -146,17 +147,16 @@ class RouteSecurityPolicyRegistryTest {
 
     @Test
     void apiTokenPolicyRequiresMcpReadScopeForMcpCatalogRoutes() {
-        var catalogDenied = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("skill:read"));
-        var internalDenied = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("skill:read"));
-        var catalogAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("mcp:read"));
-        var internalAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("mcp:read"));
+        for (String prefix : List.of("/api/v1/mcp", "/api/web/mcp")) {
+            for (String endpoint : List.of("/servers", "/internal-servers")) {
+                var denied = registry.authorizeApiToken("GET", prefix + endpoint, Set.of("skill:read"));
+                var allowed = registry.authorizeApiToken("GET", prefix + endpoint, Set.of("mcp:read"));
 
-        assertFalse(catalogDenied.allowed());
-        assertEquals("mcp:read", catalogDenied.requiredScope());
-        assertFalse(internalDenied.allowed());
-        assertEquals("mcp:read", internalDenied.requiredScope());
-        assertTrue(catalogAllowed.allowed());
-        assertTrue(internalAllowed.allowed());
+                assertFalse(denied.allowed());
+                assertEquals("mcp:read", denied.requiredScope());
+                assertTrue(allowed.allowed());
+            }
+        }
     }
 
     @Test

@@ -983,7 +983,7 @@ export function WorkbenchPage() {
         : []
       ),
     ]
-  }, [activeRuntimeRun, activeSessionId, chatMessages, lastRun, pendingChatMessages, shouldShowThinkingMessage])
+  }, [activeRuntimeRun, activeSessionId, chatMessages, pendingChatMessages, shouldShowThinkingMessage])
   const chatScrollKey = useMemo(() => visibleChatMessages.map((item) => [
     String(item.id),
     item.content.length,
@@ -992,7 +992,7 @@ export function WorkbenchPage() {
     item.toolItems?.length ?? 0,
     item.pending ? 'pending' : 'done',
   ].join(':')).join('|'), [visibleChatMessages])
-  const mcpCatalog = mcpCatalogQuery.data?.items ?? []
+  const mcpCatalog = useMemo(() => mcpCatalogQuery.data?.items ?? [], [mcpCatalogQuery.data?.items])
   const approvals = approvalsQuery.data ?? []
   const savedMcpServerIds = useMemo(() => enabledBindingServerIds(mcpBindingsQuery.data ?? []), [mcpBindingsQuery.data])
   const mcpCatalogNameById = useMemo(() => new Map(mcpCatalog.map((server) => [server.id, server.name])), [mcpCatalog])

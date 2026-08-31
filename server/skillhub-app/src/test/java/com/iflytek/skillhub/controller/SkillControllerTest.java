@@ -52,6 +52,9 @@ class SkillControllerTest {
 
     @Test
     void getVersionDetailShouldReturnMetadataFields() throws Exception {
+        String parsedMetadata = """
+                {"name":"demo","complianceSnapshot":{"schemaVersion":"1.0","items":[{"standard":"mitre-attack","version":"v19.1","controlId":"T1059","evidence":[]}],"digest":"sha256:demo"}}
+                """;
         when(skillQueryService.getVersionDetail(
                 eq("team"),
                 eq("demo"),
@@ -66,7 +69,7 @@ class SkillControllerTest {
                         2,
                         128L,
                         Instant.parse("2026-03-12T12:00:00Z"),
-                        "{\"name\":\"demo\"}",
+                        parsedMetadata,
                         "[{\"path\":\"SKILL.md\"}]"
                 ));
 
@@ -74,7 +77,8 @@ class SkillControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value(0))
                 .andExpect(jsonPath("$.data.version").value("1.0.0"))
-                .andExpect(jsonPath("$.data.parsedMetadataJson").value("{\"name\":\"demo\"}"))
+                .andExpect(jsonPath("$.data.parsedMetadataJson").value(parsedMetadata))
+                .andExpect(jsonPath("$.data.complianceSnapshot.items[0].controlId").value("T1059"))
                 .andExpect(jsonPath("$.data.manifestJson").value("[{\"path\":\"SKILL.md\"}]"))
                 .andExpect(jsonPath("$.timestamp").isNotEmpty())
                 .andExpect(jsonPath("$.requestId").isNotEmpty());
@@ -227,6 +231,9 @@ class SkillControllerTest {
     @Test
     void listVersionsShouldExposeDownloadAvailability() throws Exception {
         SkillVersion version = new SkillVersion(1L, "1.0.0", "owner-1");
+        version.setParsedMetadataJson("""
+                {"complianceSnapshot":{"schemaVersion":"1.0","items":[{"standard":"mitre-attack","version":"v19.1","controlId":"T1059","evidence":[]}],"digest":"sha256:demo"}}
+                """);
         when(skillQueryService.listVersions(
                 eq("team"),
                 eq("demo"),
@@ -238,7 +245,8 @@ class SkillControllerTest {
 
         mockMvc.perform(get("/api/v1/skills/team/demo/versions"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.items[0].downloadAvailable").value(false));
+                .andExpect(jsonPath("$.data.items[0].downloadAvailable").value(false))
+                .andExpect(jsonPath("$.data.items[0].complianceSnapshot.items[0].standard").value("mitre-attack"));
     }
 
     @Test

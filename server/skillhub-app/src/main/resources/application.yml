@@ -49,6 +49,7 @@ spring:
       host: ${SPRING_DATA_REDIS_HOST:${REDIS_HOST:localhost}}
       port: ${SPRING_DATA_REDIS_PORT:${REDIS_PORT:6379}}
       password: ${SPRING_DATA_REDIS_PASSWORD:${REDIS_PASSWORD:}}
+      database: ${SPRING_DATA_REDIS_DATABASE:0}
   session:
     store-type: redis
     redis:
@@ -127,8 +128,17 @@ spring:
           completion: false
 
 skillhub:
+  observability:
+    tracing-mode: ${SKILLHUB_TRACING_MODE:none}
+    log-format: ${SKILLHUB_LOG_FORMAT:text}
+    log-async-queue-size: ${SKILLHUB_LOG_ASYNC_QUEUE_SIZE:1024}
+    service-version: ${SKILLHUB_SERVICE_VERSION:unknown}
+    service-environment: ${SKILLHUB_SERVICE_ENVIRONMENT:local}
   builtin-skills:
     enabled: ${SKILLHUB_BUILTIN_SKILLS_ENABLED:true}
+  redis:
+    sentinel:
+      check-sentinels-list: ${SKILLHUB_REDIS_SENTINEL_CHECK_SENTINELS_LIST:true}
   auth:
     mock:
       enabled: ${SKILLHUB_AUTH_MOCK_ENABLED:false}
@@ -264,6 +274,17 @@ skillhub:
       email: ${BOOTSTRAP_ADMIN_EMAIL:admin@skillhub.local}
 
 management:
+  tracing:
+    sampling:
+      probability: ${SKILLHUB_TRACING_SAMPLING_PROBABILITY:0.1}
+    baggage:
+      enabled: false
+    propagation:
+      type: W3C
+  otlp:
+    tracing:
+      timeout: ${SKILLHUB_OTLP_TIMEOUT:5s}
+      compression: ${SKILLHUB_OTLP_COMPRESSION:gzip}
   health:
     mail:
       enabled: ${MANAGEMENT_HEALTH_MAIL_ENABLED:false}

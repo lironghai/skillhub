@@ -21,6 +21,11 @@ spec:
           env:
             - name: SKILLHUB_API_UPSTREAM
               value: http://skillhub-server:8080
+            # Leave empty so a fixed-base image keeps its baked base; set to e.g. /skillhub/ to override.
+            - name: SKILLHUB_WEB_BASE_PATH
+              value: ""
+            - name: SKILLHUB_WEB_API_BASE_URL
+              value: ""
           ports:
             - containerPort: 80
               name: http

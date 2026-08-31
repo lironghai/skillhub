@@ -207,6 +207,12 @@ describe('SearchPage', () => {
     })
   })
 
+  it('wraps the filter chip row so many labels can flow onto multiple lines', () => {
+    const html = renderToStaticMarkup(<SearchPage />)
+
+    expect(html).toContain('flex flex-wrap items-center gap-2')
+  })
+
   it('toggles the selected label off and resets paging', () => {
     renderToStaticMarkup(<SearchPage />)
 

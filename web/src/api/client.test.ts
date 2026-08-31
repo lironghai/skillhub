@@ -38,6 +38,7 @@ import {
   WEB_API_PREFIX,
   buildApiUrl,
   fetchText,
+  getAppBaseUrl,
   getDirectAuthRuntimeConfig,
   getSessionBootstrapRuntimeConfig,
   namespaceApi,
@@ -107,6 +108,14 @@ describe('buildApiUrl', () => {
     window.__SKILLHUB_RUNTIME_CONFIG__ = { apiBaseUrl: '/skill_hub' }
     const url = buildApiUrl('/api/v1/auth/me')
     expect(url).toBe('/skill_hub/api/v1/auth/me')
+  })
+})
+
+describe('getAppBaseUrl', () => {
+  it('returns the configured public application URL', () => {
+    window.__SKILLHUB_RUNTIME_CONFIG__ = { appBaseUrl: 'https://example.com/skillhub' }
+
+    expect(getAppBaseUrl()).toBe('https://example.com/skillhub')
   })
 })
 

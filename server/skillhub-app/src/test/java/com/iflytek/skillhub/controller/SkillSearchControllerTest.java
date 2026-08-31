@@ -135,6 +135,7 @@ class SkillSearchControllerTest {
                                 null,
                                 null,
                                 "NONE",
+                                null,
                                 List.of(new SkillLabelDto("official", "RECOMMENDED", "Official"))
                         )),
                         1,
