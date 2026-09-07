@@ -11,13 +11,16 @@ COPY skillhub-search/pom.xml skillhub-search/
 COPY skillhub-infra/pom.xml skillhub-infra/
 COPY skillhub-storage/pom.xml skillhub-storage/
 COPY skillhub-notification/pom.xml skillhub-notification/
+COPY skillhub-mcp/pom.xml skillhub-mcp/
 COPY skillhub-app/pom.xml skillhub-app/
 COPY mvnw .
 COPY .mvn .mvn
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
 RUN ./mvnw dependency:go-offline -B
 
 COPY . .
-RUN ./mvnw package -DskipTests -B
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+RUN ./mvnw clean package -DskipTests -B
 
 # ---- Runtime Stage ----
 # The Noble variant publishes a linux/riscv64 image; the Alpine JRE currently

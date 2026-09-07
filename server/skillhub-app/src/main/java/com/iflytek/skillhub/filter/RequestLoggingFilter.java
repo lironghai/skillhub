@@ -1,5 +1,6 @@
 package com.iflytek.skillhub.filter;
 
+import com.iflytek.skillhub.auth.policy.RouteSecurityPolicyRegistry;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,13 +38,18 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
-        if (isNotificationSse(uri)) {
+        String path = RouteSecurityPolicyRegistry.requestPath(request);
+        if (isNotificationSse(path)) {
             prepareSseResponse(response);
             filterChain.doFilter(request, response);
             return;
         }
-        if (shouldSkip(uri)) {
+        if (isMcpStreamable(path)) {
+            prepareStreamingResponse(response);
+            filterChain.doFilter(request, response);
+            return;
+        }
+        if (shouldSkip(path)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -103,8 +109,16 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         return uri != null && uri.endsWith("/notifications/sse");
     }
 
+    private boolean isMcpStreamable(String path) {
+        return "/api/mcp".equals(path);
+    }
+
     private void prepareSseResponse(HttpServletResponse response) {
         response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+        prepareStreamingResponse(response);
+    }
+
+    private void prepareStreamingResponse(HttpServletResponse response) {
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-transform");
         response.setHeader("X-Accel-Buffering", "no");
     }

@@ -40,8 +40,8 @@ if SKILLHUB_WEB_BASE_PATH=/skillhub/ \
   exit 1
 fi
 
-if [ "$(grep -Fc 'proxy_set_header X-Forwarded-Prefix $skillhub_forwarded_prefix;' "$ROOT_DIR/web/nginx.conf.template")" -ne 4 ]; then
-  echo 'API, OAuth, and .well-known proxy locations must forward the configured base path' >&2
+if [ "$(grep -Fc 'proxy_set_header X-Forwarded-Prefix $skillhub_forwarded_prefix;' "$ROOT_DIR/web/nginx.conf.template")" -ne 7 ]; then
+  echo 'API, Swagger, OAuth, and .well-known proxy locations must forward the configured base path' >&2
   exit 1
 fi
 
@@ -67,7 +67,7 @@ grep -F '/assets/index.js' "$root_web_root/index.html" >/dev/null
 # would desync the generated location from the baked asset URLs).
 for bad in '/foo/../bar/' '/foo/./bar/' '/foo//bar/' '/no-trailing' 'foo/' \
            '/api/' '/oauth2/' '/login/' '/assets/' '/registry/' '/nginx-health/' \
-           '/.well-known/' '/runtime-config.js/' '/api/nested/'; do
+           '/.well-known/' '/runtime-config.js/' '/contextforge/' '/swagger-ui/' '/v3/' '/api/nested/'; do
   reject_root="$tmp/reject-html"
   reject_config="$tmp/reject.conf"
   mkdir -p "$reject_root"

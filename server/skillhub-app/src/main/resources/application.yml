@@ -2,6 +2,13 @@ server:
   port: 8080
   shutdown: graceful
   forward-headers-strategy: framework
+  error:
+    include-exception: false
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  tomcat:
+    keep-alive-timeout: ${SERVER_TOMCAT_KEEP_ALIVE_TIMEOUT:75s}
   servlet:
     session:
       timeout: ${SERVER_SERVLET_SESSION_TIMEOUT:8h}
@@ -70,6 +77,13 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             client-name: ${OAUTH2_GITLAB_DISPLAY_NAME:GitLab}
+          feishu:
+            client-id: ${OAUTH2_FEISHU_CLIENT_ID:placeholder}
+            client-secret: ${OAUTH2_FEISHU_CLIENT_SECRET:placeholder}
+            scope: ${OAUTH2_FEISHU_SCOPE:auth:user.id:read}
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: ${OAUTH2_FEISHU_DISPLAY_NAME:Feishu}
         provider:
           github:
             api-base-url: ${OAUTH2_GITHUB_API_BASE_URL:https://api.github.com}
@@ -79,6 +93,11 @@ spring:
             token-uri: ${OAUTH2_GITLAB_BASE_URI:https://gitlab.com}/oauth/token
             user-info-uri: ${OAUTH2_GITLAB_BASE_URI:https://gitlab.com}/api/v4/user
             user-name-attribute: username
+          feishu:
+            authorization-uri: ${OAUTH2_FEISHU_AUTHORIZATION_URI:https://accounts.feishu.cn/open-apis/authen/v1/authorize}
+            token-uri: ${OAUTH2_FEISHU_TOKEN_URI:https://accounts.feishu.cn/oauth/v3/token}
+            user-info-uri: ${OAUTH2_FEISHU_USER_INFO_URI:https://open.feishu.cn/open-apis/authen/v1/user_info}
+            user-name-attribute: code
   servlet:
     multipart:
       max-file-size: 100MB
@@ -94,6 +113,21 @@ spring:
           auth: ${SPRING_MAIL_SMTP_AUTH:false}
           starttls:
             enable: ${SPRING_MAIL_SMTP_STARTTLS_ENABLE:false}
+  ai:
+    mcp:
+      server:
+        enabled: ${SKILLHUB_MCP_ENABLED:true}
+        name: skillhub-mcp
+        version: 1.0.0
+        type: SYNC
+        protocol: STREAMABLE
+        streamable-http:
+          mcp-endpoint: /api/mcp
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
 
 skillhub:
   observability:
@@ -182,6 +216,26 @@ skillhub:
       anonymous-cookie-name: ${SKILLHUB_DOWNLOAD_ANON_COOKIE_NAME:skillhub_anon_dl}
       anonymous-cookie-max-age: ${SKILLHUB_DOWNLOAD_ANON_COOKIE_MAX_AGE:P30D}
       anonymous-cookie-secret: ${SKILLHUB_DOWNLOAD_ANON_COOKIE_SECRET:}
+  mcp:
+    enabled: ${SKILLHUB_MCP_ENABLED:true}
+    context-forge:
+      enabled: ${SKILLHUB_MCP_CONTEXT_FORGE_ENABLED:true}
+      base-url: ${SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL:http://localhost:4444}
+      username: ${SKILLHUB_MCP_CONTEXT_FORGE_USERNAME:}
+      password: ${SKILLHUB_MCP_CONTEXT_FORGE_PASSWORD:}
+      team-id: ${SKILLHUB_MCP_CONTEXT_FORGE_TEAM_ID:e69584b918294279896f69cfbccc3f73}
+      login-path: ${SKILLHUB_MCP_CONTEXT_FORGE_LOGIN_PATH:/auth/email/login}
+      catalog-path: ${SKILLHUB_MCP_CONTEXT_FORGE_CATALOG_PATH:/admin/mcp-registry/servers}
+      internal-servers-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_SERVERS_PATH:/admin/servers}
+      internal-tools-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_TOOLS_PATH:/admin/tools}
+      internal-resources-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_RESOURCES_PATH:/admin/resources}
+      internal-prompts-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_PROMPTS_PATH:/admin/prompts}
+      public-base-url: ${SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL:${SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL:http://localhost:4444}}
+      default-size: ${SKILLHUB_MCP_CONTEXT_FORGE_DEFAULT_SIZE:24}
+      max-size: ${SKILLHUB_MCP_CONTEXT_FORGE_MAX_SIZE:100}
+      max-search-scan-size: ${SKILLHUB_MCP_CONTEXT_FORGE_MAX_SEARCH_SCAN_SIZE:1000}
+      connect-timeout: ${SKILLHUB_MCP_CONTEXT_FORGE_CONNECT_TIMEOUT:5s}
+      read-timeout: ${SKILLHUB_MCP_CONTEXT_FORGE_READ_TIMEOUT:15s}
   publish:
     max-file-count: 100
     max-single-file-size: 10485760 # 10MB

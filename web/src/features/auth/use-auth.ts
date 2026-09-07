@@ -18,6 +18,7 @@ export function getAuthQueryOptions(enabled = true) {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     refetchInterval: 60_000,
+    meta: { skipGlobalErrorHandler: true },
   }
 }
 

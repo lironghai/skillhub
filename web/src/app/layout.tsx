@@ -9,6 +9,9 @@ import { dismissOpenOverlays } from '@/shared/lib/dismiss-open-overlays'
 import { syncDocumentLanguage } from '@/shared/lib/document-language'
 import { getAppHeaderClassName } from './layout-header-style'
 import { getAppMainContentLayout, resolveAppMainContentPathname } from './layout-main-content'
+import { SvgIcon } from '@/shared/components/svg-icon'
+import footerLogo from '@/assets/footer_logo.png'
+import { buildApiUrl, isContextForgeEnabled } from '@/api/client'
 
 /**
  * Application shell shared by all routed pages.
@@ -65,6 +68,9 @@ export function Layout() {
     { label: t('nav.landing'), to: '/', exact: true },
     { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
     { label: t('nav.search'), to: '/search' },
+    ...(isContextForgeEnabled()
+      ? [{ label: t('nav.mcpManagement'), to: '/dashboard/mcp', auth: true }]
+      : []),
     { label: t('nav.dashboard'), to: '/dashboard', auth: true },
     { label: t('nav.mySkills'), to: '/dashboard/skills', auth: true },
   ]
@@ -89,15 +95,18 @@ export function Layout() {
       </div>
 
       {/* Header */}
-      <header className={getAppHeaderClassName(isHeaderElevated)} style={{ borderColor: 'hsl(var(--border))' }}>
-        <Link to="/" className="text-xl font-semibold tracking-tight text-brand-gradient">
-          SkillHub
+      <header
+        className={getAppHeaderClassName(isHeaderElevated)}
+        style={{ borderColor: "hsl(var(--border))" }}
+      >
+        <Link to="/" className="inline-flex min-w-0 items-center">
+          <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-[120px] sm:w-auto" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <nav className="hidden md:flex items-center gap-10 text-[15px] font-medium h-full">
           {navItems.map((item) => {
-            if (item.auth && !user) return null
-            const active = isActive(item.to, item.exact)
+            if (item.auth && !user) return null;
+            const active = isActive(item.to, item.exact);
 
             return (
               <Link
@@ -105,27 +114,29 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'px-4 py-1.5 rounded-full bg-brand-gradient text-white shadow-sm'
-                    : 'hover:opacity-80 transition-opacity duration-150'
+                    ? "flex items-center h-full text-[#bf3732] border-b-[3px] border-[#bf3732] font-bold"
+                    : "flex items-center h-full text-[#666] hover:text-[#bf3732] transition-colors duration-150"
                 }
               >
                 {item.label}
               </Link>
-            )
+            );
           })}
         </nav>
 
-        <div className="flex items-center gap-6 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>
-          <LanguageSwitcher />
+        <div className="ml-auto flex min-w-0 items-center gap-2 text-[15px] font-normal sm:gap-4">
+          <LanguageSwitcher className="px-2 sm:px-3 [&>span]:hidden sm:[&>span]:inline" />
+          <span className="hidden text-[#ccc] select-none sm:inline">|</span>
           {user && <NotificationBell />}
           {isLoading ? null : user ? (
-            <UserMenu user={user} />
+            <UserMenu user={user} triggerClassName="max-w-16 gap-2 sm:max-w-none sm:gap-3 [&>span]:truncate" />
           ) : (
             <Link
               to="/login"
-              className="hover:opacity-80 transition-opacity"
+              search={{ returnTo: "" }}
+              className="flex items-center justify-center min-w-[52px] px-3 h-[32px] bg-white border border-[#ccc] rounded-[8px] text-sm text-[#333] hover:border-[#bf3732] hover:text-[#bf3732] transition-colors duration-150"
             >
-              {t('nav.login')}
+              {t("nav.login")}
             </Link>
           )}
         </div>
@@ -149,66 +160,108 @@ export function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t rounded-t-2xl mt-auto" style={{ background: '#F1F5F9', borderColor: 'hsl(var(--border))' }}>
+      <footer
+        className="relative z-10 border-t mt-auto"
+        style={{ background: "#fff", borderColor: "hsl(var(--border))" }}
+      >
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 md:gap-12">
             <div className="flex-shrink-0">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm bg-brand-gradient">
-                  S
-                </div>
-                <span className="text-lg font-bold text-brand-gradient">SkillHub</span>
+                <img
+                  src={footerLogo}
+                  alt="HeroSkillHub"
+                  className="h-9 w-auto"
+                />
               </div>
-              <p className="text-sm max-w-xs" style={{ color: 'hsl(var(--text-secondary))' }}>
-                {t('layout.footerDescription')}
+              <p
+                className="text-sm max-w-xs"
+                style={{ color: "hsl(var(--text-secondary))" }}
+              >
+                {t("layout.footerDescription")}
               </p>
             </div>
             <div className="flex flex-wrap gap-12 md:gap-16">
               <div>
-                <h4 className="text-sm font-semibold mb-3" style={{ color: 'hsl(var(--foreground))' }}>
-                  {t('nav.home')}
+                <h4
+                  className="text-sm font-semibold mb-3"
+                  style={{ color: "hsl(var(--foreground))" }}
+                >
+                  {t("nav.home")}
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link to="/" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
-                      {t('nav.home')}
+                    <Link
+                      to="/"
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
+                      {t("nav.home")}
                     </Link>
                   </li>
                   <li>
                     <Link
                       to="/search"
-                      search={{ q: '', sort: 'relevance', page: 0, starredOnly: false }}
+                      search={{
+                        q: "",
+                        sort: "relevance",
+                        page: 0,
+                        starredOnly: false,
+                      }}
                       className="hover:opacity-80 transition-opacity"
-                      style={{ color: 'hsl(var(--text-secondary))' }}
+                      style={{ color: "hsl(var(--text-secondary))" }}
                     >
-                      {t('nav.search')}
+                      {t("nav.search")}
                     </Link>
                   </li>
                   <li>
-                    <Link to="/dashboard" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
-                      {t('nav.dashboard')}
+                    <Link
+                      to="/dashboard"
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
+                      {t("nav.dashboard")}
                     </Link>
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="text-sm font-semibold mb-3" style={{ color: 'hsl(var(--foreground))' }}>
-                  {t('footer.resources')}
+                <h4
+                  className="text-sm font-semibold mb-3"
+                  style={{ color: "hsl(var(--foreground))" }}
+                >
+                  {t("footer.resources")}
                 </h4>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
-                      {t('footer.docs')}
+                    <a
+                      href="https://iflytek.github.io/skillhub/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
+                      {t("footer.docs")}
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
-                      {t('footer.api')}
+                    <a
+                      href={buildApiUrl('/swagger-ui/index.html')}
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
+                      {t("footer.api")}
                     </a>
                   </li>
                   <li>
-                    <a href="#" className="hover:opacity-80 transition-opacity" style={{ color: 'hsl(var(--text-secondary))' }}>
-                      {t('footer.community')}
+                    <a
+                      href="https://github.com/iflytek/skillhub/discussions"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(var(--text-secondary))" }}
+                    >
+                      {t("footer.community")}
                     </a>
                   </li>
                 </ul>
@@ -217,21 +270,27 @@ export function Layout() {
           </div>
           <div
             className="mt-10 pt-6 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs"
-            style={{ borderColor: 'hsl(var(--border))', color: 'hsl(var(--muted-foreground))' }}
+            style={{
+              borderColor: "hsl(var(--border))",
+              color: "hsl(var(--muted-foreground))",
+            }}
           >
-            <span>{t('footer.copyright')}</span>
+            <span>{t("footer.copyright")}</span>
             <div className="flex items-center gap-2">
-              <Link to="/privacy" className="hover:opacity-80 transition-opacity">
-                {t('footer.privacy')}
+              <Link
+                to="/privacy"
+                className="hover:opacity-80 transition-opacity"
+              >
+                {t("footer.privacy")}
               </Link>
               <span>|</span>
               <Link to="/terms" className="hover:opacity-80 transition-opacity">
-                {t('footer.terms')}
+                {t("footer.terms")}
               </Link>
             </div>
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }

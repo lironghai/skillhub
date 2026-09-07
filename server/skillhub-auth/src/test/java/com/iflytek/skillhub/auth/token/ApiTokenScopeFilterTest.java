@@ -218,4 +218,39 @@ class ApiTokenScopeFilterTest {
         verify(chain).doFilter(request, response);
         verify(handler, never()).handle(eq(request), eq(response), any());
     }
+
+    @Test
+    void shouldAllowReadonlyMcpRequestsWithMcpReadScopeBehindBasePath() throws Exception {
+        AccessDeniedHandler handler = mock(AccessDeniedHandler.class);
+        ApiTokenScopeFilter filter = new ApiTokenScopeFilter(scopeService, handler);
+
+        PlatformPrincipal principal = new PlatformPrincipal(
+            "user-5",
+            "Mcp User",
+            "mcp@example.com",
+            "",
+            "api_token",
+            Set.of("USER")
+        );
+        var authentication = new UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            List.of(
+                new SimpleGrantedAuthority("ROLE_USER"),
+                new SimpleGrantedAuthority("SCOPE_mcp:read")
+            )
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/skillhub/api/mcp");
+        request.setContextPath("/skillhub");
+        request.setServletPath("/api/mcp");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verify(handler, never()).handle(eq(request), eq(response), any());
+    }
 }

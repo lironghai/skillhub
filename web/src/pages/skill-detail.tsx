@@ -2,7 +2,7 @@ import { startTransition, useCallback, useEffect, useRef, useState, type MouseEv
 import { useTranslation } from 'react-i18next'
 import { Link, useParams, useNavigate, useRouterState, useSearch } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, ArrowUpCircle, ChevronDown, ChevronUp, Clock, Folder, Globe, Lock, RefreshCw, ShieldCheck, Terminal, User, Users } from 'lucide-react'
+import { ArrowLeft, ArrowUpCircle, ChevronDown, ChevronUp, Clock, Folder, Globe, Lock, RefreshCw, ShieldCheck, Terminal, Users } from 'lucide-react'
 import { MarkdownRenderer } from '@/features/skill/markdown-renderer'
 import { resolvePackageRelativeLink } from '@/features/skill/package-relative-link'
 import { FileTree } from '@/features/skill/file-tree'
@@ -799,7 +799,7 @@ export function SkillDetailPage() {
             {t('skillDetail.back')}
           </Button>
           <div className="flex items-center gap-3 mb-1">
-            <NamespaceBadge type="GLOBAL" name={namespace} />
+            <NamespaceBadge type="GLOBAL" name={`@${namespace}`} />
             {skill.status && (
               <span className={cn(
                 'badge-soft',
@@ -840,16 +840,16 @@ export function SkillDetailPage() {
           <h1 className="text-balance text-4xl font-bold font-heading text-foreground">{skill.displayName}</h1>
           {skill.ownerDisplayName && (
             <div className="flex min-w-0">
-              <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-border/60 bg-background/85 px-3 py-1.5 text-sm text-muted-foreground shadow-sm backdrop-blur-sm">
-                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">
+              <div className="inline-flex max-w-full items-center gap-2 rounded-full bg-background/85 py-1 text-sm text-muted-foreground backdrop-blur-sm">
+                {/* <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">
                   <User className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-                <span className="min-w-0 truncate">{t('skillDetail.authorLabel', { name: skill.ownerDisplayName })}</span>
+                </span> */}
+                <span className="min-w-0 truncate" style={{color:"#999","fontFamily": "PingFang SC"}}>{t('skillDetail.authorLabel', { name: skill.ownerDisplayName })}</span>
               </div>
             </div>
           )}
           {skill.summary && (
-            <p className="text-lg text-muted-foreground leading-relaxed">{skill.summary}</p>
+            <p className="text-md text-muted-foreground leading-relaxed" style={{color:"#666","fontFamily": "PingFang SC",lineHeight: "normal"}}>{skill.summary}</p>
           )}
           {(skill.labels?.length ?? 0) > 0 && (
             <div className="flex flex-wrap gap-2">
@@ -1150,9 +1150,13 @@ export function SkillDetailPage() {
               <>
                 {!isFetchingSkill ? (
                   <>
-                    <StarButton skillId={skill.id} starCount={skill.starCount} onRequireLogin={requireLogin} />
+                    <div className="flex justify-center gap-3">
+                      <StarButton skillId={skill.id} starCount={skill.starCount} onRequireLogin={requireLogin} />
+                      {/* <div className="h-px bg-border/40" /> */}
+                      <SubscribeButton skillId={skill.id} subscriptionCount={(skill as { subscriptionCount?: number }).subscriptionCount ?? 0} onRequireLogin={requireLogin} />
+                    </div>
                     <div className="h-px bg-border/40" />
-                    <SubscribeButton skillId={skill.id} subscriptionCount={(skill as { subscriptionCount?: number }).subscriptionCount ?? 0} onRequireLogin={requireLogin} />
+
                     <RatingInput skillId={skill.id} onRequireLogin={requireLogin} />
                   </>
                 ) : null}

@@ -1195,7 +1195,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_2"];
+        get: operations["list"];
         put?: never;
         post: operations["create"];
         delete?: never;
@@ -1739,7 +1739,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels_2"];
+        get: operations["listLabels"];
         put?: never;
         post: operations["createLabel"];
         delete?: never;
@@ -2219,7 +2219,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels"];
+        get: operations["listLabels_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2235,7 +2235,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["listLabels_1"];
+        get: operations["listLabels_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2286,7 +2286,7 @@ export interface paths {
         get: operations["getSkillDetail"];
         put?: never;
         post?: never;
-        delete: operations["deleteSkill_1"];
+        delete: operations["deleteSkill"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2302,7 +2302,7 @@ export interface paths {
         get: operations["getSkillDetail_1"];
         put?: never;
         post?: never;
-        delete: operations["deleteSkill"];
+        delete: operations["deleteSkill_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2635,7 +2635,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2651,7 +2651,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["list_1"];
+        get: operations["list_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2812,6 +2812,70 @@ export interface paths {
             cookie?: never;
         };
         get: operations["listMyNamespaces_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mcp/servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["servers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/mcp/servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["servers_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/mcp/internal-servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["internalServers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/web/mcp/internal-servers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["internalServers_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3548,7 +3612,7 @@ export interface components {
             /** Format: int32 */
             code?: number;
             msg?: string;
-            data?: Record<string, never>;
+            data?: unknown;
             /** Format: date-time */
             timestamp?: string;
             requestId?: string;
@@ -4070,12 +4134,15 @@ export interface components {
         LocalRegisterRequest: {
             username: string;
             password: string;
+            /** Format: email */
             email: string;
         };
         PasswordResetRequestDto: {
+            /** Format: email */
             email: string;
         };
         PasswordResetConfirmRequest: {
+            /** Format: email */
             email: string;
             code: string;
             newPassword: string;
@@ -4678,7 +4745,7 @@ export interface components {
         };
         SseEmitter: {
             /** Format: int64 */
-            timeout?: number;
+            timeout?: number | null;
         };
         ApiResponsePageResponseNotificationResponse: {
             /** Format: int32 */
@@ -4825,6 +4892,93 @@ export interface components {
             canArchive?: boolean;
             canRestore?: boolean;
             canDelete?: boolean;
+        };
+        ApiResponseMcpCatalogResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["McpCatalogResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        McpCatalogItemResponse: {
+            id?: string;
+            name?: string;
+            category?: string;
+            provider?: string;
+            description?: string;
+            url?: string;
+            authType?: string;
+            requiresApiKey?: boolean;
+            secure?: boolean;
+            tags?: string[];
+            transport?: string;
+            logoUrl?: string;
+            documentationUrl?: string;
+            registered?: boolean;
+            available?: boolean;
+            requiresOauthConfig?: boolean;
+        };
+        McpCatalogResponse: {
+            items?: components["schemas"]["McpCatalogItemResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
+            categories?: string[];
+            authTypes?: string[];
+            providers?: string[];
+            tags?: string[];
+        };
+        ApiResponseMcpInternalServerResponse: {
+            /** Format: int32 */
+            code?: number;
+            msg?: string;
+            data?: components["schemas"]["McpInternalServerResponse"];
+            /** Format: date-time */
+            timestamp?: string;
+            requestId?: string;
+        };
+        JsonNode: unknown;
+        McpAssociatedItemResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            inputSchema?: components["schemas"]["JsonNode"];
+            outputSchema?: components["schemas"]["JsonNode"];
+        };
+        McpInternalServerItemResponse: {
+            id?: string;
+            name?: string;
+            description?: string;
+            iconUrl?: string;
+            enabled?: boolean;
+            visibility?: string;
+            team?: string;
+            /** Format: int32 */
+            toolCount?: number;
+            /** Format: int32 */
+            resourceCount?: number;
+            /** Format: int32 */
+            promptCount?: number;
+            tools?: components["schemas"]["McpAssociatedItemResponse"][];
+            resources?: components["schemas"]["McpAssociatedItemResponse"][];
+            prompts?: components["schemas"]["McpAssociatedItemResponse"][];
+            tags?: string[];
+            streamableHttpUrl?: string;
+            sseUrl?: string;
+        };
+        McpInternalServerResponse: {
+            items?: components["schemas"]["McpInternalServerItemResponse"][];
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            size?: number;
         };
         ApiResponseGovernanceSummaryResponse: {
             /** Format: int32 */
@@ -4992,8 +5146,8 @@ export interface components {
             slug?: string;
             displayName?: string;
             summary?: string;
-            tags?: Record<string, never>;
-            stats?: Record<string, never>;
+            tags?: unknown;
+            stats?: unknown;
             /** Format: int64 */
             createdAt?: number;
             /** Format: int64 */
@@ -5042,7 +5196,7 @@ export interface components {
             remediation?: string;
             analyzer?: string;
             metadata?: {
-                [key: string]: Record<string, never>;
+                [key: string]: unknown;
             };
         };
         ClawHubSkillResponse: {
@@ -5070,8 +5224,8 @@ export interface components {
             slug?: string;
             displayName?: string;
             summary?: string;
-            tags?: Record<string, never>;
-            stats?: Record<string, never>;
+            tags?: unknown;
+            stats?: unknown;
             /** Format: int64 */
             createdAt?: number;
             /** Format: int64 */
@@ -7950,7 +8104,7 @@ export interface operations {
             };
         };
     };
-    list_2: {
+    list: {
         parameters: {
             query?: {
                 page?: number;
@@ -8860,7 +9014,7 @@ export interface operations {
             };
         };
     };
-    listLabels_2: {
+    listLabels: {
         parameters: {
             query?: never;
             header?: never;
@@ -9705,7 +9859,7 @@ export interface operations {
             };
         };
     };
-    listLabels: {
+    listLabels_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -9728,7 +9882,7 @@ export interface operations {
             };
         };
     };
-    listLabels_1: {
+    listLabels_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -9820,7 +9974,7 @@ export interface operations {
             };
         };
     };
-    deleteSkill_1: {
+    deleteSkill: {
         parameters: {
             query?: {
                 ownerId?: string;
@@ -9868,7 +10022,7 @@ export interface operations {
             };
         };
     };
-    deleteSkill: {
+    deleteSkill_1: {
         parameters: {
             query?: {
                 ownerId?: string;
@@ -10337,7 +10491,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: {
                 category?: string;
@@ -10361,7 +10515,7 @@ export interface operations {
             };
         };
     };
-    list_1: {
+    list_2: {
         parameters: {
             query?: {
                 category?: string;
@@ -10615,6 +10769,110 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ApiResponseListMyNamespaceResponse"];
+                };
+            };
+        };
+    };
+    servers: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                auth_type?: string;
+                provider?: string;
+                tags?: string[];
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpCatalogResponse"];
+                };
+            };
+        };
+    };
+    servers_1: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                auth_type?: string;
+                provider?: string;
+                tags?: string[];
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpCatalogResponse"];
+                };
+            };
+        };
+    };
+    internalServers: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpInternalServerResponse"];
+                };
+            };
+        };
+    };
+    internalServers_1: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ApiResponseMcpInternalServerResponse"];
                 };
             };
         };

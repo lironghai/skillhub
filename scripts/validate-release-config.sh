@@ -139,7 +139,7 @@ validate_web_base_path_format() {
     first_segment=${value#/}
     first_segment=${first_segment%%/*}
     case "$first_segment" in
-      api|oauth2|login|assets|registry|nginx-health|.well-known|runtime-config.js)
+      api|oauth2|login|assets|registry|nginx-health|.well-known|runtime-config.js|contextforge|swagger-ui|v3)
         error "SKILLHUB_WEB_BASE_PATH must not start with a segment reserved by the SkillHub server ($first_segment); it would shadow the server's own Nginx location: $value"
         ;;
     esac
@@ -319,12 +319,15 @@ validate_boolean SKILLHUB_STORAGE_S3_FORCE_PATH_STYLE
 validate_boolean SKILLHUB_STORAGE_S3_AUTO_CREATE_BUCKET
 validate_boolean SPRING_DATA_REDIS_SSL_ENABLED
 validate_boolean SKILLHUB_REDIS_SENTINEL_CHECK_SENTINELS_LIST
+validate_boolean SKILLHUB_MCP_ENABLED
+validate_boolean SKILLHUB_MCP_CONTEXT_FORGE_ENABLED
 
 validate_port POSTGRES_PORT
 validate_port REDIS_PORT
 validate_port API_PORT
 validate_port WEB_PORT
 validate_non_negative_integer SPRING_DATA_REDIS_CLUSTER_MAX_REDIRECTS
+validate_non_negative_integer SKILLHUB_MCP_CONTEXT_FORGE_MAX_SEARCH_SCAN_SIZE
 validate_redis_nodes SPRING_DATA_REDIS_CLUSTER_NODES
 validate_redis_cluster_database
 validate_redis_sentinel_configuration
@@ -384,6 +387,33 @@ oauth_id="${OAUTH2_GITHUB_CLIENT_ID:-}"
 oauth_secret="${OAUTH2_GITHUB_CLIENT_SECRET:-}"
 if [ -n "$oauth_id" ] && [ -z "$oauth_secret" ]; then
   error "OAUTH2_GITHUB_CLIENT_SECRET is required when OAUTH2_GITHUB_CLIENT_ID is set"
+fi
+
+feishu_id="${OAUTH2_FEISHU_CLIENT_ID:-}"
+feishu_secret="${OAUTH2_FEISHU_CLIENT_SECRET:-}"
+if [ -n "$feishu_id" ] && [ -z "$feishu_secret" ]; then
+  error "OAUTH2_FEISHU_CLIENT_SECRET is required when OAUTH2_FEISHU_CLIENT_ID is set"
+fi
+if [ -n "$feishu_secret" ] && [ -z "$feishu_id" ]; then
+  error "OAUTH2_FEISHU_CLIENT_ID is required when OAUTH2_FEISHU_CLIENT_SECRET is set"
+fi
+
+if [ "${SKILLHUB_MCP_CONTEXT_FORGE_ENABLED:-false}" = "true" ]; then
+  if [ "${SKILLHUB_MCP_ENABLED:-true}" != "true" ]; then
+    error "SKILLHUB_MCP_CONTEXT_FORGE_ENABLED=true requires SKILLHUB_MCP_ENABLED=true"
+  fi
+  require_non_empty SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL
+  require_non_empty SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL
+  require_non_empty SKILLHUB_CONTEXT_FORGE_UPSTREAM
+  require_non_empty SKILLHUB_MCP_CONTEXT_FORGE_USERNAME
+  require_non_empty SKILLHUB_MCP_CONTEXT_FORGE_PASSWORD
+  validate_url SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL
+  validate_url SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL
+  validate_url SKILLHUB_CONTEXT_FORGE_UPSTREAM
+  validate_no_trailing_slash SKILLHUB_CONTEXT_FORGE_UPSTREAM
+  reject_patterns SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL "*example.com*" "*localhost*"
+  reject_patterns SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL "*example.com*" "*localhost*"
+  reject_patterns SKILLHUB_CONTEXT_FORGE_UPSTREAM "*example.com*" "*localhost*"
 fi
 if [ -n "$oauth_secret" ] && [ -z "$oauth_id" ]; then
   error "OAUTH2_GITHUB_CLIENT_ID is required when OAUTH2_GITHUB_CLIENT_SECRET is set"

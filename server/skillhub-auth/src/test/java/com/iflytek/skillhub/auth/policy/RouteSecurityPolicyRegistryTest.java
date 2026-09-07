@@ -14,7 +14,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 class RouteSecurityPolicyRegistryTest {
 
     private static final Set<String> ALL_SCOPES =
-            Set.of("skill:read", "skill:publish", "skill:delete", "token:manage");
+            Set.of("skill:read", "skill:publish", "skill:delete", "token:manage", "mcp:read");
 
     private final RouteSecurityPolicyRegistry registry = new RouteSecurityPolicyRegistry();
 
@@ -136,6 +136,46 @@ class RouteSecurityPolicyRegistryTest {
     }
 
     @Test
+    void apiTokenPolicySupportsReadonlyStreamableMcpRoute() {
+        var emptyScopes = registry.authorizeApiToken("POST", "/api/mcp", Set.of());
+        var wrongScope = registry.authorizeApiToken("POST", "/api/mcp", Set.of("skill:publish"));
+        var allowed = registry.authorizeApiToken("POST", "/api/mcp", Set.of("mcp:read"));
+
+        assertFalse(emptyScopes.allowed());
+        assertEquals("mcp:read", emptyScopes.requiredScope());
+        assertFalse(wrongScope.allowed());
+        assertEquals("mcp:read", wrongScope.requiredScope());
+        assertTrue(allowed.allowed());
+        assertFalse(registry.authorizeApiToken("GET", "/api/mcp/sse", Set.of()).allowed());
+        assertFalse(registry.authorizeApiToken("POST", "/api/mcp/messages", Set.of()).allowed());
+    }
+
+    @Test
+    void apiTokenPolicyRequiresMcpReadScopeForMcpCatalogRoutes() {
+        var v1CatalogDenied = registry.authorizeApiToken("GET", "/api/v1/mcp/servers", Set.of("skill:read"));
+        var v1InternalDenied = registry.authorizeApiToken("GET", "/api/v1/mcp/internal-servers", Set.of("skill:read"));
+        var v1CatalogAllowed = registry.authorizeApiToken("GET", "/api/v1/mcp/servers", Set.of("mcp:read"));
+        var v1InternalAllowed = registry.authorizeApiToken("GET", "/api/v1/mcp/internal-servers", Set.of("mcp:read"));
+        var catalogDenied = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("skill:read"));
+        var internalDenied = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("skill:read"));
+        var catalogAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/servers", Set.of("mcp:read"));
+        var internalAllowed = registry.authorizeApiToken("GET", "/api/web/mcp/internal-servers", Set.of("mcp:read"));
+
+        assertFalse(v1CatalogDenied.allowed());
+        assertEquals("mcp:read", v1CatalogDenied.requiredScope());
+        assertFalse(v1InternalDenied.allowed());
+        assertEquals("mcp:read", v1InternalDenied.requiredScope());
+        assertTrue(v1CatalogAllowed.allowed());
+        assertTrue(v1InternalAllowed.allowed());
+        assertFalse(catalogDenied.allowed());
+        assertEquals("mcp:read", catalogDenied.requiredScope());
+        assertFalse(internalDenied.allowed());
+        assertEquals("mcp:read", internalDenied.requiredScope());
+        assertTrue(catalogAllowed.allowed());
+        assertTrue(internalAllowed.allowed());
+    }
+
+    @Test
     void routeAuthorizationProtectsNativeCliRemoteDeleteByAuthenticationNotSuperAdminRole() {
         boolean matched = registry.authorizationPolicies().stream()
                 .anyMatch(policy -> policy.method() == HttpMethod.DELETE
@@ -161,6 +201,7 @@ class RouteSecurityPolicyRegistryTest {
     @Test
     void shouldProjectRequestContext_onlyForApiRoutes() {
         assertTrue(registry.shouldProjectRequestContext("/api/web/namespaces/team-a"));
+        assertTrue(registry.shouldProjectRequestContext("/api/mcp"));
         assertFalse(registry.shouldProjectRequestContext("/assets/index.css"));
     }
 

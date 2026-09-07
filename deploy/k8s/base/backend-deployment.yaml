@@ -168,6 +168,60 @@ spec:
                   name: skillhub-config
                   key: session-cookie-secure
 
+            # MCP and ContextForge catalog
+            - name: SKILLHUB_MCP_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: skillhub-mcp-enabled
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-enabled
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-base-url
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_TEAM_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-team-id
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-public-base-url
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_MAX_SEARCH_SCAN_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-max-search-scan-size
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_CONNECT_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-connect-timeout
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_READ_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-read-timeout
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: skillhub-secret
+                  key: mcp-context-forge-username
+                  optional: true
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: skillhub-secret
+                  key: mcp-context-forge-password
+                  optional: true
+
             # Bootstrap Admin (non-sensitive from ConfigMap)
             - name: BOOTSTRAP_ADMIN_ENABLED
               valueFrom:
@@ -216,6 +270,22 @@ spec:
                   name: skillhub-secret
                   key: oauth2-github-client-secret
                   optional: true
+            - name: OAUTH2_FEISHU_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: skillhub-secret
+                  key: oauth2-feishu-client-id
+                  optional: true
+            - name: OAUTH2_FEISHU_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: skillhub-secret
+                  key: oauth2-feishu-client-secret
+                  optional: true
+            - name: OAUTH2_FEISHU_DISPLAY_NAME
+              value: Feishu
+            - name: OAUTH2_FEISHU_SCOPE
+              value: auth:user.id:read,contact:user.email:readonly
 
           volumeMounts:
             - name: skillhub-storage

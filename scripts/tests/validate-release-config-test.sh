@@ -150,7 +150,7 @@ expect_fail "$missing_trailing_base_env" "must be '/' or start and end with '/'"
 
 # A base path whose first segment collides with a server Nginx location (/api/,
 # /oauth2/, ...) must be rejected: it would shadow the real route and break the app.
-for reserved in /api/ /oauth2/ /login/ /assets/ /registry/ /nginx-health/ /.well-known/ /runtime-config.js/ /api/nested/; do
+for reserved in /api/ /oauth2/ /login/ /assets/ /registry/ /nginx-health/ /.well-known/ /runtime-config.js/ /contextforge/ /swagger-ui/ /v3/ /api/nested/; do
   reserved_base_env="$tmp/reserved-base.env"
   write_env "$reserved_base_env" "release-download-secret-32-bytes-minimum"
   printf 'SKILLHUB_WEB_BASE_PATH=%s\n' "$reserved" >>"$reserved_base_env"
@@ -188,6 +188,33 @@ invalid_builtin_skills_env="$tmp/invalid-builtin-skills.env"
 write_env "$invalid_builtin_skills_env" "release-download-secret-32-bytes-minimum"
 printf '%s\n' "SKILLHUB_BUILTIN_SKILLS_ENABLED=yes" >>"$invalid_builtin_skills_env"
 expect_fail "$invalid_builtin_skills_env" "SKILLHUB_BUILTIN_SKILLS_ENABLED must be true or false"
+
+missing_contextforge_credentials_env="$tmp/missing-contextforge-credentials.env"
+write_env "$missing_contextforge_credentials_env" "release-download-secret-32-bytes-minimum"
+printf '%s\n' "SKILLHUB_MCP_CONTEXT_FORGE_ENABLED=true" >>"$missing_contextforge_credentials_env"
+expect_fail "$missing_contextforge_credentials_env" "SKILLHUB_MCP_CONTEXT_FORGE_USERNAME is required"
+
+valid_contextforge_env="$tmp/valid-contextforge.env"
+write_env "$valid_contextforge_env" "release-download-secret-32-bytes-minimum"
+cat >>"$valid_contextforge_env" <<'EOF'
+SKILLHUB_MCP_CONTEXT_FORGE_ENABLED=true
+SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL=https://contextforge.internal.company/contextforge
+SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL=https://skillhub.company/contextforge
+SKILLHUB_CONTEXT_FORGE_UPSTREAM=http://contextforge.internal.company
+SKILLHUB_MCP_CONTEXT_FORGE_USERNAME=skillhub-service
+SKILLHUB_MCP_CONTEXT_FORGE_PASSWORD=strong-contextforge-password
+EOF
+"$SCRIPT" "$valid_contextforge_env" >/dev/null
+
+contextforge_without_mcp_env="$tmp/contextforge-without-mcp.env"
+cp "$valid_contextforge_env" "$contextforge_without_mcp_env"
+printf '%s\n' "SKILLHUB_MCP_ENABLED=false" >>"$contextforge_without_mcp_env"
+expect_fail "$contextforge_without_mcp_env" "SKILLHUB_MCP_CONTEXT_FORGE_ENABLED=true requires SKILLHUB_MCP_ENABLED=true"
+
+incomplete_feishu_env="$tmp/incomplete-feishu.env"
+write_env "$incomplete_feishu_env" "release-download-secret-32-bytes-minimum"
+printf '%s\n' "OAUTH2_FEISHU_CLIENT_ID=cli_test" >>"$incomplete_feishu_env"
+expect_fail "$incomplete_feishu_env" "OAUTH2_FEISHU_CLIENT_SECRET is required"
 
 valid_redis_cluster_env="$tmp/valid-redis-cluster.env"
 write_env "$valid_redis_cluster_env" "release-download-secret-32-bytes-minimum"
