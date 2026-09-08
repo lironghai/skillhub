@@ -67,6 +67,7 @@ type RuntimeConfig = {
   appBaseUrl?: string
   authDirectEnabled?: string
   authDirectProvider?: string
+  mcpContextForgeEnabled?: string
   authSessionBootstrapEnabled?: string
   authSessionBootstrapProvider?: string
   authSessionBootstrapAuto?: string
@@ -107,6 +108,10 @@ function parseBooleanFlag(value: string | undefined): boolean {
     return false
   }
   return ['1', 'true', 'yes', 'on'].includes(value.trim().toLowerCase())
+}
+
+export function isContextForgeEnabled(): boolean {
+  return parseBooleanFlag(getRuntimeConfig().mcpContextForgeEnabled)
 }
 
 const client = createClient<paths>({ baseUrl: getApiBaseUrl() })

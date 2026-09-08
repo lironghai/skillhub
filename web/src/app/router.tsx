@@ -1,7 +1,7 @@
 import { lazy, Suspense, type ComponentType } from 'react'
 import { createRouter, createRoute, createRootRoute, redirect } from '@tanstack/react-router'
 import { Layout } from './layout'
-import { getCurrentUser } from '@/api/client'
+import { getCurrentUser, isContextForgeEnabled } from '@/api/client'
 import { RoleGuard } from '@/shared/components/role-guard'
 import { RouteError } from '@/shared/components/route-error'
 import { createRequireAuth } from '@/shared/lib/auth-route'
@@ -122,6 +122,10 @@ const MyStarsPage = createLazyRouteComponent(() => import('@/pages/dashboard/sta
 const MySubscriptionsPage = createLazyRouteComponent(() => import('@/pages/dashboard/subscriptions'), 'MySubscriptionsPage')
 const NotificationsPage = createLazyRouteComponent(() => import('@/pages/notifications'), 'NotificationsPage')
 const TokensPage = createLazyRouteComponent(() => import('@/pages/dashboard/tokens'), 'TokensPage')
+const McpManagementPage = createLazyRouteComponent(
+  () => import('@/pages/dashboard/mcp-management'),
+  'McpManagementPage',
+)
 const CliAuthPage = createLazyRouteComponent(() => import('@/pages/cli-auth'), 'CliAuthPage')
 const SecuritySettingsPage = createLazyRouteComponent(
   () => import('@/pages/settings/security'),
@@ -423,6 +427,18 @@ const dashboardTokensRoute = createRoute({
   component: TokensPage,
 })
 
+const dashboardMcpRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: 'dashboard/mcp',
+  beforeLoad: async (context) => {
+    await requireAuth(context)
+    if (!isContextForgeEnabled()) {
+      throw redirect({ to: '/dashboard' })
+    }
+  },
+  component: McpManagementPage,
+})
+
 const cliAuthRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'cli/auth',
@@ -525,6 +541,7 @@ const routeTree = rootRoute.addChildren([
   dashboardSubscriptionsRoute,
   dashboardNotificationsRoute,
   dashboardTokensRoute,
+  dashboardMcpRoute,
   cliAuthRoute,
   settingsSecurityRoute,
   settingsProfileRoute,

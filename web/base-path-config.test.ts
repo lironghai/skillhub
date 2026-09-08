@@ -32,6 +32,9 @@ describe('validateBasePath', () => {
     '/nginx-health/',
     '/.well-known/',
     '/runtime-config.js/',
+    '/contextforge/',
+    '/swagger-ui/',
+    '/v3/',
     '/api/nested/',
   ])('rejects reserved first segment %s', (value) => {
     expect(() => validateBasePath(value)).toThrow(/reserved by the SkillHub server/)

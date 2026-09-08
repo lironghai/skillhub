@@ -206,7 +206,7 @@ class NamespaceBatchMemberControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400));
 
-        verify(namespacePortalCommandAppService, never()).batchAddMembers(any(), any(), any());
+                verify(namespacePortalCommandAppService, never()).batchAddMembers(any(), any(), any());
     }
 
     @Test

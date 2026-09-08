@@ -1,3 +1,5 @@
+import { renderToStaticMarkup } from 'react-dom/server'
+import { createElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 // Layout is a component-only file with no exported pure functions or constants.
@@ -27,6 +29,12 @@ vi.mock('@/features/auth/use-auth', () => ({
   }),
 }))
 
+vi.mock('@/api/client', () => ({
+  WEB_API_PREFIX: '/api/web',
+  buildApiUrl: (path: string) => `/skillhub${path}`,
+  isContextForgeEnabled: () => true,
+}))
+
 vi.mock('@/shared/components/language-switcher', () => ({
   LanguageSwitcher: () => null,
 }))
@@ -53,5 +61,30 @@ describe('Layout', () => {
   it('exports a named Layout component function', () => {
     expect(typeof Layout).toBe('function')
     expect(Layout.name).toBe('Layout')
+  })
+
+  it('hides the MCP management entry before SkillHub login', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).not.toContain('nav.mcpManagement')
+  })
+
+  it('keeps the app shell controls within narrow viewports', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).toContain('w-[120px] sm:w-auto')
+    expect(html).toContain('ml-auto flex min-w-0 items-center gap-2')
+  })
+
+  it('renders the footer resources column', () => {
+    const html = renderToStaticMarkup(createElement(Layout))
+
+    expect(html).toContain('footer.resources')
+    expect(html).toContain('footer.docs')
+    expect(html).toContain('footer.api')
+    expect(html).toContain('footer.community')
+    expect(html).toContain('href="https://iflytek.github.io/skillhub/"')
+    expect(html).toContain('href="/skillhub/swagger-ui/index.html"')
+    expect(html).toContain('href="https://github.com/iflytek/skillhub/discussions"')
   })
 })

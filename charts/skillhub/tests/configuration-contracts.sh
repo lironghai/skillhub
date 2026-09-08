@@ -208,6 +208,38 @@ if [[ $(grep -Fc 'name: tls-skillhub-server' "$TMP_DIR/tls-ingress.yaml") -ne 4 
   fail "API and OAuth ingress paths must route directly to the SkillHub server"
 fi
 
+render mcp-ingress "$CHART_DIR" \
+  --set ingress.enabled=true \
+  --set-string 'ingress.annotations.nginx\.ingress\.kubernetes\.io/whitelist-source-range=10.0.0.0/8' \
+  --show-only templates/mcp-ingress.yaml >"$TMP_DIR/mcp-ingress.yaml"
+grep -Fq 'nginx.ingress.kubernetes.io/proxy-buffering: "off"' "$TMP_DIR/mcp-ingress.yaml"
+grep -Fq 'nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"' "$TMP_DIR/mcp-ingress.yaml"
+grep -Fq 'nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8' "$TMP_DIR/mcp-ingress.yaml"
+grep -A1 -F 'path: /api/mcp' "$TMP_DIR/mcp-ingress.yaml" | grep -Fq 'pathType: Exact'
+render main-ingress-security "$CHART_DIR" \
+  --set ingress.enabled=true \
+  --set-string 'ingress.annotations.nginx\.ingress\.kubernetes\.io/whitelist-source-range=10.0.0.0/8' \
+  --show-only templates/ingress.yaml >"$TMP_DIR/main-ingress-security.yaml"
+grep -Fq 'nginx.ingress.kubernetes.io/whitelist-source-range: 10.0.0.0/8' "$TMP_DIR/main-ingress-security.yaml"
+
+render subpath-mcp-ingress "$CHART_DIR" \
+  --set ingress.enabled=true \
+  --set-string web.basePath=/skillhub/ \
+  --set-string web.apiBaseUrl=/skillhub \
+  --set-string publicBaseUrl=https://skills.example.com/skillhub \
+  --show-only templates/mcp-ingress.yaml >"$TMP_DIR/subpath-mcp-ingress.yaml"
+grep -A1 -F 'path: /skillhub/api/mcp' "$TMP_DIR/subpath-mcp-ingress.yaml" | grep -Fq 'pathType: Exact'
+grep -A5 -F 'path: /skillhub/api/mcp' "$TMP_DIR/subpath-mcp-ingress.yaml" | grep -Fq 'name: subpath-mcp-ingress-skillhub-web'
+
+render context-forge-ingress "$CHART_DIR" \
+  --set ingress.enabled=true \
+  --set mcp.contextForge.enabled=true \
+  --set-string secrets.contextForgeUsername=admin@example.com \
+  --set-string secrets.contextForgePassword=context-forge-password \
+  --show-only templates/mcp-ingress.yaml >"$TMP_DIR/context-forge-ingress.yaml"
+grep -A1 -F 'path: /contextforge' "$TMP_DIR/context-forge-ingress.yaml" | grep -Fq 'pathType: Prefix'
+grep -A5 -F 'path: /contextforge' "$TMP_DIR/context-forge-ingress.yaml" | grep -Fq 'name: context-forge-ingress-skillhub-web'
+
 render legacy-ingress "$CHART_DIR" \
   --set ingress.enabled=true \
   --set-string ingress.className= \
@@ -352,6 +384,9 @@ assert_rejected subpath-api-base-mismatch \
 assert_rejected subpath-reserved-api --set-string web.basePath=/api/
 assert_rejected subpath-reserved-assets --set-string web.basePath=/assets/
 assert_rejected subpath-reserved-well-known --set-string web.basePath=/.well-known/
+assert_rejected subpath-reserved-contextforge --set-string web.basePath=/contextforge/
+assert_rejected subpath-reserved-swagger --set-string web.basePath=/swagger-ui/
+assert_rejected subpath-reserved-v3 --set-string web.basePath=/v3/
 assert_rejected subpath-reserved-nested --set-string web.basePath=/api/nested/
 
 # publicBaseUrl is concatenated with paths (/cli/auth, /.well-known/clawhub.json),
@@ -360,5 +395,27 @@ assert_rejected subpath-reserved-nested --set-string web.basePath=/api/nested/
 assert_rejected public-base-url-query --set-string publicBaseUrl=https://skills.example.com/skillhub?ref=1
 assert_rejected public-base-url-fragment --set-string publicBaseUrl=https://skills.example.com#frag
 assert_rejected public-base-url-no-host --set-string publicBaseUrl=https://
+
+render context-forge "$CHART_DIR" \
+  --set mcp.contextForge.enabled=true \
+  --set-string mcp.contextForge.baseUrl=http://contextforge/contextforge \
+  --set-string mcp.contextForge.publicBaseUrl=https://skills.example.com/contextforge \
+  --set-string mcp.contextForge.upstream=http://contextforge \
+  --set-string secrets.contextForgeUsername=admin@example.com \
+  --set-string secrets.contextForgePassword=context-forge-password >"$TMP_DIR/context-forge.yaml"
+grep -A1 -F 'name: SKILLHUB_MCP_CONTEXT_FORGE_ENABLED' "$TMP_DIR/context-forge.yaml" \
+  | grep -Fq 'value: "true"'
+grep -A1 -F 'name: SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL' "$TMP_DIR/context-forge.yaml" \
+  | grep -Fq 'value: "http://contextforge/contextforge"'
+grep -A1 -F 'name: SKILLHUB_CONTEXT_FORGE_UPSTREAM' "$TMP_DIR/context-forge.yaml" \
+  | grep -Fq 'value: "http://contextforge"'
+grep -Fq 'mcp-context-forge-username: "admin@example.com"' "$TMP_DIR/context-forge.yaml"
+grep -Fq 'mcp-context-forge-password: "context-forge-password"' "$TMP_DIR/context-forge.yaml"
+
+assert_rejected context-forge-without-mcp \
+  --set mcp.enabled=false \
+  --set mcp.contextForge.enabled=true
+assert_rejected context-forge-without-credentials \
+  --set mcp.contextForge.enabled=true
 
 echo "Helm configuration contract tests passed"

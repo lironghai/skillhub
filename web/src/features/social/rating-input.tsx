@@ -31,7 +31,7 @@ export function RatingInput({ skillId, onRequireLogin }: RatingInputProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex justify-center items-center gap-2">
       <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((rating) => {
           const isFilled = rating <= (hoveredRating || currentRating)

@@ -25,6 +25,18 @@ auth:
 builtinSkills:
   enabled: true
 
+mcp:
+  enabled: true
+  contextForge:
+    enabled: false
+    teamId: e69584b918294279896f69cfbccc3f73
+    baseUrl: http://mcp-context-forge.example.com/contextforge
+    publicBaseUrl: https://skills.example.com/contextforge
+    upstream: http://mcp-context-forge.example.com
+    maxSearchScanSize: 1000
+    connectTimeout: 5s
+    readTimeout: 15s
+
 # ============================================================================
 # Ingress 配置
 # ============================================================================
@@ -93,6 +105,8 @@ secrets:
   downloadAnonCookieSecret: ""
   oauth2GithubClientId: ""
   oauth2GithubClientSecret: ""
+  contextForgeUsername: ""
+  contextForgePassword: ""
   scannerLlmApiKey: ""
   scannerLlmBaseUrl: ""
   scannerLlmModel: ""

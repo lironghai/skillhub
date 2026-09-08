@@ -13,8 +13,14 @@ class TracingModeAutoConfigurationImportFilterTest {
             "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration";
     private static final String TRACING_OTEL_AUTO_CONFIGURATION =
             "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration";
+    private static final String OTEL_TRACING_AUTO_CONFIGURATION =
+            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration";
+    private static final String OTEL_LOGGING_AUTO_CONFIGURATION =
+            "org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration";
     private static final String OTLP_AUTO_CONFIGURATION =
             "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpAutoConfiguration";
+    private static final String OTLP_TRACING_AUTO_CONFIGURATION =
+            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration";
     private static final String NOOP_AUTO_CONFIGURATION =
             "org.springframework.boot.actuate.autoconfigure.tracing.NoopTracerAutoConfiguration";
 
@@ -25,7 +31,7 @@ class TracingModeAutoConfigurationImportFilterTest {
     void shouldExcludeApplicationOtelForDefaultNoneMode() {
         filter.setEnvironment(new MockEnvironment());
 
-        assertThat(matches()).containsExactly(false, false, false, true, false);
+        assertThat(matches()).containsExactly(false, false, false, false, false, false, true, false);
     }
 
     @Test
@@ -36,7 +42,7 @@ class TracingModeAutoConfigurationImportFilterTest {
                         "external-agent"
                 ));
 
-        assertThat(matches()).containsExactly(false, false, false, true, false);
+        assertThat(matches()).containsExactly(false, false, false, false, false, false, true, false);
     }
 
     @Test
@@ -47,7 +53,7 @@ class TracingModeAutoConfigurationImportFilterTest {
                         "otel-sdk"
                 ));
 
-        assertThat(matches()).containsExactly(true, true, false, true, false);
+        assertThat(matches()).containsExactly(true, true, true, true, false, false, true, false);
     }
 
     @Test
@@ -59,7 +65,7 @@ class TracingModeAutoConfigurationImportFilterTest {
                 )
                 .withProperty("management.otlp.tracing.endpoint", "http://127.0.0.1:4318/v1/traces"));
 
-        assertThat(matches()).containsExactly(true, true, true, true, false);
+        assertThat(matches()).containsExactly(true, true, true, true, true, true, true, false);
     }
 
     @Test
@@ -71,7 +77,7 @@ class TracingModeAutoConfigurationImportFilterTest {
                 )
                 .withProperty("management.otlp.tracing.endpoint", ""));
 
-        assertThat(matches()).containsExactly(true, true, false, true, false);
+        assertThat(matches()).containsExactly(true, true, true, true, false, false, true, false);
     }
 
     private boolean[] matches() {
@@ -79,7 +85,10 @@ class TracingModeAutoConfigurationImportFilterTest {
                 new String[]{
                         CORE_OTEL_AUTO_CONFIGURATION,
                         TRACING_OTEL_AUTO_CONFIGURATION,
+                        OTEL_TRACING_AUTO_CONFIGURATION,
+                        OTEL_LOGGING_AUTO_CONFIGURATION,
                         OTLP_AUTO_CONFIGURATION,
+                        OTLP_TRACING_AUTO_CONFIGURATION,
                         NOOP_AUTO_CONFIGURATION,
                         null
                 },

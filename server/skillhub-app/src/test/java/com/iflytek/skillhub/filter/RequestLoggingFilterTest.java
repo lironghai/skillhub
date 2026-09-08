@@ -105,6 +105,49 @@ class RequestLoggingFilterTest {
     }
 
     @Test
+    void doFilterInternal_shouldBypassCachingWrapperForNotificationSse() throws Exception {
+        RequestLoggingFilter filter = new RequestLoggingFilter();
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/notifications/sse");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();
+        FilterChain chain = (servletRequest, servletResponse) -> {
+            responseSeenByChain.set(servletResponse);
+            servletResponse.getWriter().write("event: connected\n");
+            servletResponse.flushBuffer();
+        };
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(responseSeenByChain.get()).isSameAs(response);
+        assertThat(response.getHeader("X-Accel-Buffering")).isEqualTo("no");
+        assertThat(response.getHeader(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-cache, no-transform");
+        assertThat(response.getContentType()).isEqualTo(MediaType.TEXT_EVENT_STREAM_VALUE);
+        assertThat(response.getContentAsString()).contains("event: connected");
+    }
+
+    @Test
+    void doFilterInternal_shouldBypassCachingWrapperForPrefixedMcpTransport() throws Exception {
+        RequestLoggingFilter filter = new RequestLoggingFilter();
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/skillhub/api/mcp");
+        request.setContextPath("/skillhub");
+        request.setServletPath("/api/mcp");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AtomicReference<ServletResponse> responseSeenByChain = new AtomicReference<>();
+        FilterChain chain = (servletRequest, servletResponse) -> {
+            responseSeenByChain.set(servletResponse);
+            servletResponse.getWriter().write("stream chunk");
+            servletResponse.flushBuffer();
+        };
+
+        filter.doFilter(request, response, chain);
+
+        assertThat(responseSeenByChain.get()).isSameAs(response);
+        assertThat(response.getHeader("X-Accel-Buffering")).isEqualTo("no");
+        assertThat(response.getHeader(HttpHeaders.CACHE_CONTROL)).isEqualTo("no-cache, no-transform");
+        assertThat(response.getContentAsString()).isEqualTo("stream chunk");
+    }
+
+    @Test
     void doFilterInternal_shouldKeepCachingWrapperForRegularApiResponses() throws Exception {
         RequestLoggingFilter filter = new RequestLoggingFilter();
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/web/notifications/unread-count");

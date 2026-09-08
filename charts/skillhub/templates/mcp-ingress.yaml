@@ -1,0 +1,45 @@
+{{- if and .Values.ingress.enabled .Values.mcp.enabled }}
+{{- $webBasePath := trimSuffix "/" (.Values.web.basePath | default "") }}
+{{- $annotations := deepCopy (.Values.ingress.annotations | default (dict)) }}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/proxy-buffering" "off" }}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/proxy-read-timeout" "3600" }}
+{{- $_ := set $annotations "nginx.ingress.kubernetes.io/proxy-send-timeout" "3600" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "skillhub.fullname" . }}-mcp
+  labels:
+    {{- include "skillhub.labels" . | nindent 4 }}
+  annotations:
+    {{- toYaml $annotations | nindent 4 }}
+spec:
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- end }}
+  {{- if .Values.ingress.tls }}
+  tls:
+    {{- toYaml .Values.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host.host | quote }}
+      http:
+        paths:
+          - path: {{ if $webBasePath }}{{ $webBasePath }}/api/mcp{{ else }}/api/mcp{{ end }}
+            pathType: Exact
+            backend:
+              service:
+                name: {{ include "skillhub.fullname" $ }}-{{ if $webBasePath }}web{{ else }}server{{ end }}
+                port:
+                  number: {{ if $webBasePath }}{{ $.Values.web.service.port }}{{ else }}{{ $.Values.server.service.port }}{{ end }}
+          {{- if $.Values.mcp.contextForge.enabled }}
+          - path: /contextforge
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "skillhub.fullname" $ }}-web
+                port:
+                  number: {{ $.Values.web.service.port }}
+          {{- end }}
+    {{- end }}
+{{- end }}

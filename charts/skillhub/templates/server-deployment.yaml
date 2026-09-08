@@ -25,6 +25,7 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/mcp: {{ toYaml .Values.mcp | sha256sum }}
         {{- range $key, $val := .Values.server.podAnnotations }}
         {{ $key }}: {{ $val }}
         {{- end }}
@@ -305,6 +306,36 @@ spec:
                 secretKeyRef:
                   name: {{ include "skillhub.secretName" . }}
                   key: skillhub-download-anon-cookie-secret
+
+            # MCP and ContextForge catalog
+            - name: SKILLHUB_MCP_ENABLED
+              value: {{ .Values.mcp.enabled | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_ENABLED
+              value: {{ .Values.mcp.contextForge.enabled | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_BASE_URL
+              value: {{ .Values.mcp.contextForge.baseUrl | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_TEAM_ID
+              value: {{ .Values.mcp.contextForge.teamId | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_PUBLIC_BASE_URL
+              value: {{ .Values.mcp.contextForge.publicBaseUrl | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_MAX_SEARCH_SCAN_SIZE
+              value: {{ .Values.mcp.contextForge.maxSearchScanSize | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_CONNECT_TIMEOUT
+              value: {{ .Values.mcp.contextForge.connectTimeout | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_READ_TIMEOUT
+              value: {{ .Values.mcp.contextForge.readTimeout | quote }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "skillhub.secretName" . }}
+                  key: mcp-context-forge-username
+                  optional: {{ not .Values.mcp.contextForge.enabled }}
+            - name: SKILLHUB_MCP_CONTEXT_FORGE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "skillhub.secretName" . }}
+                  key: mcp-context-forge-password
+                  optional: {{ not .Values.mcp.contextForge.enabled }}
 
             # Bootstrap Admin
             - name: BOOTSTRAP_ADMIN_ENABLED
