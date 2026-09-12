@@ -62,7 +62,7 @@ public class FeishuClaimsExtractor implements OAuthClaimsExtractor {
                 "feishu",
                 tenantKey + ":" + stableId,
                 firstPresent(email, enterpriseEmail),
-                false,
+                true,
                 providerLogin,
                 new HashMap<>(data)
         );

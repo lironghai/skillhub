@@ -41,7 +41,7 @@ class FeishuClaimsExtractorTest {
         assertThat(claims.subject()).isEqualTo("tenant-a:on-union");
         assertThat(claims.providerLogin()).isEqualTo("Alice Zhang");
         assertThat(claims.email()).isEqualTo("alice@example.com");
-        assertThat(claims.emailVerified()).isFalse();
+        assertThat(claims.emailVerified()).isTrue();
         assertThat(claims.extra()).containsEntry("avatar_url", "https://example.com/avatar.png");
     }
 
@@ -95,7 +95,7 @@ class FeishuClaimsExtractorTest {
     }
 
     @Test
-    void extract_requiresProviderPolicyInsteadOfEmailDomainPolicy() {
+    void extract_marksReturnedEmailAsVerified() {
         OAuthClaims claims = extractor.extract(request(), user(Map.of(
                 "code", 0,
                 "data", Map.of(
@@ -106,7 +106,7 @@ class FeishuClaimsExtractorTest {
         )));
 
         assertThat(new EmailDomainAccessPolicy(Set.of("company.example")).evaluate(claims))
-                .isEqualTo(AccessDecision.DENY);
+                .isEqualTo(AccessDecision.ALLOW);
         assertThat(new ProviderAllowlistAccessPolicy(Set.of("feishu")).evaluate(claims))
                 .isEqualTo(AccessDecision.ALLOW);
     }
