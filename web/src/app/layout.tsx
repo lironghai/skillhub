@@ -3,7 +3,6 @@ import { Outlet, Link, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/features/auth/use-auth'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
-import { ThemeToggle } from '@/shared/components/theme-toggle'
 import { UserMenu } from '@/shared/components/user-menu'
 import { NotificationBell } from '@/features/notification/notification-bell'
 import { dismissOpenOverlays } from '@/shared/lib/dismiss-open-overlays'
@@ -100,8 +99,8 @@ export function Layout() {
         className={getAppHeaderClassName(isHeaderElevated)}
         style={{ borderColor: "hsl(var(--border))" }}
       >
-        <Link to="/" className="inline-flex min-w-0 items-center">
-          <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-[120px] sm:w-auto" />
+        <Link to="/" className="inline-flex items-center">
+          <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-10 text-[15px] font-medium h-full">
@@ -125,12 +124,12 @@ export function Layout() {
           })}
         </nav>
 
-        <div className="ml-auto flex min-w-0 items-center gap-2 text-[15px] font-normal sm:gap-3" style={{ color: 'hsl(var(--text-secondary))' }}>
-          <ThemeToggle />
+        <div className="flex items-center gap-4 text-[15px] font-normal">
           <LanguageSwitcher />
+          <span className="text-[#ccc] select-none">|</span>
           {user && <NotificationBell />}
           {isLoading ? null : user ? (
-            <UserMenu user={user} triggerClassName="max-w-16 gap-2 sm:max-w-none sm:gap-3 [&>span]:truncate" />
+            <UserMenu user={user} />
           ) : (
             <Link
               to="/login"
@@ -161,7 +160,10 @@ export function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 mt-auto rounded-t-2xl border-t bg-secondary/70" style={{ borderColor: 'hsl(var(--border))' }}>
+      <footer
+        className="relative z-10 border-t mt-auto"
+        style={{ background: "#fff", borderColor: "hsl(var(--border))" }}
+      >
         <div className="max-w-6xl mx-auto px-6 md:px-12 py-10">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-10 md:gap-12">
             <div className="flex-shrink-0">

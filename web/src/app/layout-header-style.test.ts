@@ -6,8 +6,7 @@ describe('getAppHeaderClassName', () => {
     const className = getAppHeaderClassName(false)
 
     expect(className).not.toContain(APP_HEADER_ELEVATED_CLASS_NAME)
-    expect(className).toContain('bg-background/90')
-    expect(className).not.toContain('bg-white')
+    expect(className).toContain('bg-white')
   })
 
   it('adds a subtle drop shadow after the header becomes sticky', () => {

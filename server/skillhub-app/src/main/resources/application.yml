@@ -226,7 +226,7 @@ skillhub:
       team-id: ${SKILLHUB_MCP_CONTEXT_FORGE_TEAM_ID:e69584b918294279896f69cfbccc3f73}
       login-path: ${SKILLHUB_MCP_CONTEXT_FORGE_LOGIN_PATH:/auth/email/login}
       catalog-path: ${SKILLHUB_MCP_CONTEXT_FORGE_CATALOG_PATH:/admin/mcp-registry/servers}
-      internal-servers-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_SERVERS_PATH:/admin/servers}
+      internal-servers-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_SERVERS_PATH:/v1/servers}
       internal-tools-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_TOOLS_PATH:/admin/tools}
       internal-resources-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_RESOURCES_PATH:/admin/resources}
       internal-prompts-path: ${SKILLHUB_MCP_CONTEXT_FORGE_INTERNAL_PROMPTS_PATH:/admin/prompts}

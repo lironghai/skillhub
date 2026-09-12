@@ -132,10 +132,10 @@ public class ContextForgeMcpCatalogClient {
         }
     }
 
-    private String getInternalServersPage(String accessToken, int page, int size) {
+    private String getInternalServersPage(String accessToken, String cursor, int size) {
         try {
             return restClient.get()
-                    .uri(internalServersUri(page, size))
+                    .uri(internalServersUri(cursor, size))
                     .headers(headers -> headers.setBearerAuth(accessToken))
                     .retrieve()
                     .body(String.class);
@@ -147,24 +147,21 @@ public class ContextForgeMcpCatalogClient {
     private String getAllInternalServers(String accessToken) {
         int pageSize = Math.max(properties.getMaxSize(), 1);
         try {
-            JsonNode first = objectMapper.readTree(getInternalServersPage(accessToken, 1, pageSize));
-            if (!(first instanceof ObjectNode combined) || !(combined.path("data") instanceof ArrayNode combinedData)) {
-                throw new McpCatalogUnavailableException("ContextForge internal server response is invalid");
-            }
-            long total = combined.path("pagination").path("total_items").asLong(combinedData.size());
-            int scanLimit = Math.max(properties.getMaxSearchScanSize(), pageSize);
-            if (total > scanLimit) {
-                throw new McpCatalogUnavailableException(
-                        "Internal MCP server search exceeds scan limit of " + scanLimit);
-            }
-            int pages = (int) Math.ceil((double) total / pageSize);
-            for (int page = 2; page <= pages; page++) {
-                JsonNode next = objectMapper.readTree(getInternalServersPage(accessToken, page, pageSize));
-                if (!(next instanceof ObjectNode) || !(next.path("data") instanceof ArrayNode nextData)) {
-                    throw new McpCatalogUnavailableException("ContextForge internal server response is invalid");
-                }
-                combinedData.addAll(nextData);
-            }
+            ObjectNode combined = objectMapper.createObjectNode();
+            ArrayNode data = combined.putArray("data");
+            String cursor = null;
+            int scanned = 0;
+            int requests = 0;
+            do {
+                if (++requests > Math.max(properties.getMaxSearchScanSize(), pageSize)) throw new McpCatalogUnavailableException("Internal MCP server pagination exceeded scan limit");
+                JsonNode page = objectMapper.readTree(getInternalServersPage(accessToken, cursor, pageSize));
+                ArrayNode values = serverArray(page);
+                if (values == null) throw new McpCatalogUnavailableException("ContextForge internal server response is invalid");
+                scanned += values.size();
+                if (scanned > Math.max(properties.getMaxSearchScanSize(), pageSize)) throw new McpCatalogUnavailableException("Internal MCP server search exceeds scan limit of " + properties.getMaxSearchScanSize());
+                data.addAll(values);
+                cursor = firstText(page, "nextCursor", "next_cursor");
+            } while (StringUtils.hasText(cursor));
             return objectMapper.writeValueAsString(combined);
         } catch (JsonProcessingException | RuntimeException ex) {
             throw new McpCatalogUnavailableException("Unable to parse internal MCP servers from ContextForge", ex);
@@ -183,13 +180,13 @@ public class ContextForgeMcpCatalogClient {
     private AssociatedNeeds associatedNeeds(String internalServersBody) {
         try {
             JsonNode root = objectMapper.readTree(internalServersBody);
-            if (root == null || !root.isObject() || !root.path("data").isArray()) {
+            if (root == null || !root.isObject() || serverArray(root) == null) {
                 throw new McpCatalogUnavailableException("ContextForge internal server response is invalid");
             }
             boolean hasTools = false;
             boolean hasResources = false;
             boolean hasPrompts = false;
-            for (JsonNode server : root.path("data")) {
+            for (JsonNode server : serverArray(root)) {
                 hasTools = hasTools || hasArrayItems(server, "associatedTools", "associated_tools");
                 hasResources = hasResources || hasArrayItems(server, "associatedResources", "associated_resources");
                 hasPrompts = hasPrompts || hasArrayItems(server, "associatedPrompts", "associated_prompts");
@@ -270,13 +267,19 @@ public class ContextForgeMcpCatalogClient {
         return builder.build().toUriString();
     }
 
-    private String internalServersUri(int page, int size) {
+    private String internalServersUri(String cursor, int size) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(endpoint(properties.getInternalServersPath()))
-                .queryParam("include_inactive", "false")
-                .queryParam("page", Math.max(page, 1))
-                .queryParam("per_page", Math.max(size, 1));
+                .queryParam("limit", Math.max(size, 1)).queryParam("include_pagination", "true");
         addParam(builder, "team_id", normalizeTeamId(properties.getTeamId()));
+        addParam(builder, "cursor", cursor);
         return builder.build().toUriString();
+    }
+
+    private ArrayNode serverArray(JsonNode root) {
+        if (root == null || !root.isObject()) return null;
+        JsonNode values = root.path("servers");
+        if (!values.isArray()) values = root.path("data");
+        return values.isArray() ? (ArrayNode) values : null;
     }
 
     private String associatedCatalogUri(String path, int page, int size) {
@@ -308,7 +311,7 @@ public class ContextForgeMcpCatalogClient {
                         bool(server, "secure"),
                         textList(server, "tags"),
                         text(server, "transport"),
-                        text(server, "logo_url"),
+                        publicAssetUrl(text(server, "logo_url")),
                         text(server, "documentation_url"),
                         bool(server, "is_registered"),
                         bool(server, "is_available"),
@@ -333,11 +336,11 @@ public class ContextForgeMcpCatalogClient {
     private McpInternalServerResponse parseInternalServers(String body, McpCatalogQuery query, AssociatedCatalog associatedCatalog) {
         try {
             JsonNode root = objectMapper.readTree(body);
-            if (root == null || !root.isObject() || !root.path("data").isArray()) {
+            if (root == null || !root.isObject() || serverArray(root) == null) {
                 throw new McpCatalogUnavailableException("ContextForge internal server response is invalid");
             }
             List<McpInternalServerItemResponse> items = new ArrayList<>();
-            for (JsonNode server : root.path("data")) {
+            for (JsonNode server : serverArray(root)) {
                 if (!server.path("enabled").asBoolean(false)
                         || !matchesConfiguredTeam(server)
                         || !matchesVisibleInternalServer(server)
@@ -373,7 +376,7 @@ public class ContextForgeMcpCatalogClient {
                         id,
                         text(server, "name"),
                         text(server, "description"),
-                        firstText(server, "icon", "iconUrl"),
+                        publicAssetUrl(firstText(server, "icon", "iconUrl")),
                         server.path("enabled").asBoolean(false),
                         text(server, "visibility"),
                         text(server, "team"),
@@ -644,6 +647,27 @@ public class ContextForgeMcpCatalogClient {
             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
         }
         return baseUrl + "/servers/" + serverId + "/" + suffix;
+    }
+
+    private String publicAssetUrl(String value) {
+        if (!StringUtils.hasText(value) || value.startsWith("data:") || value.matches("^[a-zA-Z][a-zA-Z0-9+.-]*://.*")) {
+            return value;
+        }
+        String baseUrl = StringUtils.hasText(properties.getPublicBaseUrl())
+                ? properties.getPublicBaseUrl()
+                : properties.getBaseUrl();
+        if (!StringUtils.hasText(baseUrl)) {
+            return value;
+        }
+        baseUrl = baseUrl.trim();
+        while (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        String path = value.trim();
+        while (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return baseUrl + "/" + path;
     }
 
     private List<String> safeList(List<String> values) {

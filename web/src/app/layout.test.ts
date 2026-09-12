@@ -69,11 +69,13 @@ describe('Layout', () => {
     expect(html).not.toContain('nav.mcpManagement')
   })
 
-  it('keeps the app shell controls within narrow viewports', () => {
+  it('renders the header shell controls with the production layout', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 
-    expect(html).toContain('w-[120px] sm:w-auto')
-    expect(html).toContain('ml-auto flex min-w-0 items-center gap-2')
+    expect(html).toContain('flex items-center gap-4')
+    expect(html).toContain('h-4 w-auto')
+    expect(html).not.toContain('w-[120px]')
+    expect(html).not.toContain('ml-auto flex min-w-0')
   })
 
   it('renders the footer resources column', () => {

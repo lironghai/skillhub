@@ -15,7 +15,7 @@ public class ContextForgeMcpProperties {
     private String teamId;
     private String loginPath = "/auth/email/login";
     private String catalogPath = "/admin/mcp-registry/servers";
-    private String internalServersPath = "/admin/servers";
+    private String internalServersPath = "/v1/servers";
     private String internalToolsPath = "/admin/tools";
     private String internalResourcesPath = "/admin/resources";
     private String internalPromptsPath = "/admin/prompts";
