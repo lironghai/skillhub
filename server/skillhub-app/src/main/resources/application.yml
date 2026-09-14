@@ -80,7 +80,7 @@ spring:
           feishu:
             client-id: ${OAUTH2_FEISHU_CLIENT_ID:placeholder}
             client-secret: ${OAUTH2_FEISHU_CLIENT_SECRET:placeholder}
-            scope: ${OAUTH2_FEISHU_SCOPE:auth:user.id:read}
+            scope: ${OAUTH2_FEISHU_SCOPE:auth:user.id:read,contact:user.email:readonly}
             authorization-grant-type: authorization_code
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             client-name: ${OAUTH2_FEISHU_DISPLAY_NAME:Feishu}
@@ -130,6 +130,18 @@ spring:
           completion: false
 
 skillhub:
+  notification:
+    feishu-webhook:
+      enabled: ${SKILLHUB_FEISHU_WEBHOOK_ENABLED:false}
+      url: ${SKILLHUB_FEISHU_WEBHOOK_URL:}
+      secret: ${SKILLHUB_FEISHU_WEBHOOK_SECRET:}
+      header-name: ${SKILLHUB_FEISHU_WEBHOOK_HEADER_NAME:feishu_union_id_key}
+      header-value: ${SKILLHUB_FEISHU_WEBHOOK_HEADER_VALUE:${SKILLHUB_FEISHU_WEBHOOK_SECRET:}}
+      connect-timeout: ${SKILLHUB_FEISHU_WEBHOOK_CONNECT_TIMEOUT:3s}
+      read-timeout: ${SKILLHUB_FEISHU_WEBHOOK_READ_TIMEOUT:5s}
+      core-pool-size: ${SKILLHUB_FEISHU_WEBHOOK_CORE_POOL_SIZE:4}
+      max-pool-size: ${SKILLHUB_FEISHU_WEBHOOK_MAX_POOL_SIZE:8}
+      queue-capacity: ${SKILLHUB_FEISHU_WEBHOOK_QUEUE_CAPACITY:200}
   observability:
     tracing-mode: ${SKILLHUB_TRACING_MODE:none}
     log-format: ${SKILLHUB_LOG_FORMAT:text}

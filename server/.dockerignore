@@ -5,4 +5,14 @@
 **/.idea/
 **/*.iml
 .git/
+.acceptance/
+.planning/
+.worktrees/
+.m2/
+node_modules/
+**/node_modules/
+**/.cache/
+**/.pytest_cache/
+**/target/
+*.log
 *.md
