@@ -73,7 +73,7 @@ describe('Layout', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 
     expect(html).toContain('flex items-center gap-4')
-    expect(html).toContain('h-4 w-auto')
+    expect(html).toContain('SkillHub')
     expect(html).not.toContain('w-[120px]')
     expect(html).not.toContain('ml-auto flex min-w-0')
   })
@@ -82,10 +82,9 @@ describe('Layout', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 
     expect(html).toContain('footer.resources')
-    expect(html).toContain('footer.docs')
     expect(html).toContain('footer.api')
     expect(html).toContain('footer.community')
-    expect(html).toContain('href="https://iflytek.github.io/skillhub/"')
+    expect(html).toContain('href="https://github.com/iflytek/skillhub/tree/main/docs/skillhub"')
     expect(html).toContain('href="/skillhub/swagger-ui/index.html"')
     expect(html).toContain('href="https://github.com/iflytek/skillhub/discussions"')
   })

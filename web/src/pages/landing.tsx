@@ -23,6 +23,7 @@ import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { useSearchSkills } from '@/shared/hooks/use-skill-queries'
 import { useInView } from '@/shared/hooks/use-in-view'
 import { Button } from '@/shared/ui/button'
+import { SvgIcon } from '@/shared/components/svg-icon'
 
 interface HeroSkillItem {
   name: string
@@ -290,31 +291,37 @@ export function LandingPage() {
   const features = [
     {
       icon: <Shield className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_shield',
       title: t('landing.features.secure.title'),
       description: t('landing.features.secure.description'),
     },
     {
       icon: <Users className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_peoples',
       title: t('landing.features.community.title'),
       description: t('landing.features.community.description'),
     },
     {
       icon: <PackageOpen className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_dropbox',
       title: t('landing.features.integration.title'),
       description: t('landing.features.integration.description'),
     },
     {
       icon: <GitBranch className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_branch-two',
       title: t('landing.features.versionControl.title'),
       description: t('landing.features.versionControl.description'),
     },
     {
       icon: <Terminal className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_code',
       title: t('landing.features.cli.title'),
       description: t('landing.features.cli.description'),
     },
     {
       icon: <Settings className="h-5 w-5" strokeWidth={1.75} />,
+      iconName: 'home_audit',
       title: t('landing.features.governance.title'),
       description: t('landing.features.governance.description'),
     },
@@ -375,6 +382,19 @@ export function LandingPage() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-8 grid max-w-md grid-cols-3 gap-4 border-t border-border/70 pt-5">
+              {[
+                { value: '1000+', label: t('landing.stats.skills') },
+                { value: '50K+', label: t('landing.stats.downloads') },
+                { value: '200+', label: t('landing.stats.teams') },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <div className="text-2xl font-semibold tracking-tight text-foreground">{stat.value}</div>
+                  <div className="mt-1 text-xs text-muted-foreground">{stat.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <HeroBrowserMockup onSearch={handleSearch} />
@@ -399,7 +419,7 @@ export function LandingPage() {
             {features.map((feature) => (
               <div key={feature.title} className="bg-card p-7 transition-colors hover:bg-secondary/50">
                 <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground">
-                  {feature.icon}
+                  <SvgIcon name={`svg-${feature.iconName}`} className="h-5 w-5" />
                 </div>
                 <h3 className="mb-2 text-base font-semibold text-foreground">{feature.title}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
