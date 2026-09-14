@@ -205,7 +205,7 @@ class ContextForgeMcpCatalogClientTest {
                           "expires_in": 3600
                         }
                         """, MediaType.APPLICATION_JSON));
-        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=false&page=1&per_page=100"))
+        server.expect(once(), requestTo("https://contextforge.internal/v1/servers?limit=100&include_pagination=true"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("Authorization", "Bearer ctx-token"))
                 .andRespond(withSuccess("""
@@ -377,7 +377,7 @@ class ContextForgeMcpCatalogClientTest {
 
         server.expect(once(), requestTo("https://contextforge.internal/auth/email/login"))
                 .andRespond(withSuccess("{\"access_token\":\"ctx-token\",\"expires_in\":3600}", MediaType.APPLICATION_JSON));
-        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=false&page=1&per_page=100&team_id=e69584b918294279896f69cfbccc3f73"))
+        server.expect(once(), requestTo("https://contextforge.internal/v1/servers?limit=100&include_pagination=true&team_id=e69584b918294279896f69cfbccc3f73"))
                 .andExpect(header("Authorization", "Bearer ctx-token"))
                 .andRespond(withSuccess("""
                         {
@@ -426,7 +426,7 @@ class ContextForgeMcpCatalogClientTest {
 
         server.expect(once(), requestTo("https://contextforge.internal/auth/email/login"))
                 .andRespond(withSuccess("{\"access_token\":\"ctx-token\",\"expires_in\":3600}", MediaType.APPLICATION_JSON));
-        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=false&page=1&per_page=100"))
+        server.expect(once(), requestTo("https://contextforge.internal/v1/servers?limit=100&include_pagination=true"))
                 .andRespond(withSuccess("""
                         {"data":[{"id":"public-server","name":"public-server","enabled":true,"visibility":"public","associatedTools":["shared-name"],"associatedToolIds":["private-tool"],"associatedResources":["private-resource"],"associatedPrompts":["private-prompt"]}],"pagination":{"total_items":1}}
                         """, MediaType.APPLICATION_JSON));
@@ -475,7 +475,7 @@ class ContextForgeMcpCatalogClientTest {
                           "expires_in": 3600
                         }
                         """, MediaType.APPLICATION_JSON));
-        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=false&page=1&per_page=100"))
+        server.expect(once(), requestTo("https://contextforge.internal/v1/servers?limit=100&include_pagination=true"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("Authorization", "Bearer ctx-token"))
                 .andRespond(withSuccess("""
@@ -493,6 +493,7 @@ class ContextForgeMcpCatalogClientTest {
                               "tags": []
                             }
                           ],
+                          "next_cursor": "page-2",
                           "pagination": {
                             "page": 1,
                             "per_page": 100,
@@ -502,7 +503,7 @@ class ContextForgeMcpCatalogClientTest {
                           "links": null
                         }
                         """, MediaType.APPLICATION_JSON));
-        server.expect(once(), requestTo("https://contextforge.internal/admin/servers?include_inactive=false&page=2&per_page=100"))
+        server.expect(once(), requestTo("https://contextforge.internal/v1/servers?limit=100&include_pagination=true&cursor=page-2"))
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(header("Authorization", "Bearer ctx-token"))
                 .andRespond(withSuccess("""
