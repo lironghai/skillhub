@@ -64,9 +64,16 @@ cp secret.yaml.example secret.yaml
 | bootstrap-admin-password | 管理员密码 | 是 |
 | oauth2-github-client-id | GitHub OAuth ID | 否 |
 | oauth2-github-client-secret | GitHub OAuth 密钥 | 否 |
+| oauth2-feishu-client-id | Feishu App ID | 否 |
+| oauth2-feishu-client-secret | Feishu App Secret | 否 |
 | skill-scanner-llm-api-key | LLM API 密钥 | 否 |
 | skill-scanner-llm-base-url | 本地/自定义 LLM 服务地址 | 否 |
 | skill-scanner-llm-model | Scanner 使用的 LLM 模型名 | 否 |
+
+Feishu OAuth 需要在飞书开放平台应用的安全设置中配置回调地址：
+`https://<skillhub-domain>/login/oauth2/code/feishu`。
+飞书 user_info 没有独立的邮箱已验证声明，因此 `EMAIL_DOMAIN` 访问策略会拒绝飞书登录；
+如需允许飞书登录，请使用 `PROVIDER_ALLOWLIST` 并将 `feishu` 加入允许列表，或使用 subject 白名单。
 
 ### 3. 选择部署方式
 
@@ -237,9 +244,13 @@ kubectl apply -k overlays/with-infra/  # 或 overlays/external/
 | bootstrap-admin-password | 管理员密码 | 是 |
 | oauth2-github-client-id | GitHub OAuth ID | 否 |
 | oauth2-github-client-secret | GitHub OAuth 密钥 | 否 |
+| oauth2-feishu-client-id | Feishu App ID | 否 |
+| oauth2-feishu-client-secret | Feishu App Secret | 否 |
 | skill-scanner-llm-api-key | LLM API 密钥 | 否 |
 | skill-scanner-llm-base-url | 本地/自定义 LLM 服务地址 | 否 |
 | skill-scanner-llm-model | LLM 模型名称 | 否 |
+
+Feishu OAuth 回调地址为：`https://<skillhub-domain>/login/oauth2/code/feishu`。
 
 ### 存储配置
 

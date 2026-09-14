@@ -474,7 +474,7 @@ password defaults.
        └──────────┘  └──────────┘  └─────────┘
 ```
 
-**Backend (Spring Boot 3.2.3, Java 21):**
+**Backend (Spring Boot 3.5.15, Java 21):**
 - Multi-module Maven project with clean architecture
 - Modules: app, domain, auth, search, storage, infra
 - PostgreSQL 16 with Flyway migrations

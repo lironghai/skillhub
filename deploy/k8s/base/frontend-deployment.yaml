@@ -21,11 +21,26 @@ spec:
           env:
             - name: SKILLHUB_API_UPSTREAM
               value: http://skillhub-server:8080
+            - name: SKILLHUB_CONTEXT_FORGE_UPSTREAM
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-upstream
             # Leave empty so a fixed-base image keeps its baked base; set to e.g. /skillhub/ to override.
             - name: SKILLHUB_WEB_BASE_PATH
               value: ""
             - name: SKILLHUB_WEB_API_BASE_URL
               value: ""
+            - name: SKILLHUB_MCP_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: skillhub-mcp-enabled
+            - name: SKILLHUB_WEB_MCP_CONTEXT_FORGE_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: skillhub-config
+                  key: mcp-context-forge-enabled
           ports:
             - containerPort: 80
               name: http

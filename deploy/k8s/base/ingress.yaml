@@ -24,3 +24,32 @@ spec:
                 name: skillhub-web
                 port:
                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: skillhub-mcp
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: skills.example.com
+      http:
+        paths:
+          - path: /api/mcp
+            pathType: Exact
+            backend:
+              service:
+                name: skillhub-server
+                port:
+                  number: 8080
+          - path: /contextforge
+            pathType: Prefix
+            backend:
+              service:
+                name: skillhub-web
+                port:
+                  number: 80

@@ -3,6 +3,7 @@ window.__SKILLHUB_RUNTIME_CONFIG__ = {
   appBaseUrl: '',
   authDirectEnabled: 'false',
   authDirectProvider: '',
+  mcpContextForgeEnabled: 'false',
   authSessionBootstrapEnabled: 'false',
   authSessionBootstrapProvider: '',
   authSessionBootstrapAuto: 'false',

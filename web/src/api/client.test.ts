@@ -41,6 +41,7 @@ import {
   getAppBaseUrl,
   getDirectAuthRuntimeConfig,
   getSessionBootstrapRuntimeConfig,
+  isContextForgeEnabled,
   namespaceApi,
 } from './client'
 
@@ -114,6 +115,14 @@ describe('getAppBaseUrl', () => {
     window.__SKILLHUB_RUNTIME_CONFIG__ = { appBaseUrl: 'https://example.com/skillhub' }
 
     expect(getAppBaseUrl()).toBe('https://example.com/skillhub')
+  })
+})
+
+describe('isContextForgeEnabled', () => {
+  it('is disabled by default and accepts the runtime true flag', () => {
+    expect(isContextForgeEnabled()).toBe(false)
+    window.__SKILLHUB_RUNTIME_CONFIG__ = { mcpContextForgeEnabled: 'true' }
+    expect(isContextForgeEnabled()).toBe(true)
   })
 })
 

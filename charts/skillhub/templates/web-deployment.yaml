@@ -16,7 +16,7 @@ spec:
       labels:
         {{- include "skillhub.web.selectorLabels" . | nindent 8 }}
       annotations:
-        checksum/config: {{ toYaml (dict "web" .Values.web "publicBaseUrl" .Values.publicBaseUrl "auth" .Values.auth) | sha256sum }}
+        checksum/config: {{ toYaml (dict "web" .Values.web "publicBaseUrl" .Values.publicBaseUrl "auth" .Values.auth "mcp" .Values.mcp) | sha256sum }}
         {{- range $key, $val := .Values.web.podAnnotations }}
         {{ $key }}: {{ $val }}
         {{- end }}
@@ -33,6 +33,12 @@ spec:
           env:
             - name: SKILLHUB_API_UPSTREAM
               value: http://{{ include "skillhub.fullname" . }}-server:{{ .Values.server.service.port }}
+            - name: SKILLHUB_CONTEXT_FORGE_UPSTREAM
+              value: {{ .Values.mcp.contextForge.upstream | quote }}
+            - name: SKILLHUB_MCP_ENABLED
+              value: {{ .Values.mcp.enabled | quote }}
+            - name: SKILLHUB_WEB_MCP_CONTEXT_FORGE_ENABLED
+              value: {{ .Values.mcp.contextForge.enabled | quote }}
             - name: SKILLHUB_PUBLIC_BASE_URL
               valueFrom:
                 configMapKeyRef:

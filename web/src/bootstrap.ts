@@ -27,6 +27,7 @@ function ensureRuntimeConfigFallback() {
       appBaseUrl: '',
       authDirectEnabled: 'false',
       authDirectProvider: '',
+      mcpContextForgeEnabled: 'false',
       authSessionBootstrapEnabled: 'false',
       authSessionBootstrapProvider: '',
       authSessionBootstrapAuto: 'false',

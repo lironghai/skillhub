@@ -42,7 +42,7 @@ export function NotificationBell() {
         type="button"
         aria-label={t('notification.title')}
         onClick={() => setOpen((v) => !v)}
-        className="relative flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-muted"
+        className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 transition-colors"
       >
         {/* Bell SVG */}
         <svg

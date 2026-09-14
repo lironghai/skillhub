@@ -12,4 +12,10 @@ describe('getAuthQueryOptions', () => {
     expect(options.refetchInterval).toBe(60_000)
     expect(options.enabled).toBe(true)
   })
+
+  it('does not surface background session probe failures as global errors', () => {
+    const options = getAuthQueryOptions()
+
+    expect(options.meta).toEqual({ skipGlobalErrorHandler: true })
+  })
 })

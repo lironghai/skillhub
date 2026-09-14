@@ -33,6 +33,28 @@ describe('auth-route', () => {
     })
   })
 
+  it('createRequireAuth redirects when the current-user probe fails', async () => {
+    const requireAuth = createRequireAuth(async () => {
+      throw new Error('HTTP 500')
+    })
+
+    await expect(requireAuth({
+      location: {
+        pathname: '/dashboard/mcp',
+      },
+    })).rejects.toSatisfy((error: unknown) => {
+      expect(isRedirect(error)).toBe(true)
+      if (!isRedirect(error)) {
+        return false
+      }
+      expect(error.options.to).toBe('/login')
+      expect(error.options.search).toEqual({
+        returnTo: '/dashboard/mcp',
+      })
+      return true
+    })
+  })
+
   it('createRequireAuth returns the current user when authenticated', async () => {
     const user = { userId: 'user-1' }
     const getCurrentUser = vi.fn(async () => user)

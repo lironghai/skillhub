@@ -19,11 +19,14 @@ public final class TracingModeAutoConfigurationImportFilter
 
     private static final Set<String> OTEL_AUTO_CONFIGURATIONS = Set.of(
             "org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration",
-            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration"
+            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryTracingAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration"
     );
 
     private static final Set<String> OTLP_EXPORT_AUTO_CONFIGURATIONS = Set.of(
-            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpAutoConfiguration"
+            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpAutoConfiguration",
+            "org.springframework.boot.actuate.autoconfigure.tracing.otlp.OtlpTracingAutoConfiguration"
     );
 
     private Environment environment;

@@ -3,6 +3,7 @@ import { Outlet, Link, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/use-auth'
+import { buildApiUrl, isContextForgeEnabled } from '@/api/client'
 import { BrandMark } from '@/shared/components/brand-mark'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import { ThemeToggle } from '@/shared/components/theme-toggle'
@@ -86,6 +87,7 @@ export function Layout() {
     { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
     { label: t('nav.marketplace'), to: '/search' },
     { label: t('nav.suites'), to: '/suites' },
+    ...(isContextForgeEnabled() ? [{ label: t('nav.mcpManagement'), to: '/dashboard/mcp', auth: true }] : []),
     { label: t('nav.dashboard'), to: '/dashboard', auth: true },
   ]
 
@@ -141,7 +143,7 @@ export function Layout() {
           })}
         </nav>
 
-        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <div className="flex items-center gap-4 flex-shrink-0" style={{ color: 'hsl(var(--text-secondary))' }}>
           {/* Hamburger — visible below lg */}
           <button
             type="button"
@@ -261,6 +263,7 @@ export function Layout() {
             <div>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{t('footer.resources')}</h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
+                <li><a href={buildApiUrl('/swagger-ui/index.html')} className={FOOTER_LINK_CLASS_NAME}>{t('footer.api')}</a></li>
                 <li><a href="https://github.com/iflytek/skillhub/discussions" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.community')}</a></li>
                 <li><Link to="/privacy" className={FOOTER_LINK_CLASS_NAME}>{t('footer.privacy')}</Link></li>
                 <li><Link to="/terms" className={FOOTER_LINK_CLASS_NAME}>{t('footer.terms')}</Link></li>

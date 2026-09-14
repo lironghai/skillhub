@@ -50,6 +50,18 @@ data:
   # Session 配置
   # HTTP 环境设为 false，HTTPS 环境设为 true
   session-cookie-secure: "false"
+
+  # MCP and ContextForge catalog
+  skillhub-mcp-enabled: "true"
+  mcp-context-forge-enabled: "false"
+  mcp-context-forge-team-id: "e69584b918294279896f69cfbccc3f73"
+  # ContextForge must be configured with APP_ROOT_PATH=/contextforge.
+  mcp-context-forge-base-url: http://mcp-context-forge.example.com/contextforge
+  mcp-context-forge-public-base-url: https://skills.example.com/contextforge
+  mcp-context-forge-upstream: http://mcp-context-forge.example.com
+  mcp-context-forge-max-search-scan-size: "1000"
+  mcp-context-forge-connect-timeout: 5s
+  mcp-context-forge-read-timeout: 15s
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

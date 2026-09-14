@@ -40,6 +40,29 @@
       "required": ["enabled"],
       "properties": { "enabled": { "type": "boolean" } }
     },
+    "mcp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "contextForge"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "contextForge": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "teamId", "baseUrl", "publicBaseUrl", "upstream", "maxSearchScanSize", "connectTimeout", "readTimeout"],
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "teamId": { "type": "string", "minLength": 1 },
+            "baseUrl": { "type": "string", "pattern": "^https?://[^/]+(?:/.*)?$" },
+            "publicBaseUrl": { "type": "string", "pattern": "^https?://[^/]+(?:/.*)?$" },
+            "upstream": { "type": "string", "pattern": "^https?://[^/]+(?:/.*)?$" },
+            "maxSearchScanSize": { "type": "integer", "minimum": 1 },
+            "connectTimeout": { "type": "string", "minLength": 1 },
+            "readTimeout": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
     "ingress": {
       "type": "object",
       "additionalProperties": false,
@@ -156,6 +179,8 @@
         "downloadAnonCookieSecret": { "type": "string" },
         "oauth2GithubClientId": { "type": "string" },
         "oauth2GithubClientSecret": { "type": "string" },
+        "contextForgeUsername": { "type": "string" },
+        "contextForgePassword": { "type": "string" },
         "scannerLlmApiKey": { "type": "string" },
         "scannerLlmBaseUrl": { "type": "string" },
         "scannerLlmModel": { "type": "string" }

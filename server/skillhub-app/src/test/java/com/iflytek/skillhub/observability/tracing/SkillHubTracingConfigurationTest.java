@@ -4,8 +4,10 @@ import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.otel.bridge.OtelTracer;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
+import org.springframework.boot.actuate.autoconfigure.tracing.OpenTelemetryEventPublisherBeansApplicationListener;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SkillHubTracingConfigurationTest {
 
+    @BeforeAll
+    static void installOpenTelemetryEventPublisherBridge() {
+        OpenTelemetryEventPublisherBeansApplicationListener.addWrapper();
+    }
+
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(TestApplication.class)
+            .withInitializer(context -> context.addApplicationListener(
+                    new OpenTelemetryEventPublisherBeansApplicationListener()
+            ))
             .withPropertyValues(
                     "spring.flyway.enabled=false",
                     "spring.jpa.hibernate.ddl-auto=none"

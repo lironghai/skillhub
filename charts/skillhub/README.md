@@ -55,6 +55,31 @@ helm -n skillhub upgrade -i skillhub ./charts/skillhub \
 > `ingress.tls[]`。旧的 `ingress.host`、`ingress.tls.enabled` 与
 > `ingress.tls.secretName` 不再接受，升级前必须改成本文 Ingress 示例中的数组结构。
 
+ContextForge 目录默认关闭。启用时，ContextForge 应配置同一子路径（例如
+`APP_ROOT_PATH=/contextforge`），并同时配置后端 API、浏览器公开地址和 Web 代理：
+
+```yaml
+mcp:
+  enabled: true
+  contextForge:
+    enabled: true
+    teamId: e69584b918294279896f69cfbccc3f73
+    baseUrl: http://mcp-context-forge/contextforge
+    publicBaseUrl: https://skills.example.com/contextforge
+    upstream: http://mcp-context-forge
+
+secrets:
+  contextForgeUsername: admin@example.com
+  contextForgePassword: "<ContextForge password>"
+```
+
+使用 `existingSecret` 时，该 Secret 必须提供 `mcp-context-forge-username` 和
+`mcp-context-forge-password` 两个 key。
+
+启用 Ingress 时，Chart 会为 `/api/mcp`（以及启用 ContextForge 后的
+`/contextforge`）额外生成关闭缓冲、读写超时 3600 秒的 ingress-nginx 规则，
+避免 MCP 长连接被默认超时截断。
+
 合并或发布前，可在一个空的测试 Kubernetes 集群中运行可重复的安装/升级 smoke：
 
 ```bash

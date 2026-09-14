@@ -45,7 +45,7 @@ export function TabsList({ children, className }: TabsListProps) {
     <div
       role="tablist"
       className={cn(
-        'inline-flex items-center gap-6 border-b text-sm',
+        'inline-flex items-center gap-6 text-sm',
         className
       )}
       style={{ borderColor: 'hsl(var(--border))' }}
