@@ -47,10 +47,10 @@
     --success: 160 50% 40%;
     --warning: 38 85% 50%;
 
-    /* ── 品牌渐变 — 无（纯黑） ── */
-    --brand-start: #202020;
-    --brand-end: #111111;
-    --brand-gradient: none;
+    /* ── HERO Skillhub 品牌渐变 ── */
+    --brand-start: #BF3732;
+    --brand-end: #ED6C30;
+    --brand-gradient: linear-gradient(90deg, #BF3732 0%, #ED6C30 102.2%);
 
     /* ── 文字语义色 — 对标 clone 的 rgba(0,0,0,0.62) / 0.4 ── */
     --text-secondary: 0 0% 45%;            /* #737373，正文辅助信息 */

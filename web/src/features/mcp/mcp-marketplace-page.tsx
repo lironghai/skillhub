@@ -124,7 +124,7 @@ export function McpMarketplacePage() {
             className={cn(
               "rounded-[8px] px-2 text-sm font-medium transition-colors",
               activeTab === "internal"
-                ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                ? "bg-brand-gradient text-white hover:opacity-90 hover:text-white"
                 : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
@@ -141,7 +141,7 @@ export function McpMarketplacePage() {
             className={cn(
               "rounded-[8px] px-2 text-sm font-medium transition-colors",
               activeTab === "opensource"
-                ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                ? "bg-brand-gradient text-white hover:opacity-90 hover:text-white"
                 : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
@@ -303,7 +303,7 @@ function TabButton({ active, onClick, children, style, title }: { active: boolea
       className={cn(
         "rounded-[6px] px-1.5 text-sm font-medium transition-colors",
         active
-          ? "bg-primary text-primary-foreground shadow-sm"
+          ? "bg-brand-gradient text-white shadow-sm"
           : "text-muted-foreground hover:text-foreground",
       )}
     >
