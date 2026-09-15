@@ -73,7 +73,7 @@ describe('Layout', () => {
     const html = renderToStaticMarkup(createElement(Layout))
 
     expect(html).toContain('flex items-center gap-4')
-    expect(html).toContain('SkillHub')
+    expect(html).toContain('svg-text-HeroSkillhub')
     expect(html).not.toContain('w-[120px]')
     expect(html).not.toContain('ml-auto flex min-w-0')
   })

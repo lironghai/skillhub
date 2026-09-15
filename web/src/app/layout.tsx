@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/use-auth'
 import { buildApiUrl, isContextForgeEnabled } from '@/api/client'
 import { BrandMark } from '@/shared/components/brand-mark'
+import { SvgIcon } from '@/shared/components/svg-icon'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
 import { ThemeToggle } from '@/shared/components/theme-toggle'
 import { UserMenu } from '@/shared/components/user-menu'
@@ -116,8 +117,12 @@ export function Layout() {
 
       {/* Header */}
       <header className={getAppHeaderClassName(isHeaderElevated)} style={{ borderColor: 'hsl(var(--border))' }}>
-        <Link to="/" className="text-xl font-semibold tracking-tight flex-shrink-0" style={{ color: 'hsl(var(--foreground))' }}>
-          SkillHub
+        <Link
+          to="/"
+          aria-label="SkillHub"
+          className="flex h-4 w-[184px] flex-shrink-0 items-center"
+        >
+          <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-full" />
         </Link>
 
         {/* Desktop nav — lg+ only */}

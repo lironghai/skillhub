@@ -124,8 +124,8 @@ export function McpMarketplacePage() {
             className={cn(
               "rounded-[8px] px-2 text-sm font-medium transition-colors",
               activeTab === "internal"
-                ? "bg-brand-gradient text-primary-foreground hover:text-primary-foreground "
-                : "bg-[#fff] hover:text-foreground",
+                ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
             {t("mcpMarketplace.internalTab")}
@@ -141,8 +141,8 @@ export function McpMarketplacePage() {
             className={cn(
               "rounded-[8px] px-2 text-sm font-medium transition-colors",
               activeTab === "opensource"
-                ? "bg-brand-gradient text-primary-foreground hover:text-primary-foreground "
-                : "bg-[#fff] hover:text-foreground ",
+                ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                : "bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
             )}
           >
             {t("mcpMarketplace.openSourceTab")}
@@ -164,7 +164,7 @@ export function McpMarketplacePage() {
               {/* {t("mcpMarketplace.listView")} */}
               <SvgIcon
                 name="svg-mcp_list"
-                className="h-4 w-4 text-[var(--brand-gradient)]"
+                className="h-4 w-4 text-current"
                 style={viewMode === "list" ? { color: "#fff" } : {}}
               />
             </TabButton>
@@ -177,7 +177,7 @@ export function McpMarketplacePage() {
               {/* {t("mcpMarketplace.gridView")} */}
               <SvgIcon
                 name="svg-mcp_card"
-                className="h-4 w-4 text-[var(--brand-gradient)]"
+                className="h-4 w-4 text-current"
                 style={viewMode === "grid" ? { color: "#fff" } : {}}
               />
             </TabButton>
@@ -303,7 +303,7 @@ function TabButton({ active, onClick, children, style, title }: { active: boolea
       className={cn(
         "rounded-[6px] px-1.5 text-sm font-medium transition-colors",
         active
-          ? "bg-brand-gradient text-primary-foreground shadow-sm"
+          ? "bg-primary text-primary-foreground shadow-sm"
           : "text-muted-foreground hover:text-foreground",
       )}
     >
