@@ -57,7 +57,7 @@ function AgentAccessPanel() {
               className={`relative px-4 py-2.5 text-xs font-semibold transition-[color,background-color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${activeView === id ? 'bg-background/70 text-foreground' : 'text-muted-foreground hover:bg-background/40 hover:text-foreground'}`}
             >
               {label}
-              <span className={`absolute inset-x-0 -bottom-px h-0.5 origin-center bg-foreground transition-transform duration-200 ${activeView === id ? 'scale-x-100' : 'scale-x-0'}`} aria-hidden />
+              <span className={`absolute inset-x-0 -bottom-px h-0.5 origin-center bg-primary transition-transform duration-200 ${activeView === id ? 'scale-x-100' : 'scale-x-0'}`} aria-hidden />
             </button>
           ))}
         </div>
@@ -71,7 +71,7 @@ function AgentAccessPanel() {
         <div className="animate-fade-up py-9">
           <p className="mb-5 text-xs text-muted-foreground">{t('landing.experience.quickStart.agent.instructionLead')}</p>
           <div className="flex flex-col gap-5 border-y border-border/70 py-5 sm:flex-row sm:items-start">
-            <span className="mt-1 hidden h-12 w-1 flex-shrink-0 bg-foreground sm:block" aria-hidden />
+            <span className="mt-1 hidden h-12 w-1 flex-shrink-0 bg-primary sm:block" aria-hidden />
             <p className="min-w-0 flex-1 text-sm leading-7 text-foreground">
               {t('landing.experience.quickStart.agent.instructionPrefix')} <span className="break-all text-blue-600 underline decoration-blue-300 underline-offset-4">{registryUrl}/registry/skill.md</span> {t('landing.experience.quickStart.agent.instructionSuffix')}
             </p>
@@ -82,7 +82,7 @@ function AgentAccessPanel() {
                   toast.error(t('landing.experience.quickStart.copyErrorTitle'), t('landing.experience.quickStart.agent.copyErrorDescription'))
                 })
               }}
-              className="inline-flex w-fit flex-shrink-0 items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-xs font-semibold text-background shadow-sm transition-[transform,opacity,box-shadow] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none"
+              className="inline-flex w-fit flex-shrink-0 items-center gap-2 rounded-lg bg-brand-gradient px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-[transform,opacity,box-shadow] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none"
             >
               {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
               {copied ? t('landing.experience.quickStart.copied') : t('landing.experience.quickStart.agent.copyInstruction')}
@@ -318,7 +318,7 @@ function WebAccessPanel() {
               <h3 className="mt-2 text-xl font-semibold tracking-tight text-foreground">weather <span className="font-mono text-xs font-normal text-muted-foreground">@global</span></h3>
               <p className="mt-1 text-xs text-muted-foreground">{t('landing.experience.quickStart.web.summary')}</p>
             </div>
-            <a href={buildApiUrl(`${WEB_API_PREFIX}/skills/global/weather/download`)} className="inline-flex w-fit items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-xs font-semibold text-background shadow-sm transition-[transform,opacity,box-shadow] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none">
+            <a href={buildApiUrl(`${WEB_API_PREFIX}/skills/global/weather/download`)} className="inline-flex w-fit items-center gap-2 rounded-lg bg-brand-gradient px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-[transform,opacity,box-shadow] duration-150 hover:-translate-y-px hover:opacity-90 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none">
               <Download className="h-3.5 w-3.5" />{t('landing.experience.quickStart.web.download')}
             </a>
           </div>
@@ -375,13 +375,13 @@ export function LandingQuickStartSection() {
                   onClick={() => setActiveMode(mode.id)}
                   className={`group relative flex w-full items-center gap-4 border-b border-border/70 px-2 py-5 text-left transition-[background-color,transform] duration-200 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${active ? 'bg-background/65' : 'hover:bg-background/35 active:translate-x-px'}`}
                 >
-                  <span className={`absolute inset-y-3 left-0 w-0.5 origin-center bg-foreground transition-transform duration-200 ${active ? 'scale-y-100' : 'scale-y-0'}`} aria-hidden />
+                  <span className={`absolute inset-y-3 left-0 w-0.5 origin-center bg-primary transition-transform duration-200 ${active ? 'scale-y-100' : 'scale-y-0'}`} aria-hidden />
                   <span className={`font-mono text-[11px] font-semibold transition-colors duration-200 ${active ? 'text-foreground' : 'text-muted-foreground'}`}>{mode.number}</span>
                   <span className="min-w-0 flex-1">
                     <strong className={`block text-sm font-semibold transition-colors ${active ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'}`}>{t(`landing.experience.quickStart.modes.${mode.titleKey}`)}</strong>
                     <span className="mt-1 block text-[11px] text-muted-foreground">{t(`landing.experience.quickStart.modes.${mode.descriptionKey}`)}</span>
                   </span>
-                  <span className={`h-1.5 w-1.5 rounded-full transition-colors ${active ? 'bg-foreground' : 'bg-border'}`} />
+                  <span className={`h-1.5 w-1.5 rounded-full transition-colors ${active ? 'bg-primary' : 'bg-border'}`} />
                 </button>
               )
             })}

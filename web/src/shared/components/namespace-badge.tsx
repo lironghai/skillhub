@@ -12,10 +12,10 @@ export function NamespaceBadge({ type, name, className, title }: NamespaceBadgeP
     <span
       title={title}
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border transition-colors',
+        'inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors',
         type === 'GLOBAL'
           ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20'
-          : 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+          : 'border-[rgba(237,108,48,0.2)] bg-[rgba(237,108,48,0.1)] text-[var(--brand-end)]',
         className
       )}
     >
