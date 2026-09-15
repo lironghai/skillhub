@@ -120,13 +120,13 @@ export function Layout() {
         <Link
           to="/"
           aria-label="SkillHub"
-          className="flex h-4 w-[184px] flex-shrink-0 items-center"
+          className="inline-flex h-4 w-[184px] flex-shrink-0 items-center"
         >
           <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-full" />
         </Link>
 
         {/* Desktop nav — lg+ only */}
-        <nav className="hidden lg:flex items-center gap-10 text-[15px] font-medium" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <nav className="hidden md:flex h-full items-center gap-10 text-[15px] font-medium" style={{ color: 'hsl(var(--text-secondary))' }}>
           {navItems.map((item) => {
             if (item.auth && !user) return null
             const active = isActive(item.to, item.exact)
@@ -137,8 +137,8 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'px-4 py-1.5 rounded-full text-[15px] font-medium bg-brand-gradient text-white shadow-[0_1px_2px_0_rgb(0_0_0/0.12)]'
-                    : 'px-4 py-1.5 rounded-full text-[15px] font-medium hover:opacity-90 transition-opacity duration-150'
+                    ? 'flex h-full items-center border-b-[3px] border-primary text-[15px] font-bold text-primary'
+                    : 'flex h-full items-center text-[15px] font-medium transition-colors duration-150 hover:text-primary'
                 }
                 style={active ? undefined : { color: 'hsl(var(--foreground) / 0.65)' }}
               >
@@ -177,7 +177,7 @@ export function Layout() {
 
       {/* Mobile nav dropdown */}
       {mobileMenuOpen ? (
-        <div className="lg:hidden sticky top-[52px] z-40 border-b border-border bg-background/95 backdrop-blur-xl">
+        <div className="md:hidden sticky top-[68px] z-40 border-b border-border bg-background/95 backdrop-blur-xl">
           <nav className="flex flex-col px-4 py-3 gap-1">
             {navItems.map((item) => {
               if (item.auth && !user) return null

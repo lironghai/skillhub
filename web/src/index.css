@@ -386,19 +386,6 @@
   background: var(--brand-gradient);
 }
 
-/* ─── Handle tag (namespace @ pill) ─── */
-.handle-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: hsl(199 76% 34%);
-  background: hsl(199 89% 94%);
-  border: 1px solid hsl(199 93% 74%);
-  border-radius: 9999px;
-}
-
 /* ─── Status pills ─── */
 .status-pill {
   display: inline-flex;
@@ -446,12 +433,6 @@
 .badge-soft-blue {
   background: #dbeafe;
   color: #1d4ed8;
-}
-
-.dark .handle-tag {
-  color: hsl(196 80% 72%);
-  background: hsl(199 70% 15%);
-  border-color: hsl(199 60% 30%);
 }
 
 .dark .badge-soft-green {
