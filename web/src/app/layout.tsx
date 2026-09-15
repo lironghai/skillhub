@@ -126,7 +126,7 @@ export function Layout() {
         </Link>
 
         {/* Desktop nav — lg+ only */}
-        <nav className="hidden lg:flex items-center gap-5 text-[15px] font-normal" style={{ color: 'hsl(var(--text-secondary))' }}>
+        <nav className="hidden lg:flex items-center gap-10 text-[15px] font-medium" style={{ color: 'hsl(var(--text-secondary))' }}>
           {navItems.map((item) => {
             if (item.auth && !user) return null
             const active = isActive(item.to, item.exact)
@@ -137,8 +137,8 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-brand-gradient text-white shadow-[0_1px_2px_0_rgb(0_0_0/0.12)]'
-                    : 'px-4 py-1.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity duration-150'
+                    ? 'px-4 py-1.5 rounded-full text-[15px] font-medium bg-brand-gradient text-white shadow-[0_1px_2px_0_rgb(0_0_0/0.12)]'
+                    : 'px-4 py-1.5 rounded-full text-[15px] font-medium hover:opacity-90 transition-opacity duration-150'
                 }
                 style={active ? undefined : { color: 'hsl(var(--foreground) / 0.65)' }}
               >
