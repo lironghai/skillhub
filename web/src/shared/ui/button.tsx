@@ -10,7 +10,7 @@ const buttonVariants = cva(
       variant: {
         // default：三层阴影（inset 顶高光 + 底部投影 + 1px 描边），模拟立体片状按钮
         default:
-          'bg-primary text-primary-foreground shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.10),0_1px_2px_0_rgb(0_0_0/0.10),0_0_0_1px_rgb(0_0_0/0.04)] hover:bg-primary/92 hover:shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.14),0_2px_4px_-1px_rgb(0_0_0/0.14),0_0_0_1px_rgb(0_0_0/0.06)] active:shadow-[inset_0_1px_2px_0_rgb(0_0_0/0.14)]',
+          'bg-brand-gradient text-white shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.10),0_1px_2px_0_rgb(0_0_0/0.10),0_0_0_1px_rgb(0_0_0/0.04)] hover:opacity-95 hover:shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.14),0_2px_4px_-1px_rgb(0_0_0/0.14),0_0_0_1px_rgb(0_0_0/0.06)] active:shadow-[inset_0_1px_2px_0_rgb(0_0_0/0.14)]',
         destructive:
           'bg-destructive text-destructive-foreground shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.12),0_1px_2px_0_rgb(0_0_0/0.10)] hover:bg-destructive/92 hover:shadow-[inset_0_1px_0_0_hsl(0_0%_100%/0.16),0_2px_4px_-1px_rgb(0_0_0/0.14)]',
         outline:

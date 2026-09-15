@@ -137,7 +137,7 @@ export function Layout() {
                 to={item.to}
                 className={
                   active
-                    ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-foreground text-background shadow-[0_1px_2px_0_rgb(0_0_0/0.12)]'
+                    ? 'px-4 py-1.5 rounded-full text-sm font-medium bg-brand-gradient text-white shadow-[0_1px_2px_0_rgb(0_0_0/0.12)]'
                     : 'px-4 py-1.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity duration-150'
                 }
                 style={active ? undefined : { color: 'hsl(var(--foreground) / 0.65)' }}
@@ -187,7 +187,7 @@ export function Layout() {
                   key={item.to}
                   to={item.to}
                   className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    active ? 'bg-accent text-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                    active ? 'bg-brand-gradient text-white' : 'text-muted-foreground hover:bg-accent hover:text-foreground'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >

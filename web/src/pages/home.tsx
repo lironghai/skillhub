@@ -54,7 +54,7 @@ export function HomePage() {
 
         <div className="flex items-center justify-center gap-4 animate-fade-up delay-2">
           <button
-            className="px-8 py-3.5 rounded-xl text-base font-medium text-white bg-[#202020] shadow-sm hover:bg-[#111] transition-colors"
+            className="px-8 py-3.5 rounded-xl text-base font-medium text-white bg-brand-gradient shadow-sm hover:opacity-95 transition-opacity"
             onClick={() => navigate({ to: '/search', search: { q: '', sort: 'relevance', page: 0, starredOnly: false } })}
           >
             {t('home.browseSkills')}

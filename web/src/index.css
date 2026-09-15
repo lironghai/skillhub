@@ -18,8 +18,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    /* ── 主色 — 近黑（无品牌色，对标 skillhub-clone #202020） ── */
-    --primary: 0 0% 13%;                   /* #202020 */
+    /* ── 主色 — HERO Skillhub 品牌红 ── */
+    --primary: 2 59% 47%;                  /* #BF3732 */
     --primary-foreground: 0 0% 100%;
 
     /* ── 表面层 — 冷灰递进 ── */
@@ -37,7 +37,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 92%;                    /* rgba(0,0,0,0.08) */
     --input: 240 3% 95%;                   /* #f2f3f5 */
-    --ring: 0 0% 13%;                      /* #202020 */
+    --ring: 2 59% 47%;                     /* #BF3732 */
     --radius: 0.625rem;                    /* 10px，对标 skillhub-clone */
 
     /* ── 扩展色板 ── */
@@ -75,9 +75,9 @@
     --popover: 0 0% 11%;
     --popover-foreground: 0 0% 94%;
 
-    /* ── 主色 — 白（暗色下反转） ── */
-    --primary: 0 0% 94%;                   /* 近白 */
-    --primary-foreground: 0 0% 6%;         /* 近黑 */
+    /* ── 主色 — 暗色下仍保持品牌识别 ── */
+    --primary: 2 59% 47%;
+    --primary-foreground: 0 0% 100%;
 
     /* ── 表面层 — 灰阶递进，提高对比度 ── */
     --secondary: 0 0% 14%;                 /* 从 12% 提升 */
@@ -94,7 +94,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 20%;                    /* 从 18% 提升 */
     --input: 0 0% 16%;
-    --ring: 0 0% 85%;
+    --ring: 2 59% 47%;
 
     /* ── 扩展色板 ── */
     --surface-glass: 0 0% 10%;
@@ -597,17 +597,17 @@
   outline-offset: 3px;
 }
 .btn-pill-primary {
-  background: #202020;
+  background: var(--brand-gradient);
   color: #fff;
   box-shadow: 0 1px 0 rgb(255 255 255 / 16%) inset, 0 4px 12px rgb(0 0 0 / 8%);
 }
 .btn-pill-primary:hover {
-  background: #111111;
+  opacity: 0.95;
   transform: translateY(-1px);
   box-shadow: 0 1px 0 rgb(255 255 255 / 16%) inset, 0 7px 18px rgb(0 0 0 / 12%);
 }
 .btn-pill-primary:active {
-  background: #000;
+  opacity: 0.9;
   transform: translateY(0) scale(0.985);
   box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
 }
