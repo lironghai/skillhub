@@ -40,7 +40,7 @@ export function Layout() {
   const contentLayoutPathname = resolveAppMainContentPathname(pathname, resolvedPathname)
   const mainContentLayout = getAppMainContentLayout(contentLayoutPathname)
   const isDashboardSubRoute = pathname !== '/dashboard' && pathname.startsWith('/dashboard')
-  const showSidebar = (isDashboardSubRoute && pathname !== '/dashboard/publish') || pathname.startsWith('/settings/')
+  const showSidebar = (isDashboardSubRoute && pathname !== '/dashboard/publish' && pathname !== '/dashboard/mcp') || pathname.startsWith('/settings/')
   const governanceVisible = canViewGovernanceCenter(user?.platformRoles)
   const filteredDashboardGroups = SIDEBAR_GROUPS
     .map((group) => ({
