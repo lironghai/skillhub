@@ -232,7 +232,7 @@ export function Layout() {
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4 flex items-center gap-2.5">
                 <BrandMark className="h-8 w-8 rounded-lg bg-background ring-1 ring-border/70" />
-                <span className="font-semibold text-foreground">SkillHub</span>
+                <SvgIcon name="svg-text-HeroSkillhub" className="h-4 w-[184px]" />
               </div>
               <p className="text-sm text-muted-foreground">{t('layout.footerDescription')}</p>
             </div>
