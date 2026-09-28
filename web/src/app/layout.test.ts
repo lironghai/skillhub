@@ -78,14 +78,22 @@ describe('Layout', () => {
     expect(html).not.toContain('ml-auto flex min-w-0')
   })
 
-  it('renders the footer resources column', () => {
-    const html = renderToStaticMarkup(createElement(Layout))
+  it('renders the Hero footer links and retains only docs and CLI for developers', () => {
+    const footer = renderToStaticMarkup(createElement(Layout)).split('<footer')[1]
 
-    expect(html).toContain('footer.resources')
-    expect(html).toContain('footer.api')
-    expect(html).toContain('footer.community')
-    expect(html).toContain('href="https://github.com/iflytek/skillhub/tree/main/docs/skillhub"')
-    expect(html).toContain('href="/skillhub/swagger-ui/index.html"')
-    expect(html).toContain('href="https://github.com/iflytek/skillhub/discussions"')
+    expect(footer).toContain('footer.product')
+    expect(footer).toContain('footer.resources')
+    expect(footer).toContain('footer.heroDataCenter')
+    expect(footer).toContain('footer.aboutHero')
+    expect(footer.match(/href="https:\/\/www\.yingxiong\.com\/index\.html"/g)).toHaveLength(2)
+    expect(footer).toContain('href="https://github.com/iflytek/skillhub/tree/main/docs/skillhub"')
+    expect(footer).toContain('href="https://www.npmjs.com/package/@astron-team/skillhub"')
+    expect(footer).not.toContain('>GitHub<')
+    expect(footer).not.toContain('footer.project')
+    expect(footer).not.toContain('footer.marketplace')
+    expect(footer).not.toContain('footer.api')
+    expect(footer).not.toContain('footer.community')
+    expect(footer).not.toContain('footer.privacy')
+    expect(footer).not.toContain('footer.terms')
   })
 })

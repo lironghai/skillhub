@@ -1611,6 +1611,8 @@
     }
   },
   "footer": {
+    "heroDataCenter": "英雄游戏大数据中心",
+    "aboutHero": "关于英雄",
     "product": "产品",
     "marketplace": "技能市场",
     "publish": "发布技能",

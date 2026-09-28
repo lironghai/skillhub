@@ -3,7 +3,7 @@ import { Outlet, Link, useRouterState } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '@/features/auth/use-auth'
-import { buildApiUrl, isContextForgeEnabled } from '@/api/client'
+import { isContextForgeEnabled } from '@/api/client'
 import { BrandMark } from '@/shared/components/brand-mark'
 import { SvgIcon } from '@/shared/components/svg-icon'
 import { LanguageSwitcher } from '@/shared/components/language-switcher'
@@ -228,7 +228,7 @@ export function Layout() {
       {/* Footer */}
       <footer className="relative z-10 mt-auto border-t bg-secondary/70" style={{ borderColor: 'hsl(var(--border))' }}>
         <div className="mx-auto max-w-6xl px-6 py-12 md:px-12 md:py-16">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4 flex items-center gap-2.5">
                 <BrandMark className="h-8 w-8 rounded-lg bg-background ring-1 ring-border/70" />
@@ -240,9 +240,7 @@ export function Layout() {
             <div>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{t('footer.product')}</h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><Link to="/search" search={{ q: '', sort: 'relevance', page: 0, starredOnly: false }} className={FOOTER_LINK_CLASS_NAME}>{t('footer.marketplace')}</Link></li>
-                <li><Link to="/dashboard/publish" className={FOOTER_LINK_CLASS_NAME}>{t('footer.publish')}</Link></li>
-                <li><Link to="/dashboard" className={FOOTER_LINK_CLASS_NAME}>{t('nav.dashboard')}</Link></li>
+                <li><a href="https://www.yingxiong.com/index.html" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.heroDataCenter')}</a></li>
               </ul>
             </div>
 
@@ -251,27 +249,13 @@ export function Layout() {
               <ul className="space-y-2.5 text-sm text-muted-foreground">
                 <li><a href="https://github.com/iflytek/skillhub/tree/main/docs/skillhub" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.docs')}</a></li>
                 <li><a href="https://www.npmjs.com/package/@astron-team/skillhub" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>CLI</a></li>
-                <li><a href="https://github.com/iflytek/skillhub" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>GitHub</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="mb-4 text-sm font-semibold text-foreground">{t('footer.project')}</h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><a href="https://github.com/iflytek/skillhub/blob/main/LICENSE" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>License</a></li>
-                <li><a href="https://github.com/iflytek/skillhub/blob/main/CONTRIBUTING.md" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>Contributing</a></li>
-                <li><a href="https://github.com/iflytek/skillhub/releases" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>Changelog</a></li>
-                <li><a href="https://github.com/iflytek/skillhub/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.codeOfConduct')}</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{t('footer.resources')}</h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><a href={buildApiUrl('/swagger-ui/index.html')} className={FOOTER_LINK_CLASS_NAME}>{t('footer.api')}</a></li>
-                <li><a href="https://github.com/iflytek/skillhub/discussions" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.community')}</a></li>
-                <li><Link to="/privacy" className={FOOTER_LINK_CLASS_NAME}>{t('footer.privacy')}</Link></li>
-                <li><Link to="/terms" className={FOOTER_LINK_CLASS_NAME}>{t('footer.terms')}</Link></li>
+                <li><a href="https://www.yingxiong.com/index.html" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.aboutHero')}</a></li>
               </ul>
             </div>
           </div>

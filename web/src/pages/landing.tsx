@@ -166,7 +166,7 @@ function EnterpriseSection() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="md:col-span-2 md:row-span-2 flex flex-col rounded-xl border border-border/70 bg-card p-6 shadow-[var(--shadow-card)]">
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-900 text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--brand-start)] text-white">
                 <Server className="h-4 w-4" />
               </div>
               <h3 className="font-semibold text-foreground">{t('landing.experience.enterprise.deployment.title')}</h3>
@@ -187,7 +187,7 @@ function EnterpriseSection() {
                 </div>
                 <div className="flex flex-col items-center sm:flex-shrink-0">
                   <div className="mb-0.5 text-center text-[10px] text-muted-foreground">{t('landing.experience.enterprise.serviceLayer')}</div>
-                  <div className="rounded-lg bg-neutral-900 px-3.5 py-3 text-center text-xs font-semibold leading-tight text-white">SkillHub<br />Registry</div>
+                  <div className="rounded-lg bg-[var(--brand-start)] px-3.5 py-3 text-center text-xs font-semibold leading-tight text-white">SkillHub<br />Registry</div>
                 </div>
                 <div className="flex h-8 items-center justify-center sm:h-auto sm:min-w-0 sm:flex-1">
                   <svg className="h-4 w-16 rotate-90 text-border sm:w-full sm:max-w-16 sm:rotate-0" fill="none" stroke="currentColor" viewBox="0 0 64 16"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" strokeDasharray="3 3" d="M0 8h54" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M50 4l6 4-6 4" /></svg>
@@ -205,7 +205,7 @@ function EnterpriseSection() {
 
           <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="mb-2 flex items-center gap-3">
-              <Shield className="h-5 w-5 text-foreground" />
+              <Shield className="h-5 w-5 text-[var(--brand-start)]" />
               <h3 className="text-sm font-semibold text-foreground">{t('landing.experience.enterprise.security.title')}</h3>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{t('landing.experience.enterprise.security.description')}</p>
@@ -213,7 +213,7 @@ function EnterpriseSection() {
 
           <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="mb-2 flex items-center gap-3">
-              <Lock className="h-5 w-5 text-foreground" />
+              <Lock className="h-5 w-5 text-[var(--brand-start)]" />
               <h3 className="text-sm font-semibold text-foreground">{t('landing.experience.enterprise.rbac.title')}</h3>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{t('landing.experience.enterprise.rbac.description')}</p>
@@ -221,7 +221,7 @@ function EnterpriseSection() {
 
           <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="mb-2 flex items-center gap-3">
-              <Settings className="h-5 w-5 text-foreground" />
+              <Settings className="h-5 w-5 text-[var(--brand-start)]" />
               <h3 className="text-sm font-semibold text-foreground">{t('landing.experience.enterprise.access.title')}</h3>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{t('landing.experience.enterprise.access.description')}</p>
@@ -229,7 +229,7 @@ function EnterpriseSection() {
 
           <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="mb-2 flex items-center gap-3">
-              <Monitor className="h-5 w-5 text-foreground" />
+              <Monitor className="h-5 w-5 text-[var(--brand-start)]" />
               <h3 className="text-sm font-semibold text-foreground">{t('landing.experience.enterprise.audit.title')}</h3>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{t('landing.experience.enterprise.audit.description')}</p>
@@ -237,7 +237,7 @@ function EnterpriseSection() {
 
           <div className="rounded-xl border border-border/70 bg-card p-5 shadow-[var(--shadow-card)]">
             <div className="mb-2 flex items-center gap-3">
-              <GitBranch className="h-5 w-5 text-foreground" />
+              <GitBranch className="h-5 w-5 text-[var(--brand-start)]" />
               <h3 className="text-sm font-semibold text-foreground">{t('landing.experience.enterprise.openSource.title')}</h3>
             </div>
             <p className="text-sm leading-relaxed text-muted-foreground">{t('landing.experience.enterprise.openSource.description')}</p>

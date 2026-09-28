@@ -1580,6 +1580,8 @@
     "title": "Файлы"
   },
   "footer": {
+    "heroDataCenter": "Центр больших данных Hero Games",
+    "aboutHero": "О Hero Games",
     "product": "Продукт",
     "marketplace": "Каталог скиллов",
     "publish": "Опубликовать скилл",

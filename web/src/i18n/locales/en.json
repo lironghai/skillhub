@@ -1612,6 +1612,8 @@
     }
   },
   "footer": {
+    "heroDataCenter": "Hero Games Big Data Center",
+    "aboutHero": "About Hero Games",
     "product": "Product",
     "marketplace": "Skill marketplace",
     "publish": "Publish skill",
