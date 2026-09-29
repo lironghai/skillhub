@@ -137,7 +137,10 @@ class McpCatalogControllerTest {
                         )),
                         List.of("bdc4"),
                         "http://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp",
-                        "http://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse"
+                        "http://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse",
+                        3,
+                        "2026-06-01T08:00:00Z",
+                        "2026-06-09T09:30:00Z"
                 )),
                 1,
                 0,
@@ -184,7 +187,10 @@ class McpCatalogControllerTest {
                         List.of(),
                         List.of("bdc4"),
                         "http://skillhub.example/contextforge/servers/srv-bdc4/mcp",
-                        "http://skillhub.example/contextforge/servers/srv-bdc4/sse"
+                        "http://skillhub.example/contextforge/servers/srv-bdc4/sse",
+                        3,
+                        "2026-06-01T08:00:00Z",
+                        "2026-06-09T09:30:00Z"
                 )),
                 1,
                 0,
@@ -196,6 +202,9 @@ class McpCatalogControllerTest {
         var firstTool = firstItem.path("tools").get(0);
 
         assertThat(firstItem.path("iconUrl").asText()).isEqualTo("https://static.example.com/icons/bdc4.png");
+        assertThat(firstItem.path("version").asInt()).isEqualTo(3);
+        assertThat(firstItem.path("createdAt").asText()).isEqualTo("2026-06-01T08:00:00Z");
+        assertThat(firstItem.path("updatedAt").asText()).isEqualTo("2026-06-09T09:30:00Z");
         assertThat(firstItem.has("ownerEmail")).isFalse();
         assertThat(firstTool.path("inputSchema").path("properties").path("reportCode").path("type").asText()).isEqualTo("string");
         assertThat(firstTool.path("outputSchema").path("properties").path("rows").path("type").asText()).isEqualTo("array");

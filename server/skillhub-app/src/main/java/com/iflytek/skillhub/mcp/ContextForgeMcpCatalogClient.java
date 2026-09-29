@@ -388,7 +388,10 @@ public class ContextForgeMcpCatalogClient {
                         prompts,
                         tagNames(server.path("tags")),
                         publicEndpoint(id, "mcp"),
-                        publicEndpoint(id, "sse")
+                        publicEndpoint(id, "sse"),
+                        server.path("version").isIntegralNumber() ? server.path("version").intValue() : null,
+                        firstText(server, "createdAt", "created_at"),
+                        firstText(server, "updatedAt", "updated_at")
                 ));
             }
             long total = items.size();

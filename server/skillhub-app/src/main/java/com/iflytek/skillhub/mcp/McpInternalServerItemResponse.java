@@ -18,7 +18,10 @@ public record McpInternalServerItemResponse(
         List<McpAssociatedItemResponse> prompts,
         List<String> tags,
         String streamableHttpUrl,
-        String sseUrl
+        String sseUrl,
+        Integer version,
+        String createdAt,
+        String updatedAt
 ) {
     public McpInternalServerItemResponse(String id,
                                          String name,
@@ -51,7 +54,10 @@ public record McpInternalServerItemResponse(
                 prompts,
                 tags,
                 streamableHttpUrl,
-                sseUrl
+                sseUrl,
+                null,
+                null,
+                null
         );
     }
 }

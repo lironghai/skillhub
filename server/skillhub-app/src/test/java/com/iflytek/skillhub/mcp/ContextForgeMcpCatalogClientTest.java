@@ -216,6 +216,9 @@ class ContextForgeMcpCatalogClientTest {
                               "name": "bdc4_group",
                               "description": "bdc4_group",
                               "icon": "https://static.example.com/icons/bdc4.png",
+                              "version": 3,
+                              "createdAt": "2026-06-01T08:00:00Z",
+                              "updatedAt": "2026-06-09T09:30:00Z",
                               "enabled": true,
                               "associatedTools": ["query_report_by_code", "legacy-tool-b"],
                               "associatedToolIds": ["tool-a", "legacy-tool-b"],
@@ -342,6 +345,9 @@ class ContextForgeMcpCatalogClientTest {
         assertThat(item.id()).isEqualTo("34eaa0d257da49608da2c6b079ed0b5");
         assertThat(item.name()).isEqualTo("bdc4_group");
         assertThat(item.iconUrl()).isEqualTo("https://static.example.com/icons/bdc4.png");
+        assertThat(item.version()).isEqualTo(3);
+        assertThat(item.createdAt()).isEqualTo("2026-06-01T08:00:00Z");
+        assertThat(item.updatedAt()).isEqualTo("2026-06-09T09:30:00Z");
         assertThat(item.streamableHttpUrl()).isEqualTo("https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp");
         assertThat(item.sseUrl()).isEqualTo("https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse");
         assertThat(item.toolCount()).isEqualTo(2);
