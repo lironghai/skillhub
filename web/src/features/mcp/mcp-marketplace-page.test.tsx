@@ -44,6 +44,9 @@ const mcpCatalogHooks = vi.hoisted(() => {
             tags: ['bdc4'],
             streamableHttpUrl: 'https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/mcp',
             sseUrl: 'https://skillhub.example/contextforge/servers/34eaa0d257da49608da2c6b079ed0b5/sse',
+            createdAt: '2026-09-10T16:09:52.792114+08:00 ',
+            updatedAt: '2026-09-11T08:05:02.123456+08:00',
+            version: '1.0.0',
           },
         ],
         total: 1,
@@ -124,9 +127,15 @@ vi.mock('./use-mcp-catalog', () => ({
   useMcpCatalog: mcpCatalogHooks.useMcpCatalog,
 }))
 
-import { AssociatedDetailList, McpMarketplacePage, McpTokenUsageHint, OpenSourceServerCard } from './mcp-marketplace-page'
+import { AssociatedDetailList, formatMcpFeatureDateTime, McpMarketplacePage, McpTokenUsageHint, OpenSourceServerCard } from './mcp-marketplace-page'
 
 describe('McpMarketplacePage', () => {
+  it('formats internal server feature timestamps to minutes', () => {
+    expect(formatMcpFeatureDateTime('2026-09-10T16:09:52.792114+08:00 ')).toBe('2026/9/10 16:09')
+    expect(formatMcpFeatureDateTime('2026-09-11T08:05:02.123456+08:00')).toBe('2026/9/11 08:05')
+    expect(formatMcpFeatureDateTime(null)).toBe('-')
+  })
+
   it('renders compact internal server rows with detail actions instead of inline associated items', () => {
     mcpCatalogHooks.useMcpInternalServers.mockClear()
     mcpCatalogHooks.useMcpCatalog.mockClear()

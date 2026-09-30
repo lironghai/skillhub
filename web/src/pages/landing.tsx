@@ -361,15 +361,14 @@ export function LandingPage() {
             </p>
 
             <div className="mb-8 flex flex-wrap gap-3">
-              <Link to="/dashboard/publish" className="btn-pill btn-pill-primary">
-                {t('landing.hero.publishSkill')}
+              <Link to="/search" search={{ q: '', sort: 'relevance', page: 0, starredOnly: false }} className="btn-pill btn-pill-primary">
+                {t('landing.hero.exploreSkills')} <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none" />
               </Link>
               <Link
-                to="/search"
-                search={{ q: '', sort: 'relevance', page: 0, starredOnly: false }}
+                to="/dashboard/publish"
                 className="group btn-pill btn-pill-outline inline-flex items-center gap-2"
               >
-                {t('landing.hero.exploreSkills')} <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+                {t('landing.hero.publishSkill')} 
               </Link>
             </div>
 
@@ -382,8 +381,8 @@ export function LandingPage() {
               ))}
             </div>
 
-            <div className="mt-8 grid max-w-md grid-cols-3 gap-4 border-t border-border/70 pt-5">
-              {[
+            <div className="mt-8 border-border/70">
+              {/* {[
                 { value: '1000+', label: t('landing.stats.skills') },
                 { value: '50K+', label: t('landing.stats.downloads') },
                 { value: '200+', label: t('landing.stats.teams') },
@@ -392,7 +391,8 @@ export function LandingPage() {
                   <div className="text-2xl font-semibold tracking-tight text-foreground">{stat.value}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{stat.label}</div>
                 </div>
-              ))}
+              ))} */}
+              <div className='text-xs text-muted-foreground'>SkillHub 是大数据中心建设的企业技能中心，统一沉淀、发现、接入和复用数据与 AI 能力</div>
             </div>
           </div>
 
@@ -404,7 +404,7 @@ export function LandingPage() {
 
       <section ref={featuresView.ref} className={`relative z-10 w-full bg-background px-6 py-16 scroll-fade-up${featuresView.inView ? ' in-view' : ''} md:py-20`}>
         <div className="mx-auto max-w-6xl">
-          <div className="mb-12 max-w-3xl">
+          <div className="mb-12 max-w-4xl">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t('landing.experience.capabilities.eyebrow')}</p>
             <h2 className="mb-4 text-3xl font-medium tracking-tight text-foreground md:text-4xl">
               {t('landing.experience.capabilities.title')}
@@ -428,9 +428,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      <div ref={quickStartView.ref} className={`scroll-fade-up${quickStartView.inView ? ' in-view' : ''}`}>
+      {/* <div ref={quickStartView.ref} className={`scroll-fade-up${quickStartView.inView ? ' in-view' : ''}`}>
         <LandingQuickStartSection />
-      </div>
+      </div> */}
 
       <section ref={popularView.ref} className={`relative z-10 w-full bg-background px-6 py-16 scroll-fade-up${popularView.inView ? ' in-view' : ''} md:py-20`}>
         <div className="mx-auto max-w-6xl space-y-6">

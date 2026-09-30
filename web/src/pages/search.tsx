@@ -1,7 +1,7 @@
 import { startTransition, useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearch } from '@tanstack/react-router'
+import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ArrowRight } from 'lucide-react'
 import type { SkillSummary } from '@/api/types'
 import { useAuth } from '@/features/auth/use-auth'
 import { SearchBar } from '@/features/search/search-bar'
@@ -16,6 +16,7 @@ import { toRouterPath } from '@/shared/lib/base-path'
 import { formatNamespaceSearchInput, normalizeSearchQuery, parseNamespaceSearchInput } from '@/shared/lib/search-query'
 import { Button } from '@/shared/ui/button'
 import { APP_SHELL_PAGE_CLASS_NAME } from '@/app/page-shell-style'
+import { DashboardPageHeader } from "@/shared/components/dashboard-page-header";
 
 const PAGE_SIZE = 12
 
@@ -228,14 +229,29 @@ export function SearchPage() {
 
   return (
     <div className={APP_SHELL_PAGE_CLASS_NAME}>
+      {/* Search title */}
+      {/* <div className="max-w-3xl">
+        <h2 className="mb-2 text-3xl font-medium tracking-tight text-foreground">技能市场</h2>
+        <p className="text-sm text-muted-foreground">发现、阅读和使用大数据中心沉淀的企业技能。</p>
+      </div> */}
+      <DashboardPageHeader title={t('search.toptitle')} subtitle={t('search.subtitle')} />
       {/* Search Bar */}
-      <div className="max-w-3xl mx-auto">
-        <SearchBar
-          value={queryInput}
-          isSearching={isUpdatingResults}
-          onChange={setQueryInput}
-          onSearch={handleSearch}
-        />
+      <div className="mt-6 flex items-center justify-between">
+        <div className="max-w-3xl flex-1">
+          <SearchBar
+            value={queryInput}
+            isSearching={isUpdatingResults}
+            onChange={setQueryInput}
+            onSearch={handleSearch}
+          />
+        </div>
+        
+        <Link
+          to="/dashboard/publish"
+          className="btn-pill btn-pill-primary"
+        >
+          {t('landing.hero.publishSkill')} <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+        </Link>
       </div>
 
       {/* Sort And Filters */}

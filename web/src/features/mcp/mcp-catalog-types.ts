@@ -26,6 +26,9 @@ export type McpCatalogItem = {
 }
 
 export type McpInternalServerItem = {
+  updatedAt: string
+  createdAt: string
+  version: string | number | null | undefined
   id: string
   name: string
   description?: string

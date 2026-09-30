@@ -34,28 +34,28 @@
     },
     "features": {
       "secure": {
-        "title": "安全私密",
-        "description": "企业级安全保护您的 AI 工作流"
+        "title": "数据服务接入",
+        "description": "把数据查询、数据处理等能力封装为可调用的技能"
       },
       "community": {
-        "title": "社区驱动",
-        "description": "与全球开发者分享和发现技能"
+        "title": "业务经验沉淀",
+        "description": "将业务规则、指标口径和分析方法整理为可复用技能"
       },
       "integration": {
-        "title": "轻松集成",
-        "description": "无缝集成到您现有的工具中"
+        "title": "AI 工具复用",
+        "description": "常用 AI 能力开箱即用，避免重复建设"
       },
       "versionControl": {
-        "title": "版本控制",
-        "description": "完善的版本管理和发布流程，确保技能包的质量和可追溯性。"
+        "title": "MCP 标准化接入",
+        "description": "以 Streamable HTTP 统一接入 MCP 服务，工具调用一致可管"
       },
       "cli": {
-        "title": "CLI 工具",
-        "description": "强大的命令行工具，支持快速发布、安装和管理技能包。"
+        "title": "统一发现与复用",
+        "description": "通过 Agent、CLI、Web 多端搜索和安装，一处发布处处可用"
       },
       "governance": {
-        "title": "审核治理",
-        "description": "内置审核流程和权限管理，保障企业级技能质量。"
+        "title": "权限与治理",
+        "description": "按团队和角色控制可见与可用范围，使用过程全程可追溯"
       }
     },
     "stats": {
@@ -166,15 +166,15 @@
         "caption": "界面预览 · 4 个示例技能"
       },
       "highlights": {
-        "selfHosted": "自托管 Registry",
-        "governance": "审核与治理",
-        "multiClient": "Agent、CLI、Web 接入",
-        "traceable": "版本可追溯"
+        "selfHosted": "企业统一技能注册中心",
+        "governance": "权限与审核治理",
+        "multiClient": "Agent、CLI、Web 多端接入",
+        "traceable": "版本与变更可追溯"
       },
       "capabilities": {
         "eyebrow": "核心能力",
-        "title": "从注册到分发，管理完整的技能生命周期",
-        "description": "不只是技能仓库，而是一套覆盖发布、审核、分发和治理的平台。"
+        "title": "把大数据中心的能力，变成业务团队随取随用的技能",
+        "description": "沉淀数据服务、业务经验和 AI 工具，让业务团队按需发现和使用。"
       },
       "enterprise": {
         "title": "为团队和企业而建",
@@ -295,10 +295,10 @@
     "description": "为开发者提供高效的技能管理、分发和协作平台",
     "browseSkills": "浏览技能",
     "publishSkill": "发布技能",
-    "popularTitle": "热门下载",
-    "popularDescription": "社区最受欢迎的技能",
-    "latestTitle": "最新发布",
-    "latestDescription": "刚刚发布的新技能",
+    "popularTitle": "热门技能",
+    "popularDescription": "用户常用的企业技能",
+    "latestTitle": "最新上架",
+    "latestDescription": "近期发布的技能",
     "viewAll": "查看全部 →",
     "quickStart": {
       "title": "快速开始",
@@ -325,6 +325,8 @@
   },
   "search": {
     "title": "搜索技能",
+    "toptitle": "技能市场",
+    "subtitle": "发现、阅读和使用大数据中心沉淀的企业技能。",
     "placeholder": "搜索技能...",
     "filters": {
       "label": "筛选:"
@@ -1629,7 +1631,7 @@
   },
   "publish": {
     "title": "发布技能",
-    "subtitle": "上传技能包到 SkillHub",
+    "subtitle": "将可复用的数据服务、业务经验或 AI 能力整理为技能，提交后发布到技能市场。",
     "reviewNotice": {
       "title": "发布审核说明",
       "description": "技能包提交后需要经过管理员审核才能正式发布。"
@@ -1936,7 +1938,7 @@
   },
   "suite": {
     "listTitle": "技能套件",
-    "listDescription": "一次安装一组经过版本锁定的技能。",
+    "listDescription": "将多个技能组合起来，一次安装和使用。",
     "create": "创建套件",
     "searchPlaceholder": "搜索套件名称或说明",
     "emptyTitle": "暂无可用套件",
@@ -2073,7 +2075,7 @@
   },
   "mcpMarketplace": {
     "title": "MCP 广场",
-    "subtitle": "浏览内部 ContextForge 虚拟 MCP 服务和开源 Registry 服务。",
+    "subtitle": "发现和接入大数据中心提供的 MCP 服务，扩展 Agent 的工具能力。",
     "tabsLabel": "MCP 广场分类",
     "internalTab": "内部",
     "openSourceTab": "开源",
@@ -2108,7 +2110,7 @@
     "unnamedTool": "未命名工具",
     "unnamedResource": "未命名资源",
     "unnamedPrompt": "未命名提示词",
-    "streamableHttpUrl": "Streamable HTTP 地址",
+    "streamableHttpUrl": "接入地址",
     "sseUrl": "SSE 地址",
     "tokenTitle": "连接认证",
     "tokenDescription": "在 MCP 客户端的 headers 配置中填写 Authorization 请求头，值为 Bearer 加一个空格及你的令牌。不要把令牌放进 URL。",
