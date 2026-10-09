@@ -16,7 +16,6 @@ import {
   Users,
 } from 'lucide-react'
 import { BrandMark } from '@/shared/components/brand-mark'
-import { LandingQuickStartSection } from '@/shared/components/landing-quick-start'
 import { SkillCard } from '@/features/skill/skill-card'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { useSearchSkills } from '@/shared/hooks/use-skill-queries'
@@ -274,7 +273,6 @@ export function LandingPage() {
 
   const heroView = useInView()
   const featuresView = useInView()
-  const quickStartView = useInView()
   const enterpriseView = useInView()
   const popularView = useInView()
   const latestView = useInView()

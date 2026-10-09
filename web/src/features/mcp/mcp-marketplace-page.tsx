@@ -475,7 +475,7 @@ function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
           <div className="min-w-0 p-4 pt-0 sm:p-7 sm:pt-0">
             <div className="mt-0 space-y-3">
             <div className="text-sm font-bold">接入地址</div>
-            <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
+            <ConnectionUrl value={server.streamableHttpUrl} />
             {/* <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} /> */}
           </div>
           {/* <div className="text-sm font-bold">连接认证</div> */}
@@ -618,11 +618,9 @@ function InternalServerCard({ server }: { server: McpInternalServerItem }) {
 
         <div className="mt-5 space-y-3">
           <ConnectionUrl
-            label={t("mcpMarketplace.streamableHttpUrl")}
             value={server.streamableHttpUrl}
           />
           <ConnectionUrl
-            label={t("mcpMarketplace.sseUrl")}
             value={server.sseUrl}
           />
         </div>
@@ -1079,7 +1077,7 @@ function OpenSourceTableRow({ server }: { server: McpCatalogItem }) {
   );
 }
 
-function ConnectionUrl({ label, value }: { label: string; value?: string | null }) {
+function ConnectionUrl({ value }: { value?: string | null }) {
   const { t } = useTranslation()
   const [copied, copy] = useCopyToClipboard()
   if (!value) {

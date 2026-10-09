@@ -226,6 +226,32 @@ skillhub/
 └── docker-compose.yml    # 本地开发栈
 ```
 
+### 构建并推送私有仓库镜像
+
+发布前将 `REGISTRY` 设置为你的私有镜像仓库，并先执行
+`docker login $REGISTRY`。下面的命令会按 `linux/amd64` 构建前后端、
+推送镜像，并校验远端 manifest。
+
+```powershell
+$REGISTRY = "<registry-host>/<namespace>"
+$TAG = "<tag>"
+
+# 前端
+docker build --platform linux/amd64 -t "$REGISTRY/skillhub-web:$TAG" -f web/Dockerfile web
+docker push "$REGISTRY/skillhub-web:$TAG"
+docker manifest inspect "$REGISTRY/skillhub-web:$TAG"
+
+# 后端
+docker build --platform linux/amd64 -t "$REGISTRY/skillhub-server:$TAG" -f server/Dockerfile server
+docker push "$REGISTRY/skillhub-server:$TAG"
+docker manifest inspect "$REGISTRY/skillhub-server:$TAG"
+```
+
+如需完全重新构建，可给对应的 `docker build` 命令追加 `--no-cache`。
+当前工作区还提供可选的 PowerShell 封装脚本：
+`..\script\push-skillhub-web-image.ps1` 和
+`..\script\push-skillhub-server-image.ps1`。
+
 ## 部署
 
 ### 使用 Docker Compose

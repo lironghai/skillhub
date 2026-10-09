@@ -244,6 +244,32 @@ For a stricter end-to-end drift check, run:
 This starts local dependencies, boots the backend, regenerates the
 frontend schema, and fails if the checked-in SDK is stale.
 
+### Build and push private-registry images
+
+Set `REGISTRY` to your private registry before publishing. Run
+`docker login $REGISTRY` first. The commands below build the frontend and
+backend for `linux/amd64`, push them, and verify the remote manifests.
+
+```powershell
+$REGISTRY = "<registry-host>/<namespace>"
+$TAG = "<tag>"
+
+# Frontend
+docker build --platform linux/amd64 -t "$REGISTRY/skillhub-web:$TAG" -f web/Dockerfile web
+docker push "$REGISTRY/skillhub-web:$TAG"
+docker manifest inspect "$REGISTRY/skillhub-web:$TAG"
+
+# Backend
+docker build --platform linux/amd64 -t "$REGISTRY/skillhub-server:$TAG" -f server/Dockerfile server
+docker push "$REGISTRY/skillhub-server:$TAG"
+docker manifest inspect "$REGISTRY/skillhub-server:$TAG"
+```
+
+For a clean rebuild, add `--no-cache` to either `docker build` command. The
+local workspace also contains optional PowerShell wrappers under
+`..\script\push-skillhub-web-image.ps1` and
+`..\script\push-skillhub-server-image.ps1`.
+
 ### Container Runtime
 
 Published runtime images are built by GitHub Actions and pushed to GHCR.
