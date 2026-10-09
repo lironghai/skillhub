@@ -96,13 +96,20 @@ export function LoginPage() {
               onAuthenticated={() => navigate({ to: returnTo })}
             />
 
-            <Tabs defaultValue="password" className="space-y-6">
+            <Tabs defaultValue="oauth" className="space-y-6">
               <TabsList className="grid w-full grid-cols-2 border-b border-[#e5e5e5]">
+                <TabsTrigger value="oauth">{t("login.tabOAuth")}</TabsTrigger>
                 <TabsTrigger value="password">
                   {t("login.tabPassword")}
                 </TabsTrigger>
-                <TabsTrigger value="oauth">{t("login.tabOAuth")}</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="oauth" className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  {t("login.oauthHint")}
+                </p>
+                <LoginButton returnTo={returnTo} />
+              </TabsContent>
 
               <TabsContent value="password">
                 <form className="space-y-4" onSubmit={handleSubmit}>
@@ -232,13 +239,6 @@ export function LoginPage() {
                     </Link>
                   </p>
                 </form>
-              </TabsContent>
-
-              <TabsContent value="oauth" className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  {t("login.oauthHint")}
-                </p>
-                <LoginButton returnTo={returnTo} />
               </TabsContent>
             </Tabs>
           </div>

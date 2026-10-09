@@ -85,7 +85,7 @@ export function Layout() {
     auth?: boolean
   }> = [
     { label: t('nav.landing'), to: '/', exact: true },
-    { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
+    // { label: t('nav.publish'), to: '/dashboard/publish', auth: true },
     { label: t('nav.marketplace'), to: '/search' },
     { label: t('nav.suites'), to: '/suites' },
     ...(isContextForgeEnabled() ? [{ label: t('nav.mcpManagement'), to: '/dashboard/mcp', auth: true }] : []),
@@ -160,7 +160,7 @@ export function Layout() {
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <ThemeToggle />
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
           {user && <NotificationBell />}
           {isLoading ? null : user ? (
             <UserMenu user={user} />
