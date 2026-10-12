@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import { useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
-import { Boxes } from 'lucide-react'
 import { ResourceCard } from '@/features/suite/resource-card'
 import { useResourceSearch } from '@/shared/hooks/use-suite-queries'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
-import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import { APP_SHELL_PAGE_CLASS_NAME } from '@/app/page-shell-style'
 import { DashboardPageHeader } from "@/shared/components/dashboard-page-header";

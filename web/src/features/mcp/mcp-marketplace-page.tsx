@@ -1,14 +1,14 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
-import { Info, Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, ShieldCheck, X } from 'lucide-react'
+import { Info, Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, ShieldCheck } from 'lucide-react'
 import { DashboardPageHeader } from '@/shared/components/dashboard-page-header'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Table, TableBody, TableCell, TableRow } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
 import { MAX_SEARCH_QUERY_LENGTH } from '@/shared/lib/search-query'
@@ -69,12 +69,6 @@ export function McpMarketplacePage() {
     }
     return Math.max(Math.ceil(data.total / data.size), 1)
   }, [activeQuery.data])
-
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    setPage(0)
-    setSearch(searchInput.trim())
-  }
 
   const handleClear = () => {
     setSearchInput('')
@@ -218,50 +212,6 @@ export function McpMarketplacePage() {
       ) : null}
     </div>
   );
-}
-
-function InternalServerList({ servers, search, onClear }: { servers: McpInternalServerItem[]; search: string; onClear: () => void }) {
-  const { t } = useTranslation()
-  if (servers.length === 0) {
-    return (
-      <Card className="p-8">
-        <EmptyState
-          title={t('mcpMarketplace.emptyInternalTitle')}
-          description={search ? t('mcpMarketplace.emptySearchDescription') : t('mcpMarketplace.emptyInternalDescription')}
-          action={search ? <Button type="button" variant="outline" onClick={onClear}>{t('mcpMarketplace.clearSearch')}</Button> : null}
-        />
-      </Card>
-    )
-  }
-  return (
-    <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-      {servers.map((server) => (
-        <InternalServerCard key={server.id} server={server} />
-      ))}
-    </div>
-  )
-}
-
-function OpenSourceCatalogList({ servers, search, onClear }: { servers: McpCatalogItem[]; search: string; onClear: () => void }) {
-  const { t } = useTranslation()
-  if (servers.length === 0) {
-    return (
-      <Card className="p-8">
-        <EmptyState
-          title={t('mcpMarketplace.emptyTitle')}
-          description={search ? t('mcpMarketplace.emptySearchDescription') : t('mcpMarketplace.emptyDescription')}
-          action={search ? <Button type="button" variant="outline" onClick={onClear}>{t('mcpMarketplace.clearSearch')}</Button> : null}
-        />
-      </Card>
-    )
-  }
-  return (
-    <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-      {servers.map((server) => (
-        <OpenSourceServerCard key={server.id || server.name} server={server} />
-      ))}
-    </div>
-  )
 }
 
 function InternalServerTable({ servers, search, onClear }: { servers: McpInternalServerItem[]; search: string; onClear: () => void }) {
@@ -450,141 +400,6 @@ function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
       </Dialog>
     </>
   )
-}
-
-function InternalServerCard({ server }: { server: McpInternalServerItem }) {
-  const { t } = useTranslation()
-  const [detailType, setDetailType] = useState<AssociatedDetailType | null>(null)
-  const detailItems = detailType ? server[detailType] : []
-  const detailCount = detailType === 'tools'
-    ? server.toolCount
-    : detailType === 'resources'
-      ? server.resourceCount
-      : detailType === 'prompts'
-        ? server.promptCount
-        : 0
-  const detailTitle = detailType ? t(associatedDetailTitleKey(detailType)) : ''
-
-  return (
-    <>
-      <Card className="flex min-h-80 flex-col p-5">
-        <div className="flex gap-3">
-          <div
-            className="flex h-11 w-11 flex-none items-center justify-center rounded-lg bg-secondary text-muted-foreground"
-            style={{
-              background: "rgba(191,55,50,0.1)",
-              boxShadow: "0 2px 8px rgba(159,69,66,0.12)",
-            }}
-          >
-            {/* <Server className="h-5 w-5" aria-hidden="true" /> */}
-            {server.iconUrl ? (
-              <img
-                src={server.iconUrl}
-                alt=""
-                className="h-8 w-8 object-contain"
-                loading="lazy"
-              />
-            ) : (
-              // <Server className="h-5 w-5 color-[var(--brand-gradient)]" aria-hidden="true" />
-              <SvgIcon name="svg-mcp_icon" className="h-5 w-5" />
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <h2 className="break-words text-base font-semibold leading-6 text-foreground [overflow-wrap:anywhere]">
-              {server.name}
-            </h2>
-            <p className="mt-1 break-all text-xs leading-5 text-muted-foreground">
-              {server.id}
-            </p>
-          </div>
-        </div>
-
-        <p className="mt-4 min-h-12 break-words text-sm leading-6 text-muted-foreground [overflow-wrap:anywhere]">
-          {server.description || t("mcpMarketplace.noDescription")}
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <StatusBadge
-            active={server.enabled}
-            label={
-              server.enabled
-                ? t("mcpMarketplace.enabled")
-                : t("mcpMarketplace.disabled")
-            }
-          />
-          <CountBadgeButton
-            label={t("mcpMarketplace.toolsCount", { count: server.toolCount })}
-            onClick={() => setDetailType("tools")}
-          />
-          <CountBadgeButton
-            label={t("mcpMarketplace.resourcesCount", {
-              count: server.resourceCount,
-            })}
-            onClick={() => setDetailType("resources")}
-          />
-          <CountBadgeButton
-            label={t("mcpMarketplace.promptsCount", {
-              count: server.promptCount,
-            })}
-            onClick={() => setDetailType("prompts")}
-          />
-        </div>
-
-        {server.tags.length > 0 ? <TagList tags={server.tags} /> : null}
-
-        <div className="mt-5 space-y-3">
-          <ConnectionUrl
-            value={server.streamableHttpUrl}
-          />
-          <ConnectionUrl
-            value={server.sseUrl}
-          />
-        </div>
-        <McpTokenUsageHint server={server} />
-
-        <dl className="mt-auto grid gap-2 pt-5 text-xs text-muted-foreground">
-          <MetaRow label={t("mcpMarketplace.team")} value={server.team} />
-          <MetaRow
-            label={t("mcpMarketplace.visibility")}
-            value={server.visibility}
-          />
-        </dl>
-      </Card>
-      <Dialog
-        open={detailType !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDetailType(null);
-          }
-        }}
-      >
-        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0">
-          <DialogHeader className="border-b px-6 py-5 text-left">
-            <DialogTitle className="text-left text-lg">
-              {detailTitle}
-            </DialogTitle>
-            <DialogDescription className="text-left">
-              {t("mcpMarketplace.associatedDialogDescription", {
-                server: server.name,
-                count: detailCount,
-              })}
-            </DialogDescription>
-          </DialogHeader>
-          <AssociatedDetailList
-            items={detailItems}
-            emptyLabel={t("mcpMarketplace.emptyAssociatedItems", {
-              type: detailTitle,
-            })}
-            unnamedLabel={t(
-              detailType
-                ? associatedDetailUnnamedKey(detailType)
-                : "mcpMarketplace.unnamedItem",
-            )}
-          />
-        </DialogContent>
-      </Dialog>
-    </>
-  );
 }
 
 export function McpTokenUsageHint({ server }: { server: Pick<McpInternalServerItem, 'name' | 'streamableHttpUrl'> }) {
