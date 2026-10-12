@@ -1,15 +1,14 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
-import { AlertTriangle, Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, Search, ShieldCheck, X } from 'lucide-react'
+import { Info, Check, Copy, ExternalLink, KeyRound, Loader2, RefreshCw, ShieldCheck, X } from 'lucide-react'
 import { DashboardPageHeader } from '@/shared/components/dashboard-page-header'
 import { EmptyState } from '@/shared/components/empty-state'
 import { Pagination } from '@/shared/components/pagination'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { Button } from '@/shared/ui/button'
 import { Card } from '@/shared/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
-import { Input } from '@/shared/ui/input'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/ui/dialog'
 import { Table, TableBody, TableCell, TableRow } from '@/shared/ui/table'
 import { cn } from '@/shared/lib/utils'
 import { MAX_SEARCH_QUERY_LENGTH } from '@/shared/lib/search-query'
@@ -18,6 +17,7 @@ import { MCP_CATALOG_PAGE_SIZE } from './mcp-catalog-query'
 import type { McpAssociatedItem, McpCatalogItem, McpInternalServerItem } from './mcp-catalog-types'
 import { useMcpCatalog, useMcpInternalServers } from './use-mcp-catalog'
 import { SvgIcon } from '@/shared/components/svg-icon'
+import { SearchBar } from "@/features/search/search-bar";
 
 type McpMarketplaceTab = 'internal' | 'opensource'
 type AssociatedDetailType = 'tools' | 'resources' | 'prompts'
@@ -92,44 +92,33 @@ export function McpMarketplacePage() {
       <DashboardPageHeader
         title={t("mcpMarketplace.title")}
         subtitle={t("mcpMarketplace.subtitle")}
-        actions={
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => activeQuery.refetch()}
-            disabled={activeQuery.isFetching}
-            style={{ boxShadow: "0 2px 8px 0 rgba(159, 69, 66, 0.12)" }}
-            className="bg-background text-foreground hover:bg-accent hover:text-accent-foreground "
-          >
-            {activeQuery.isFetching ? (
-              <Loader2
-                className="mr-2 h-4 w-4 animate-spin"
-                aria-hidden="true"
-              />
-            ) : (
-              // <RefreshCw className="mr-2 h-4 w-4" aria-hidden="true" />
-              <SvgIcon name="svg-mcp_refresh" className="mr-2 h-4 w-4" />
-            )}
-            {t("mcpMarketplace.refresh")}
-          </Button>
-        }
       />
+
+      <Button
+        style={{
+          borderRadius: "12px",
+          position: "absolute",
+          top: "18px",
+          right: "0",
+          padding: "26px 32px",
+          marginTop: "0",
+          color: "#000",
+        }}
+        className="bg-background text-[16px] hover:bg-accent hover:text-accent-foreground "
+        onClick={() => activeQuery.refetch()}
+        disabled={activeQuery.isFetching}
+      >
+        {activeQuery.isFetching ? (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+        ) : (
+          // <RefreshCw className="h-4 w-4" aria-hidden="true" />
+          <SvgIcon name="svg-mcp_refresh" className="h-4 w-4" />
+        )}
+        {t("mcpMarketplace.refresh")}
+      </Button>
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          {/* <div>
-            <TabButton
-              active={activeTab === "internal"}
-              onClick={() => handleTabChange("internal")}
-            >
-              {t("mcpMarketplace.internalTab")}
-            </TabButton>
-            <TabButton
-              active={activeTab === "opensource"}
-              onClick={() => handleTabChange("opensource")}
-            >
-              {t("mcpMarketplace.openSourceTab")}
-            </TabButton>
-          </div> */}
           <Button
             type="button"
             variant="outline"
@@ -166,86 +155,24 @@ export function McpMarketplacePage() {
             {t("mcpMarketplace.openSourceTab")}
           </Button>
         </div>
-        {/* <div
-          className="inline-flex border bg-card p-1 shadow-sm rounded-[8px] justify-center items-center  hover:border-primary/30"
-          role="tablist"
-          aria-label={t("mcpMarketplace.tabsLabel")}
-        >
-          <div>
-            <TabButton
-              active={viewMode === "list"}
-              title={t("mcpMarketplace.listView")}
-              style={{ marginRight: "4px" }}
-              onClick={() => setViewMode("list")}
-            >
-              <SvgIcon
-                name="svg-mcp_list"
-                className="h-4 w-4 text-current"
-                style={viewMode === "list" ? { color: "#fff" } : {}}
-              />
-            </TabButton>
-            <TabButton
-              active={viewMode === "grid"}
-              title={t("mcpMarketplace.gridView")}
-              onClick={() => setViewMode("grid")}
-            >
-              <SvgIcon
-                name="svg-mcp_card"
-                className="h-4 w-4 text-current"
-                style={viewMode === "grid" ? { color: "#fff" } : {}}
-              />
-            </TabButton>
-          </div>
-        </div> */}
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            {/* <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden="true"
-            /> */}
-            <Input
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              maxLength={MAX_SEARCH_QUERY_LENGTH}
-              placeholder={
-                activeTab === "internal"
-                  ? t("mcpMarketplace.internalSearchPlaceholder")
-                  : t("mcpMarketplace.searchPlaceholder")
-              }
-              className="h-14 pl-10 pr-[10.5rem] w-full"
-            />
-            {searchInput ? (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="absolute right-[8rem] top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                aria-label={t("mcpMarketplace.clearSearch")}
-                title={t("mcpMarketplace.clearSearch")}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            ) : null}
-            <Button
-              type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 sm:min-w-28 p-[8px]"
-              disabled={activeQuery.isFetching}
-            >
-              {activeQuery.isFetching ? (
-                <Loader2
-                  className="mr-2 h-4 w-4 animate-spin"
-                  aria-hidden="true"
-                />
-              ) : (
-                <Search className="mr-2 h-4 w-4" aria-hidden="true" />
-              )}
-              {t("mcpMarketplace.search")}
-            </Button>
-          </div>
+      {/* Search Bar */}
+      <div className="mt-6 flex items-center justify-between">
+        <div className="flex-1">
+          <SearchBar
+            value={searchInput}
+            onChange={setSearchInput}
+            onSearch={setSearchInput}
+            maxLength={MAX_SEARCH_QUERY_LENGTH}
+            placeholder={
+              activeTab === "internal"
+                ? t("mcpMarketplace.internalSearchPlaceholder")
+                : t("mcpMarketplace.searchPlaceholder")
+            }
+          />
         </div>
-      </form>
+      </div>
 
       {activeQuery.isError ? (
         <Card className="p-8">
@@ -267,25 +194,13 @@ export function McpMarketplacePage() {
       ) : activeQuery.isLoading ? (
         <SkeletonList count={viewMode === "grid" ? 2 : 1} />
       ) : activeTab === "internal" ? (
-        viewMode === "grid" ? (
-          <InternalServerList
-            servers={internalQuery.data?.items ?? []}
-            search={search}
-            onClear={handleClear}
-          />
-        ) : (
+        (
           <InternalServerTable
             servers={internalQuery.data?.items ?? []}
             search={search}
             onClear={handleClear}
           />
         )
-      ) : viewMode === "grid" ? (
-        <OpenSourceCatalogList
-          servers={openSourceQuery.data?.items ?? []}
-          search={search}
-          onClear={handleClear}
-        />
       ) : (
         <OpenSourceTable
           servers={openSourceQuery.data?.items ?? []}
@@ -457,47 +372,48 @@ function InternalServerTableRow({ server }: { server: McpInternalServerItem }) {
           setRowDetail(false)
         }
       }}>
-        <DialogContent className="w-[min(calc(100vw-2rem),40rem)] max-h-[calc(100vh-2rem)] grid-cols-[minmax(0,1fr)] overflow-x-hidden overflow-y-auto p-0">
+        <DialogContent className="w-[min(calc(100vw-2rem),42rem)] max-h-[calc(100vh-2rem)] overflow-hidden p-0 [&>button>svg]:h-5 [&>button>svg]:w-5">
+          
           <DialogHeader className="border-b px-6 py-5 text-left">
-            <DialogTitle className="text-left text-lg">{server.name}</DialogTitle>
-            <DialogDescription className="text-left">
+            <DialogTitle className="text-left text-[20px]" style={{color: '#333'}}> {server.name} </DialogTitle>
+            <DialogDescription className="text-left" style={{color: '#666'}}>
               {server.description}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 overflow-hidden rounded-2xl md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 overflow-hidden md:grid-cols-2 lg:grid-cols-3 mx-7 border-b">
             {features.map((feature) => (
-              <div key={feature.title} className="bg-card px-7 py-3 transition-colors">
-                <p className="mb-2 text-sm text-foreground text-muted-foreground ">{feature.title}</p>
+              <div key={feature.title} className="bg-card py-3 transition-colors">
+                <p className="mb-1 text-sm text-foreground text-muted-foreground ">{feature.title}</p>
                 <p className="text-sm leading-relaxed  font-semibold">{feature.title == '可见性'? (<VisibilityStatus visibility={server.visibility} label={feature.value ?? '-'} />) : feature.title == '服务状态'? (<StatusBadge active={server.enabled} label={feature.value ?? '-'} />) : (feature.value ?? '-')}</p>
               </div>
             ))}
           </div>
           <div className="min-w-0 p-4 pt-0 sm:p-7 sm:pt-0">
-            <div className="mt-0 space-y-3">
-            <div className="text-sm font-bold">接入地址</div>
+            <div className="mt-0 space-y-2">
+            <div className="text-sm font-bold" style={{color: '#333'}}>接入地址</div>
             <ConnectionUrl label={t('mcpMarketplace.streamableHttpUrl')} value={server.streamableHttpUrl} />
             {/* <ConnectionUrl label={t('mcpMarketplace.sseUrl')} value={server.sseUrl} /> */}
           </div>
           {/* <div className="text-sm font-bold">连接认证</div> */}
           <div className='pt-5 pb-3'>
-            <h3 className="text-sm font-semibold text-foreground pb-2">{t('mcpMarketplace.tokenTitle')}</h3>
-            <p className="text-xs leading-5 text-muted-foreground">{t('mcpMarketplace.tokenDescription')}</p>
+            <h3 className="text-sm font-semibold text-foreground pb-2" style={{color: '#333'}}>{t('mcpMarketplace.tokenTitle')}</h3>
+            <p className="text-[13px] leading-5 text-muted-foreground" style={{color: '#666'}}>在 MCP 客户端的 headers 配置中填写 Authorization 请求头，值为<span className='bg-[#f9f9f9] rounded-md p-1' style={{color: '#ED6C30'}}> {`Bearer <YOUR_ACCESS_TOKEN>`} </span>,不要把令牌放进 URL。</p>
           </div>
           <McpTokenUsageHint server={server} />
           <div className='pt-5 pb-3'>
-            <h3 className="text-sm font-semibold text-foreground pb-2">Token获取</h3>
-            <div className="text-xs leading-5 text-muted-foreground inline-flex items-center">
+            <h3 className="text-sm font-semibold text-foreground pb-2" style={{color: '#333'}}>Token获取</h3>
+            <div className="text-[13px] leading-5 inline-flex items-center"  style={{color: '#666'}}>
               在
               <Link
                 to="/dashboard/tokens"
-                className="font-semibold px-1"
-                style={{color:'#3B82F6'}}
+                className="px-1"
+                style={{color:'#BF3732'}}
               >
                 API Tokens页面
               </Link>
               创建sk_开头的个人令牌.
-              <div className='font-semibold text-sm pl-3 inline-flex items-center' style={{color:"#ED6C30"}}>
-                <AlertTriangle className="mr-1 inline-block h-4 w-4 align-text-bottom" />
+              <div className='ml-3 px-2 inline-flex items-center rounded-[12px]' style={{height:"24px",color:"#333",fontSize:"12px",border:'1px solid rgba(191, 55, 50, 0.20)',background:"linear-gradient(0deg, rgba(191, 55, 50, 0.05) 0%, rgba(191, 55, 50, 0.05) 100%), #FFF"}}>
+                <Info className="mr-1 inline-block h-4 w-4 align-text-bottom" style={{color:"#ED6C30"}}/>
                 不要使用或分享账号密码</div>
             </div>
           </div>
@@ -685,25 +601,26 @@ export function McpTokenUsageHint({ server }: { server: Pick<McpInternalServerIt
     },
   }, null, 2)
   return (
-    <section className="space-y-2 rounded-lg border bg-secondary/20 p-4">
+    <section className="space-y-2 rounded-lg border bg-[#0f0f0f] px-4 py-3">
       
       {/* <pre className="overflow-x-auto rounded-md bg-background p-3 text-xs leading-5 text-foreground"><code>{`Authorization: ${authorization}`}</code></pre> */}
       {server.streamableHttpUrl && (
-        <div className="min-w-0 rounded-md bg-background">
-          <div className="flex justify-end px-3">
+        <div className="min-w-0 rounded-md">
+          <div className="absolute right-10">
             <button
               type="button"
               onClick={() => copy(config)}
-              className="inline-flex h-7 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+              className="inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+              style={{ background: "#232323",color: "#ccc",borderColor: "#666" }}
             >
               {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-              {copied ? t('copyButton.copied') : t('copyButton.copy')}
+              {copied ? t('copyButton.copied') : t('复制配置')}
             </button>
           </div>
-          <pre className="overflow-x-auto p-3 text-xs leading-5 text-foreground"><code>{config}</code></pre>
+          <pre className="overflow-x-auto text-xs leading-5 " style={{ color: "#ccc"}}><code>{config}</code></pre>
         </div>
       )}
-      <p className="text-xs leading-5 text-muted-foreground">{t('mcpMarketplace.tokenScopeHint')}</p>
+      {/* <p className="text-xs leading-5 text-muted-foreground">{t('mcpMarketplace.tokenScopeHint')}</p> */}
     </section>
   )
 }
@@ -1091,7 +1008,8 @@ function ConnectionUrl({ label, value }: { label: string; value?: string | null 
       <button
           type="button"
           onClick={() => copy(value)}
-          className="ml-2 inline-flex w-[14%] h-7 items-center gap-1.5 rounded-md border bg-background px-2 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+          className="ml-20 flex h-7 justify-center items-center gap-1.5 rounded-md border bg-background px-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary"
+          style={{ minWidth: "4.2rem" }}
         >
           {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
           {copied ? t('copyButton.copied') : t('copyButton.copy')}

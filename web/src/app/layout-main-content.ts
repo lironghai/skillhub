@@ -26,19 +26,19 @@ export function getAppMainContentLayout(pathname: string): AppMainContentLayout 
     }
   }
 
-  if (pathname === '/search') {
+  if (pathname === '/search' || pathname.startsWith('/suites') || pathname === '/dashboard' || pathname.startsWith('/dashboard/') || pathname.startsWith('/settings/')) {
     return {
       mainClassName: CENTERED_MAIN_CLASS_NAME,
       contentClassName: CENTERED_SEARCH_CONTENT_CLASS_NAME,
     }
   }
 
-  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/') || pathname.startsWith('/settings/')) {
-    return {
-      mainClassName: CENTERED_MAIN_CLASS_NAME,
-      contentClassName: CENTERED_DASHBOARD_CONTENT_CLASS_NAME,
-    }
-  }
+  // if (pathname === '/dashboard' || pathname.startsWith('/dashboard/') || pathname.startsWith('/settings/')) {
+  //   return {
+  //     mainClassName: CENTERED_MAIN_CLASS_NAME,
+  //     contentClassName: CENTERED_DASHBOARD_CONTENT_CLASS_NAME,
+  //   }
+  // }
 
   return {
     mainClassName: DEFAULT_MAIN_CLASS_NAME,
