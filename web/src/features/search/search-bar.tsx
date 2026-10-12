@@ -10,6 +10,7 @@ interface SearchBarProps {
   value?: string
   placeholder?: string
   isSearching?: boolean
+  maxLength?: number
   onChange?: (query: string) => void
   onSearch?: (query: string) => void
 }
@@ -20,7 +21,7 @@ interface SearchBarProps {
  * It supports both controlled and uncontrolled usage so page-level containers can decide whether
  * query text should be driven from URL state or local form state.
  */
-export function SearchBar({ defaultValue = '', value, placeholder, isSearching = false, onChange, onSearch }: SearchBarProps) {
+export function SearchBar({ defaultValue = '', value, placeholder, maxLength, isSearching = false, onChange, onSearch }: SearchBarProps) {
   const { t } = useTranslation()
   const [query, setQuery] = useState(defaultValue)
   const isControlled = value !== undefined
@@ -54,14 +55,14 @@ export function SearchBar({ defaultValue = '', value, placeholder, isSearching =
   return (
     <form onSubmit={handleSubmit} className="flex gap-2 rounded-lg border border-border/60 bg-card p-1.5 shadow-[var(--shadow-card)]">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        {/* <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none" /> */}
         <Input
           type="text"
           value={currentQuery}
           onChange={(e) => handleChange(e.target.value)}
-          maxLength={MAX_SEARCH_INPUT_LENGTH}
+          maxLength={maxLength || MAX_SEARCH_INPUT_LENGTH}
           placeholder={placeholder || t('searchBar.placeholder')}
-          className="pl-10 pr-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-10"
+          className="pl-5 pr-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-10"
         />
         {currentQuery ? (
           <button
@@ -75,7 +76,8 @@ export function SearchBar({ defaultValue = '', value, placeholder, isSearching =
           </button>
         ) : null}
       </div>
-      <Button type="submit" size="default" className="px-5 min-w-24 rounded-md" disabled={isSearching}>
+      <Button type="submit" size="default" className="px-10 py-5 min-w-24 rounded-md" disabled={isSearching}>
+        <Search className="relative top-2.5 h-5 w-5 -translate-y-1/2 pointer-events-none" style={{visibility: isSearching ? 'hidden' : 'visible'}} />
         {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : t('searchBar.button')}
       </Button>
     </form>

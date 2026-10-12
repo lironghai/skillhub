@@ -235,9 +235,22 @@ export function SearchPage() {
         <p className="text-sm text-muted-foreground">发现、阅读和使用大数据中心沉淀的企业技能。</p>
       </div> */}
       <DashboardPageHeader title={t('search.toptitle')} subtitle={t('search.subtitle')} />
+
+      {/* <Link
+          to="/dashboard/publish"
+          className="btn-pill btn-pill-primary"
+          style={{borderRadius:'12px',position:'absolute',top:'18px',right:'0',padding:'14px 32px',fontSize:'16px',marginTop:'0'}}
+        >
+          {t('landing.hero.publishSkill')} 
+        </Link> */}
+        <Button style={{borderRadius:'12px',position:'absolute',top:'18px',right:'0',padding:'26px 32px',fontSize:'16px',marginTop:'0'}} onClick={() => navigate({ to: "/dashboard/publish" })}>
+        {t("landing.hero.publishSkill")}
+      </Button>
+
+      
       {/* Search Bar */}
       <div className="mt-6 flex items-center justify-between">
-        <div className="max-w-3xl flex-1">
+        <div className="flex-1">
           <SearchBar
             value={queryInput}
             isSearching={isUpdatingResults}
@@ -246,12 +259,7 @@ export function SearchPage() {
           />
         </div>
         
-        <Link
-          to="/dashboard/publish"
-          className="btn-pill btn-pill-primary"
-        >
-          {t('landing.hero.publishSkill')} <ArrowRight className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5 motion-reduce:transform-none" />
-        </Link>
+        
       </div>
 
       {/* Sort And Filters */}

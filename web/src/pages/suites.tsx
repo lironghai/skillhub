@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from 'react-i18next'
 import { Boxes } from 'lucide-react'
 import { ResourceCard } from '@/features/suite/resource-card'
@@ -10,6 +10,9 @@ import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { Input } from '@/shared/ui/input'
 import { Button } from '@/shared/ui/button'
 import { APP_SHELL_PAGE_CLASS_NAME } from '@/app/page-shell-style'
+import { DashboardPageHeader } from "@/shared/components/dashboard-page-header";
+import { SearchBar } from "@/features/search/search-bar";
+
 
 const PAGE_SIZE = 12
 
@@ -28,26 +31,51 @@ export function SuitesPage() {
 
   return (
     <div className={APP_SHELL_PAGE_CLASS_NAME}>
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-        <div>
-          <div className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-primary">
-            <Boxes className="h-4 w-4" /> {t('suite.listTitle')}
-          </div>
-          <h1 className="text-4xl font-bold">{t('suite.listTitle')}</h1>
-          <p className="mt-2 text-muted-foreground">{t('suite.listDescription')}</p>
+      <DashboardPageHeader
+        title={t("suite.listTitle")}
+        subtitle={t("suite.listDescription")}
+      />
+      <Button style={{borderRadius:'12px',position:'absolute',top:'18px',right:'0',padding:'26px 32px',fontSize:'16px',marginTop:'0'}} onClick={() => navigate({ to: "/dashboard/suites/new" })}>
+        {t("suite.create")}
+      </Button>
+
+      {/* Search Bar */}
+      <div className="mt-6 flex items-center justify-between">
+        <div className="flex-1">
+          <SearchBar
+            value={query}
+            onChange={(v) => {
+              setQuery(v);
+              setPage(0);
+            }}
+            onSearch={(v) => {
+              setQuery(v);
+              setPage(0);
+            }}
+          />
         </div>
-        <Button onClick={() => navigate({ to: '/dashboard/suites/new' })}>{t('suite.create')}</Button>
+      </div>
+      {/* <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+          <h1 className="text-4xl font-semibold" style={{ color: '#333',marginBottom:'0.5rem' }}>{t("suite.listTitle")}</h1>
+          <p className="mt-2 text-lg" style={{ color: '#666' }}>
+            {t("suite.listDescription")}
+          </p>
+        </div>
+        <Button onClick={() => navigate({ to: "/dashboard/suites/new" })}>
+          {t("suite.create")}
+        </Button>
       </div>
 
       <Input
         className="max-w-xl"
         value={query}
-        placeholder={t('suite.searchPlaceholder')}
+        placeholder={t("suite.searchPlaceholder")}
         onChange={(event) => {
-          setQuery(event.target.value)
-          setPage(0)
+          setQuery(event.target.value);
+          setPage(0);
         }}
-      />
+      /> */}
 
       {isLoading ? (
         <SkeletonList count={PAGE_SIZE} />
@@ -58,9 +86,11 @@ export function SuitesPage() {
               <ResourceCard
                 key={suite.id}
                 resource={suite}
-                onClick={() => navigate({
-                  to: `/suite/${suite.namespace}/${encodeURIComponent(suite.slug)}`,
-                })}
+                onClick={() =>
+                  navigate({
+                    to: `/suite/${suite.namespace}/${encodeURIComponent(suite.slug)}`,
+                  })
+                }
               />
             ))}
           </div>
@@ -71,8 +101,11 @@ export function SuitesPage() {
           />
         </>
       ) : (
-        <EmptyState title={t('suite.emptyTitle')} description={t('suite.emptyDescription')} />
+        <EmptyState
+          title={t("suite.emptyTitle")}
+          description={t("suite.emptyDescription")}
+        />
       )}
     </div>
-  )
+  );
 }

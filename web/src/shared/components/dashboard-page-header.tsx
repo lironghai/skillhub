@@ -15,8 +15,8 @@ export function DashboardPageHeader({ title, subtitle, actions }: DashboardPageH
     <div>
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'hsl(var(--foreground))' }}>{title}</h1>
-          {subtitle ? <p className="mt-1 text-sm" style={{ color: 'hsl(var(--text-secondary))' }}>{subtitle}</p> : null}
+          <h1 className="text-4xl font-semibold tracking-tight" style={{ color: '#333',marginBottom:'0.5rem' }}>{title}</h1>
+          {subtitle ? <p className="mt-1 text-lg" style={{ color: '#666' }}>{subtitle}</p> : null}
         </div>
         {actions}
       </div>
