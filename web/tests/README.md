@@ -15,7 +15,7 @@ pnpm test:e2e:agent --workers 1 --retries 0
 
 现有 Playwright 仍使用 `pnpm test:e2e`；新增测试不会被 Vitest 收集。
 
-当前两个测试使用明确的浏览器操作，不调用模型。配置保留初始化器生成的 Vercel AI Gateway；模型提供方选择和认证完成后，才能验证 `agent.*` 步骤。密钥通过环境变量提供，不写入测试或配置文件。
+当前配置使用 OpenAI 兼容的本地模型 `deepseek-v4.1-flash`，endpoint 默认是 `http://10.0.13.142:8080/v1`。运行 AI 测试前设置 `E2E_LOCAL_MODEL_API_KEY`；也可以用 `E2E_LOCAL_MODEL_ENDPOINT` 覆盖 endpoint。密钥通过环境变量提供，不写入测试或配置文件。
 
 上述核心流程验证前端交互和 URL 状态，不断言后端搜索结果、技能详情或下载。验证这些行为需要另行启动监听 `8080` 的 SkillHub 后端及其依赖，并准备真实技能数据。
 

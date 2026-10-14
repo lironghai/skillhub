@@ -22,3 +22,9 @@ test('a visitor searches for skills and preserves the selected sort', async ({ a
   await expect(screen.getByRole('button', 'Downloads')).toBeVisible();
   await expect(browser).toHaveURL(/\/search\?q=agent(\+|%20)ops&sort=downloads&page=0&starredOnly=false$/);
 });
+
+test('the local QA agent can submit a skill search', async ({ app, agent, browser }) => {
+  await app.open('/');
+  await agent.act('Use the visible "Search skills..." field to search for "agent ops".');
+  await expect(browser).toHaveURL(/\/search\?q=agent(\+|%20)ops&sort=relevance&page=0&starredOnly=false$/);
+});

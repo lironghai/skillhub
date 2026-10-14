@@ -1,14 +1,19 @@
 import type { E2EConfig } from 'e2e';
 import { web } from '@e2e-dev/web';
-import { gateway } from 'ai';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+
+const localModel = createOpenAICompatible({
+  name: 'skillhub-local',
+  baseURL: process.env.E2E_LOCAL_MODEL_ENDPOINT ?? 'http://10.0.13.142:8080/v1',
+  apiKey: process.env.E2E_LOCAL_MODEL_API_KEY || undefined,
+});
 
 export default {
   assertionTimeout: 30000,
-  // The Vercel AI Gateway serves the model id and reads AI_GATEWAY_API_KEY, or the OIDC token of a linked Vercel project.
   agents: {
     default: {
-      model: gateway('openai/gpt-6-luna-fast'),
-      system: 'You are a thorough QA agent. Verify every outcome.',
+      model: localModel('deepseek-v4.1-flash'),
+      system: 'You are a careful QA agent. Use only visible controls, complete one goal, and verify the resulting screen.',
     },
   },
   targets: [{
