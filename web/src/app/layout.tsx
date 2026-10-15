@@ -239,7 +239,7 @@ export function Layout() {
             <div>
               <h4 className="mb-4 text-sm font-semibold text-foreground">{t('footer.product')}</h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li><a href="https://www.yingxiong.com/index.html" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.heroDataCenter')}</a></li>
+                <li><a href="https://hbdc.yingxiong.com/" target="_blank" rel="noreferrer" className={FOOTER_LINK_CLASS_NAME}>{t('footer.heroDataCenter')}</a></li>
               </ul>
             </div>
 
