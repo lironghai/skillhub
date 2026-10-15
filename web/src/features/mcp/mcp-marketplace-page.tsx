@@ -76,6 +76,12 @@ export function McpMarketplacePage() {
     setPage(0)
   }
 
+  const handleSearch = (value: string) => {
+    setSearchInput(value)
+    setSearch(value.trim())
+    setPage(0)
+  }
+
   const handleTabChange = (tab: McpMarketplaceTab) => {
     setActiveTab(tab)
     setPage(0)
@@ -156,8 +162,8 @@ export function McpMarketplacePage() {
         <div className="flex-1">
           <SearchBar
             value={searchInput}
-            onChange={setSearchInput}
-            onSearch={setSearchInput}
+            onChange={handleSearch}
+            onSearch={handleSearch}
             maxLength={MAX_SEARCH_QUERY_LENGTH}
             placeholder={
               activeTab === "internal"
@@ -188,13 +194,11 @@ export function McpMarketplacePage() {
       ) : activeQuery.isLoading ? (
         <SkeletonList count={viewMode === "grid" ? 2 : 1} />
       ) : activeTab === "internal" ? (
-        (
-          <InternalServerTable
-            servers={internalQuery.data?.items ?? []}
-            search={search}
-            onClear={handleClear}
-          />
-        )
+        <InternalServerTable
+          servers={internalQuery.data?.items ?? []}
+          search={search}
+          onClear={handleClear}
+        />
       ) : (
         <OpenSourceTable
           servers={openSourceQuery.data?.items ?? []}
