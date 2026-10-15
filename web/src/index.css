@@ -177,6 +177,61 @@
   background-size: 24px 24px;
 }
 
+/* Landing hero reference glow */
+.landing-hero-bg {
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 0;
+  height: 950px;
+  background-image: url('./assets/landing-glow.svg');
+  background-position: center -18px;
+  background-repeat: no-repeat;
+  background-size: calc(100% + 40px) auto;
+}
+
+.landing-bottom-bg {
+  background-image: url('./assets/landing-bottom.svg');
+  background-position: center bottom;
+  background-repeat: no-repeat;
+}
+
+.login-main-bg {
+  background-image: url('./assets/landing-glow.svg');
+  background-position: center -18px;
+  background-repeat: no-repeat;
+  background-size: calc(100% + 40px) auto;
+}
+
+.common-top-bg {
+  background-image: url('./assets/common-top.svg');
+  background-position: right -21px top -18px;
+  background-repeat: no-repeat;
+  background-size: 100%;
+}
+
+@media (max-width: 640px) {
+  .landing-hero-bg {
+    height: 100vh;
+    background-position: center top;
+    background-size: auto 100%;
+  }
+
+  .landing-bottom-bg {
+    background-size: auto 100%;
+  }
+
+  .login-main-bg {
+    background-position: center -14px;
+    background-size: auto calc(100% + 28px);
+  }
+
+  .common-top-bg {
+    background-size: auto 432px;
+  }
+}
+
 /* ─── Gradient glow orbs ─── */
 .glow-orb-primary {
   position: fixed;

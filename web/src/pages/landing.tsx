@@ -1,5 +1,6 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useTranslation } from 'react-i18next'
+import type { SkillSummary } from '@/api/types'
 import { normalizeSearchQuery } from '@/shared/lib/search-query'
 import {
   ArrowRight,
@@ -20,54 +21,39 @@ import { SkillCard } from '@/features/skill/skill-card'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { useSearchSkills } from '@/shared/hooks/use-skill-queries'
 import { useInView } from '@/shared/hooks/use-in-view'
+import { getHeadlineVersion } from '@/shared/lib/skill-lifecycle'
 import { Button } from '@/shared/ui/button'
 import { SvgIcon } from '@/shared/components/svg-icon'
 
-interface HeroSkillItem {
-  name: string
-  namespace: string
-  summaryKey: string
-  version: string
-  badgeClassName: string
-  statusClassName: string
-}
+const HERO_SKILL_LIMIT = 4
 
-const HERO_SKILLS: HeroSkillItem[] = [
-  {
-    name: 'weather',
-    namespace: 'global',
-    summaryKey: 'landing.experience.demoSkills.weather',
-    version: '1.3.0',
-    badgeClassName: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300',
-    statusClassName: 'bg-emerald-500',
-  },
-  {
-    name: 'git-helper',
-    namespace: 'devtools',
-    summaryKey: 'landing.experience.demoSkills.gitHelper',
-    version: '2.1.0',
-    badgeClassName: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',
-    statusClassName: 'bg-emerald-500',
-  },
-  {
-    name: 'diagram-maker',
-    namespace: 'global',
-    summaryKey: 'landing.experience.demoSkills.diagramMaker',
-    version: '0.9.2',
-    badgeClassName: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',
-    statusClassName: 'bg-amber-500',
-  },
-  {
-    name: 'code-reviewer',
-    namespace: 'devtools',
-    summaryKey: 'landing.experience.demoSkills.codeReviewer',
-    version: '1.5.0',
-    badgeClassName: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300',
-    statusClassName: 'bg-emerald-500',
-  },
+const HERO_SKILL_BADGE_CLASS_NAMES = [
+  'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300',
+  'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-300',
+  'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300',
+  'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300',
 ]
 
-function HeroBrowserMockup({ onSearch }: { onSearch: (query: string) => void }) {
+function getHeroSkillStatusClassName(skill: SkillSummary) {
+  const versionStatus = getHeadlineVersion(skill)?.status
+  if (versionStatus === 'YANKED' || skill.status === 'ARCHIVED') {
+    return 'bg-amber-500'
+  }
+  if (versionStatus === 'REJECTED' || versionStatus === 'SCAN_FAILED') {
+    return 'bg-destructive'
+  }
+  return 'bg-emerald-500'
+}
+
+function HeroBrowserMockup({
+  skills,
+  isLoading,
+  onSearch,
+}: {
+  skills: SkillSummary[]
+  isLoading: boolean
+  onSearch: (query: string) => void
+}) {
   const { t } = useTranslation()
 
   return (
@@ -101,29 +87,52 @@ function HeroBrowserMockup({ onSearch }: { onSearch: (query: string) => void }) 
           </div>
 
           <div className="space-y-2">
-            {HERO_SKILLS.map((skill) => (
-              <button
-                key={skill.name}
-                type="button"
-                className="group flex w-full items-center gap-3 rounded-lg border border-border/70 bg-background p-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-150 hover:-translate-y-px hover:border-border hover:bg-secondary/60 hover:shadow-sm active:translate-y-0 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none"
-                onClick={() => onSearch(skill.name)}
-              >
-                <span className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ${skill.badgeClassName}`}>
-                  {skill.name.slice(0, 1).toUpperCase()}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">{skill.name}</span>
-                    <span className="font-mono text-xs text-muted-foreground">@{skill.namespace}</span>
+            {isLoading ? (
+              Array.from({ length: HERO_SKILL_LIMIT }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex w-full items-center gap-3 rounded-lg border border-border/70 bg-background p-3"
+                >
+                  <span className="h-8 w-8 flex-shrink-0 animate-pulse rounded-lg bg-secondary" />
+                  <span className="min-w-0 flex-1 space-y-2">
+                    <span className="block h-3 w-2/5 animate-pulse rounded bg-secondary" />
+                    <span className="block h-3 w-4/5 animate-pulse rounded bg-secondary" />
                   </span>
-                  <span className="block truncate text-xs text-muted-foreground">{t(skill.summaryKey)}</span>
-                </span>
-                <span className="flex-shrink-0 text-right">
-                  <span className={`mb-1 inline-block h-2 w-2 rounded-full ${skill.statusClassName}`} />
-                  <span className="block font-mono text-xs text-muted-foreground">v{skill.version}</span>
-                </span>
-              </button>
-            ))}
+                  <span className="h-6 w-10 flex-shrink-0 animate-pulse rounded bg-secondary" />
+                </div>
+              ))
+            ) : (
+              skills.map((skill, index) => {
+                const headlineVersion = getHeadlineVersion(skill)
+                const badgeClassName = HERO_SKILL_BADGE_CLASS_NAMES[index % HERO_SKILL_BADGE_CLASS_NAMES.length]
+
+                return (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    className="group flex w-full items-center gap-3 rounded-lg border border-border/70 bg-background p-3 text-left transition-[transform,border-color,background-color,box-shadow] duration-150 hover:-translate-y-px hover:border-border hover:bg-secondary/60 hover:shadow-sm active:translate-y-0 active:scale-[0.995] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transform-none"
+                    onClick={() => onSearch(skill.slug)}
+                  >
+                    <span className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold ${badgeClassName}`}>
+                      {skill.displayName.slice(0, 1).toUpperCase()}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-2">
+                        <span className="truncate text-sm font-semibold text-foreground">{skill.displayName}</span>
+                        <span className="font-mono text-xs text-muted-foreground">@{skill.namespace}</span>
+                      </span>
+                      <span className="block truncate text-xs text-muted-foreground">{skill.summary || skill.slug}</span>
+                    </span>
+                    <span className="flex-shrink-0 text-right">
+                      <span className={`mb-1 inline-block h-2 w-2 rounded-full ${getHeroSkillStatusClassName(skill)}`} />
+                      {headlineVersion ? (
+                        <span className="block font-mono text-xs text-muted-foreground">v{headlineVersion.version}</span>
+                      ) : null}
+                    </span>
+                  </button>
+                )
+              })
+            )}
           </div>
 
           <div className="mt-auto flex items-center justify-between border-t border-border/70 pt-3">
@@ -154,7 +163,7 @@ function EnterpriseSection() {
   const { t } = useTranslation()
 
   return (
-    <section className="w-full bg-background px-6 py-16 md:py-20">
+    <section className="landing-bottom-bg w-full bg-background px-6 py-16 md:py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center mb-12">
           <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Enterprise</p>
@@ -264,8 +273,10 @@ export function LandingPage() {
 
   const { data: latestSkills, isLoading: isLoadingLatest } = useSearchSkills({
     sort: 'newest',
+    page: 0,
     size: 6,
   })
+  const heroSkills = latestSkills?.items.slice(0, HERO_SKILL_LIMIT) ?? []
 
   const handleSkillClick = (namespace: string, slug: string) => {
     navigate({ to: `/space/${namespace}/${encodeURIComponent(slug)}` })
@@ -338,11 +349,10 @@ export function LandingPage() {
   const viewAllText = t('home.viewAll')
 
   return (
-    <>
-      <main ref={heroView.ref} className={`relative z-10 w-full overflow-hidden px-6 py-16 scroll-fade-up${heroView.inView ? ' in-view' : ''} md:py-20`}>
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-0 h-[400px] w-[900px] -translate-x-1/2 rounded-full bg-secondary blur-3xl" />
-        </div>
+    <div className="relative overflow-x-clip bg-background">
+      <div className="landing-hero-bg" aria-hidden />
+
+      <main ref={heroView.ref} className={`relative z-10 w-full px-6 py-16 scroll-fade-up${heroView.inView ? ' in-view' : ''} md:py-20`}>
         <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border/70 bg-secondary/80 px-3 py-1.5 text-xs font-medium text-muted-foreground">
@@ -394,13 +404,13 @@ export function LandingPage() {
             </div>
           </div>
 
-          <HeroBrowserMockup onSearch={handleSearch} />
+          <HeroBrowserMockup skills={heroSkills} isLoading={isLoadingLatest} onSearch={handleSearch} />
         </div>
       </main>
 
-      <div className="mx-auto max-w-6xl px-6"><div className="h-px bg-border/70" /></div>
+      {/* <div className="mx-auto max-w-6xl px-6"><div className="h-px bg-border/70" /></div> */}
 
-      <section ref={featuresView.ref} className={`relative z-10 w-full bg-background px-6 py-16 scroll-fade-up${featuresView.inView ? ' in-view' : ''} md:py-20`}>
+      <section ref={featuresView.ref} className={`relative z-10 w-full px-6 pt-16 pb-12 scroll-fade-up${featuresView.inView ? ' in-view' : ''} `}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 max-w-4xl">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{t('landing.experience.capabilities.eyebrow')}</p>
@@ -430,7 +440,7 @@ export function LandingPage() {
         <LandingQuickStartSection />
       </div> */}
 
-      <section ref={popularView.ref} className={`relative z-10 w-full bg-background px-6 py-16 scroll-fade-up${popularView.inView ? ' in-view' : ''} md:py-20`}>
+      <section ref={popularView.ref} className={`relative z-10 w-full bg-background px-6 pt-12 pb-16 scroll-fade-up${popularView.inView ? ' in-view' : ''} `}>
         <div className="mx-auto max-w-6xl space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -492,6 +502,6 @@ export function LandingPage() {
         <EnterpriseSection />
       </div>
 
-    </>
+    </div>
   )
 }

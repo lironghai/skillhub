@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CENTERED_DASHBOARD_CONTENT_CLASS_NAME,
   CENTERED_MAIN_CLASS_NAME,
   CENTERED_SEARCH_CONTENT_CLASS_NAME,
+  COMMON_TOP_MAIN_CLASS_NAME,
   DEFAULT_MAIN_CLASS_NAME,
   getAppMainContentLayout,
   resolveAppMainContentPathname,
@@ -20,24 +20,35 @@ describe('getAppMainContentLayout', () => {
     const layout = getAppMainContentLayout('/search')
 
     expect(layout).toEqual({
+      mainClassName: COMMON_TOP_MAIN_CLASS_NAME,
+      contentClassName: CENTERED_SEARCH_CONTENT_CLASS_NAME,
+    })
+    expect(layout.contentClassName).toContain('max-w-[1200px]')
+  })
+
+  it('centers dashboard sub-pages within the standard content frame', () => {
+    const layout = getAppMainContentLayout('/dashboard/skills')
+
+    expect(layout).toEqual({
       mainClassName: CENTERED_MAIN_CLASS_NAME,
       contentClassName: CENTERED_SEARCH_CONTENT_CLASS_NAME,
     })
     expect(layout.contentClassName).toContain('max-w-[1200px]')
   })
 
-  it('centers all dashboard sub-pages within a slightly narrower content frame', () => {
-    const layout = getAppMainContentLayout('/dashboard/skills')
-
-    expect(layout).toEqual({
-      mainClassName: CENTERED_MAIN_CLASS_NAME,
-      contentClassName: CENTERED_DASHBOARD_CONTENT_CLASS_NAME,
+  it('uses the common top layout for a concrete skill detail route', () => {
+    expect(getAppMainContentLayout('/space/acme/demo')).toEqual({
+      mainClassName: COMMON_TOP_MAIN_CLASS_NAME,
+      contentClassName: CENTERED_SEARCH_CONTENT_CLASS_NAME,
     })
-    expect(layout.contentClassName).toContain('max-w-[1100px]')
   })
 
-  it('leaves other non-landing routes on the default full-width app content layout', () => {
-    expect(getAppMainContentLayout('/space/acme/demo')).toEqual({
+  it('does not apply the skill detail top background to adjacent space routes', () => {
+    expect(getAppMainContentLayout('/space/acme')).toEqual({
+      mainClassName: DEFAULT_MAIN_CLASS_NAME,
+      contentClassName: '',
+    })
+    expect(getAppMainContentLayout('/space/acme/demo/compare')).toEqual({
       mainClassName: DEFAULT_MAIN_CLASS_NAME,
       contentClassName: '',
     })
