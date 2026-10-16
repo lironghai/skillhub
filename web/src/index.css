@@ -12,7 +12,7 @@
 
     /* ── 基础层 — 纯白底，对标 skillhub-clone / skillhub.cn ── */
     --background: 0 0% 100%;               /* #ffffff */
-    --foreground: 0 0% 0%;                 /* #000000 文字 */
+    --foreground: 0 0% 20%;                 /* #333333 文字 */
     --card: 0 0% 100%;                     /* #ffffff 纯白卡片 */
     --card-foreground: 0 0% 0%;
     --popover: 0 0% 100%;
@@ -26,7 +26,7 @@
     --secondary: 240 3% 97%;               /* #f6f7f9 */
     --secondary-foreground: 0 0% 0%;
     --muted: 240 3% 94%;                   /* #eef0f2 */
-    --muted-foreground: 0 0% 45%;          /* #737373，保证辅助文字可读性 */
+    --muted-foreground: 0 0% 40%;          /* #666，保证辅助文字可读性 */
 
     /* ── 强调色 — 淡蓝 hover（对齐 TabTin hsl(214 70% 96%)） ── */
     --accent: 214 70% 96%;                  /* 淡蓝 hover */
