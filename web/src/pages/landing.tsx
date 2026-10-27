@@ -17,6 +17,7 @@ import {
   Users,
 } from 'lucide-react'
 import { BrandMark } from '@/shared/components/brand-mark'
+import { LandingQuickStartSection } from "@/shared/components/landing-quick-start";
 import { SkillCard } from '@/features/skill/skill-card'
 import { SkeletonList } from '@/shared/components/skeleton-loader'
 import { useSearchSkills } from '@/shared/hooks/use-skill-queries'
@@ -284,6 +285,7 @@ export function LandingPage() {
 
   const heroView = useInView()
   const featuresView = useInView()
+  const quickStartView = useInView();
   const enterpriseView = useInView()
   const popularView = useInView()
   const latestView = useInView()
@@ -436,9 +438,9 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* <div ref={quickStartView.ref} className={`scroll-fade-up${quickStartView.inView ? ' in-view' : ''}`}>
+      <div ref={quickStartView.ref} className={`scroll-fade-up${quickStartView.inView ? ' in-view' : ''}`}>
         <LandingQuickStartSection />
-      </div> */}
+      </div>
 
       <section ref={popularView.ref} className={`relative z-10 w-full bg-background px-6 pt-12 pb-16 scroll-fade-up${popularView.inView ? ' in-view' : ''} `}>
         <div className="mx-auto max-w-6xl space-y-6">
