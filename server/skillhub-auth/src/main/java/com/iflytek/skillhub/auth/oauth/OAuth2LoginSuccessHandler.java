@@ -1,6 +1,7 @@
 package com.iflytek.skillhub.auth.oauth;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -50,7 +51,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             // strategy (DefaultRedirectStrategy) already prepends the request context path, which
             // reflects X-Forwarded-Prefix under forward-headers-strategy=framework — so the browser
             // lands under the sub-path without any manual prefixing here (which would double it).
-            getRedirectStrategy().sendRedirect(request, response, returnTo);
+            // HTTP Location must use ASCII, while existing percent-encoded query values must stay intact.
+            getRedirectStrategy().sendRedirect(request, response, URI.create(returnTo).toASCIIString());
             // The default branch below clears these via super; clear here too so both paths behave consistently.
             clearAuthenticationAttributes(request);
             return;

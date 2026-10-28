@@ -3,6 +3,8 @@ package com.iflytek.skillhub.auth.oauth;
 import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +29,41 @@ class OAuth2LoginHandlersTest {
     @AfterEach
     void clearSecurityContext() {
         SecurityContextHolder.clearContext();
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "'', /space/global/李白-skill, /space/global/%E6%9D%8E%E7%99%BD-skill",
+            "/skillhub, /space/global/李白-skill, /skillhub/space/global/%E6%9D%8E%E7%99%BD-skill",
+            "'', /space/global/%E6%9D%8E%E7%99%BD-skill, /space/global/%E6%9D%8E%E7%99%BD-skill",
+            "'', /space/global/李白-skill?q=中文+skill#说明, /space/global/%E6%9D%8E%E7%99%BD-skill?q=%E4%B8%AD%E6%96%87+skill#%E8%AF%B4%E6%98%8E",
+            "'', /space/global/café-🚀, /space/global/caf%C3%A9-%F0%9F%9A%80",
+            "'', /space/global/李白-skill?returnTo=%2Fsearch%3Fq%3D%26sort%3Dnewest%26page%3D0%26starredOnly%3Dfalse, /space/global/%E6%9D%8E%E7%99%BD-skill?returnTo=%2Fsearch%3Fq%3D%26sort%3Dnewest%26page%3D0%26starredOnly%3Dfalse"
+    })
+    void successHandler_encodesUnicodeWithoutChangingExistingEscapes(String contextPath,
+                                                                    String target,
+                                                                    String expected) throws Exception {
+        OAuthLoginFlowService flowService = new OAuthLoginFlowService(
+                List.of(),
+                mock(com.iflytek.skillhub.auth.policy.AccessPolicy.class),
+                mock(com.iflytek.skillhub.auth.identity.IdentityBindingService.class)
+        );
+        OAuth2LoginSuccessHandler handler = new OAuth2LoginSuccessHandler(
+                new com.iflytek.skillhub.auth.session.PlatformSessionService(), flowService
+        );
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setContextPath(contextPath);
+        request.setParameter("returnTo", target);
+        flowService.rememberReturnTo(request);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        Authentication authentication = new UsernamePasswordAuthenticationToken("user", null, List.of());
+
+        handler.onAuthenticationSuccess(request, response, authentication);
+
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getHeader("Location")).isEqualTo(expected);
+        assertThat(response.getHeader("Location").chars().allMatch(character -> character < 128)).isTrue();
+        assertThat(request.getSession().getAttribute(OAuthLoginRedirectSupport.SESSION_RETURN_TO_ATTRIBUTE)).isNull();
     }
 
     @Test
